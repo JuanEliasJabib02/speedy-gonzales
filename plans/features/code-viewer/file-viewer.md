@@ -1,6 +1,6 @@
 # File Viewer
 
-**Status:** todo
+**Status:** review
 **Priority:** medium
 
 ## What it does
@@ -9,13 +9,13 @@ Display the content of a selected file from GitHub with syntax highlighting. Rep
 
 ## Checklist
 
-- [ ] Create `FileViewer` component
-- [ ] Fetch file content via GitHub Blob API (`provider.fetchFileContent`) when a file is selected
-- [ ] Render with `react-syntax-highlighter` (language auto-detected from file extension)
-- [ ] Show file path as breadcrumb header
-- [ ] Show loading skeleton while fetching
-- [ ] Handle binary files (images, fonts) — show placeholder
-- [ ] Line numbers optional (toggle)
+- [x] Create `FileViewer` component
+- [x] Fetch file content via GitHub Contents API (`/api/repo-file` route)
+- [x] Render with `react-syntax-highlighter` (language auto-detected from file extension)
+- [x] Show file path as breadcrumb header
+- [x] Show loading skeleton while fetching
+- [x] Handle binary files (images, fonts) — show placeholder
+- [x] Line numbers visible by default
 
 ## Files
 
