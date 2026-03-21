@@ -5,7 +5,6 @@ import { ArrowLeft, FileText, GitBranch, Search } from "lucide-react"
 import { useRouter } from "@/src/i18n/routing"
 import { Button } from "@/src/lib/components/ui/button"
 import { Input } from "@/src/lib/components/ui/input"
-import { cn } from "@/src/lib/helpers/cn"
 import { TicketItem } from "./TicketItem"
 
 type Ticket = {
@@ -31,13 +30,6 @@ const STATUS_TABS = [
 ] as const
 
 type TabKey = (typeof STATUS_TABS)[number]["key"]
-
-const TAB_ACTIVE_STYLES: Record<TabKey, string> = {
-  all: "bg-muted text-foreground",
-  todo: "bg-muted text-foreground",
-  "in-progress": "bg-blue-500/15 text-blue-600 dark:text-blue-400",
-  completed: "bg-green-500/15 text-green-600 dark:text-green-400",
-}
 
 export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId }: TicketSidebarProps) {
   const router = useRouter()
@@ -87,22 +79,18 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
           />
         </div>
       </div>
-      <div className="flex items-center gap-1 px-3 pb-3">
-        {STATUS_TABS.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={cn(
-              "rounded-full px-2 py-0.5 text-xs font-medium transition-colors",
-              activeTab === tab.key
-                ? TAB_ACTIVE_STYLES[tab.key]
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-            )}
-          >
-            {tab.label}
-            <span className="ml-1 opacity-70">({counts[tab.key]})</span>
-          </button>
-        ))}
+      <div className="px-3 pb-3">
+        <select
+          value={activeTab}
+          onChange={(e) => setActiveTab(e.target.value as TabKey)}
+          className="w-full rounded border border-border bg-card text-xs px-2 py-1 text-foreground"
+        >
+          {STATUS_TABS.map((tab) => (
+            <option key={tab.key} value={tab.key}>
+              {tab.label} ({counts[tab.key]})
+            </option>
+          ))}
+        </select>
       </div>
       <div className="mx-4 border-t border-border" />
       <div className="flex flex-col gap-1 p-2">
