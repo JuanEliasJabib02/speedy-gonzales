@@ -1,6 +1,6 @@
 # Full Markdown Renderer in PlanViewer
 
-**Status:** in-progress
+**Status:** review
 **Priority:** medium
 
 ## Problem
@@ -19,17 +19,17 @@ Replace the manual render with `react-markdown` + `remark-gfm` (already installe
 
 ## Checklist
 
-- [ ] Replace the `content.split("\n").map(...)` block in `PlanViewer.tsx` with a `<ReactMarkdown>` component
-- [ ] Add `remark-gfm` plugin for GitHub-flavored markdown (tables, strikethrough, task lists)
-- [ ] Style markdown elements with Tailwind prose or custom className mapping:
+- [x] Replace the `content.split("\n").map(...)` block in `PlanViewer.tsx` with a `<ReactMarkdown>` component
+- [x] Add `remark-gfm` plugin for GitHub-flavored markdown (tables, strikethrough, task lists)
+- [x] Style markdown elements with Tailwind prose or custom className mapping:
   - `h2`, `h3`: existing heading styles
   - `ul`, `ol`: proper list styles
   - `code`: inline code style (bg-muted, rounded)
   - `pre > code`: syntax highlighted block via react-syntax-highlighter
   - `table`: styled table with borders
   - `blockquote`: left border + muted text
-- [ ] Checklist items (`- [x]` / `- [ ]`) rendered as actual checkboxes (read-only)
-- [ ] Links open in new tab with `target="_blank"`
+- [x] Checklist items (`- [x]` / `- [ ]`) rendered as actual checkboxes (read-only)
+- [x] Links open in new tab with `target="_blank"`
 
 ## Files
 
