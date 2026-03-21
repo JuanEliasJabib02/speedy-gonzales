@@ -6,6 +6,7 @@ import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import { parseCommitRefs } from "@/src/lib/helpers/parseCommitRefs"
+import type { ChatContext, HistoryMessage } from "@/src/types/chat"
 
 // Creates an authenticated ConvexHttpClient using the user's session token
 async function getAuthenticatedConvex(): Promise<ConvexHttpClient | null> {
@@ -30,31 +31,6 @@ async function loadMemoryFile(projectId: string): Promise<string> {
   } catch {
     return ""
   }
-}
-
-type ChatContext = {
-  project: {
-    name: string
-    repoOwner: string
-    repoName: string
-    branch: string
-  }
-  epic: {
-    title: string
-    status: string
-    priority: string
-    content: string
-  }
-  tickets: Array<{
-    title: string
-    status: string
-    content: string
-  }>
-}
-
-type HistoryMessage = {
-  role: "user" | "assistant"
-  content: string
 }
 
 function buildSystemMessage(context: ChatContext, memory?: string): string {

@@ -4,39 +4,7 @@ import { useState, useCallback, useRef, useEffect } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
-
-type PendingImage = {
-  file: File
-  previewUrl: string
-  storageUrl: string | null
-  isUploading: boolean
-  error: string | null
-}
-
-type ChatContext = {
-  project: {
-    name: string
-    repoOwner: string
-    repoName: string
-    branch: string
-  }
-  epic: {
-    title: string
-    status: string
-    priority: string
-    content: string
-  }
-  tickets: Array<{
-    title: string
-    status: string
-    content: string
-  }>
-}
-
-type HistoryMessage = {
-  role: "user" | "assistant"
-  content: string
-}
+import type { PendingImage, ChatContext, HistoryMessage } from "@/src/types/chat"
 
 const DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000 // 24 hours
 const MAX_IMAGES = 4
