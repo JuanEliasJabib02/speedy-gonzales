@@ -51,8 +51,8 @@ export function TicketItem({ ticket, isActive, onClick }: TicketItemProps) {
     >
       <DropdownMenu>
         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-          <button type="button" className="shrink-0 rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1">
-            <div className={cn("size-2 rounded-full", STATUS_COLORS[ticket.status] ?? "bg-status-todo")} />
+          <button type="button" className="shrink-0 flex items-center justify-center size-[44px] -m-[14px] rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1">
+            <div className={cn("size-2.5 rounded-full", STATUS_COLORS[ticket.status] ?? "bg-status-todo")} />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="min-w-[140px]" onClick={(e) => e.stopPropagation()}>

@@ -44,9 +44,18 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
   const contextTicket = tickets.find((t) => t.title === "_context")
   const regularTickets = tickets.filter((t) => t.title !== "_context")
 
+  const STATUS_ORDER: Record<string, number> = {
+    "review": 0,
+    "in-progress": 1,
+    "todo": 2,
+    "blocked": 3,
+    "completed": 4,
+  }
+
   const filteredTickets = regularTickets
     .filter((t) => activeFilter.match(t.status))
     .filter((t) => !search || t.title.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => (STATUS_ORDER[a.status] ?? 5) - (STATUS_ORDER[b.status] ?? 5))
 
   const counts = STATUS_TABS.reduce(
     (acc, tab) => {
