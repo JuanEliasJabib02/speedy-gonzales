@@ -1,6 +1,6 @@
 # Upsert Logic (Epics + Tickets)
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 
@@ -8,18 +8,9 @@ Internal mutation that takes parsed plan data and upserts it into the epics and 
 
 ## Checklist
 
-- [ ] For each plan: find existing by [projectId, path] index
-- [ ] If exists and hash same → skip (no change)
-- [ ] If exists and hash different → update all fields
-- [ ] If new → insert
-- [ ] Soft-delete paths in DB but NOT in new data (removed from repo)
-- [ ] Recalculate epic progress from child tickets
-- [ ] Recalculate project progress from epics
-
-## Schema
-
-### epics table
-- projectId, title, path, content, contentHash, status, priority, progress
-
-### tickets table
-- projectId, epicId, title, path, content, contentHash, status, priority, checklistProgress
+- [x] For each plan: find existing by `[projectId, path]` index
+- [x] If exists and hash same → skip (no change)
+- [x] If exists and hash different → update all fields
+- [x] If new → insert
+- [x] Soft-delete paths in DB but NOT in new data (removed from repo)
+- [x] Track ticket count per epic

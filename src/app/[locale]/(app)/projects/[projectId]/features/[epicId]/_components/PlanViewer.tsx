@@ -1,5 +1,4 @@
 import { ChecklistProgress } from "./ChecklistProgress"
-import type { TicketStatus } from "../_constants/mock-data"
 
 const STATUS_PILL: Record<string, string> = {
   "todo": "bg-status-todo/15 text-status-todo",
@@ -17,7 +16,7 @@ const PRIORITY_PILL: Record<string, string> = {
 
 type PlanViewerProps = {
   title: string
-  status: TicketStatus
+  status: string
   priority: string
   content: string
   checklist: { total: number; completed: number }

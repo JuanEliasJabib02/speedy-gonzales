@@ -17,13 +17,10 @@ type FeatureLayoutProps = {
 }
 
 export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
-  const { plan: epic, getTicketContent } = useLivePlan(epicId)
-  const [selectedTicketId, setSelectedTicketId] = useState(epic.tickets[0]?.id ?? "_context")
+  const { plan: epic, isLoading, getTicketContent } = useLivePlan(epicId)
+  const [selectedTicketId, setSelectedTicketId] = useState("_context")
   const [chatWidth, setChatWidth] = useState(CHAT_DEFAULT_WIDTH)
   const isDragging = useRef(false)
-
-  const selectedTicket = epic.tickets.find((t) => t.id === selectedTicketId)
-  const ticketData = getTicketContent(selectedTicketId)
 
   const handleDragStart = useCallback(() => {
     isDragging.current = true
@@ -48,10 +45,25 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
     document.addEventListener("mouseup", handleMouseUp)
   }, [])
 
+  if (isLoading || !epic) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <span className="text-sm text-muted-foreground">Loading feature...</span>
+        </div>
+      </div>
+    )
+  }
+
+  const selectedTicket = epic.tickets.find((t) => t.id === selectedTicketId)
+  const ticketData = getTicketContent(selectedTicketId)
+
   return (
     <div className="flex h-full">
       <TicketSidebar
         epicTitle={epic.title}
+        branch={epic.branch}
         tickets={epic.tickets}
         selectedId={selectedTicketId}
         onSelect={setSelectedTicketId}
@@ -65,7 +77,7 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
         checklist={ticketData.checklist}
       />
       <ResizeHandle onDragStart={handleDragStart} />
-      <ChatPanel width={chatWidth} messages={epic.chatMessages} />
+      <ChatPanel width={chatWidth} epicId={epicId} />
     </div>
   )
 }

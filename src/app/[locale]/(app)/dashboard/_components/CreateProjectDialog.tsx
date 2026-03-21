@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { useMutation } from "convex/react"
+import { api } from "@/convex/_generated/api"
 import {
   Dialog,
   DialogContent,
@@ -22,6 +24,27 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [repoUrl, setRepoUrl] = useState("")
+  const [isCreating, setIsCreating] = useState(false)
+
+  const createProject = useMutation(api.projects.createProject)
+
+  const handleCreate = async () => {
+    if (!name.trim() || !repoUrl.trim()) return
+    setIsCreating(true)
+    try {
+      await createProject({
+        name: name.trim(),
+        description: description.trim() || undefined,
+        repoUrl: repoUrl.trim(),
+      })
+      setName("")
+      setDescription("")
+      setRepoUrl("")
+      onOpenChange(false)
+    } finally {
+      setIsCreating(false)
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -65,7 +88,12 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={() => onOpenChange(false)}>Create project</Button>
+          <Button
+            onClick={handleCreate}
+            disabled={!name.trim() || !repoUrl.trim() || isCreating}
+          >
+            {isCreating ? "Creating..." : "Create project"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -1,13 +1,28 @@
 import { GitCommitHorizontal, ExternalLink, Zap } from "lucide-react"
 import { cn } from "@/src/lib/helpers/cn"
-import type { ChatMessage as ChatMessageType } from "../_constants/mock-data"
+
+type CommitData = {
+  hash: string
+  message: string
+  url: string
+  filesChanged: number
+}
+
+type ChatMessageData = {
+  id: string
+  role: "user" | "agent"
+  type: "text" | "commit"
+  content: string
+  commit?: CommitData
+  timestamp: string
+}
 
 type ChatMessageProps = {
-  message: ChatMessageType
+  message: ChatMessageData
   userInitial: string
 }
 
-function CommitCard({ commit }: { commit: NonNullable<ChatMessageType["commit"]> }) {
+function CommitCard({ commit }: { commit: CommitData }) {
   return (
     <a
       href={commit.url}

@@ -1,6 +1,6 @@
 # Webhook Registration
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 
@@ -8,14 +8,15 @@ When a repo is linked to a project, automatically register a GitHub webhook to r
 
 ## Checklist
 
-- [ ] Generate random `webhookSecret` for HMAC verification
-- [ ] POST to GitHub API to create webhook on the repo
-- [ ] Store `webhookId` and `webhookSecret` in projects table
-- [ ] Configure webhook: URL, push events only, JSON content type
-- [ ] Handle errors (repo not found, insufficient permissions)
+- [x] Generate random `webhookSecret` for HMAC verification
+- [x] POST to GitHub API to create webhook on the repo
+- [x] Store `webhookId` and `webhookSecret` in projects table
+- [x] Configure webhook: URL, push events only, JSON content type
+- [x] Handle errors (repo not found, insufficient permissions) — logs error, non-blocking
 
-## Webhook config
+## Implementation
 
-- URL: `https://<convex-deployment>.convex.site/github-webhook`
-- Events: `push` only
-- Content type: `application/json`
+- `convex/githubSync.ts` → `registerWebhook` internalAction
+- `convex/githubSync.ts` → `storeWebhookInfo` internalMutation
+- Webhook URL: `${CONVEX_SITE_URL}/github-webhook`
+- Scheduled on project creation (non-critical — PAT might lack `admin:repo_hook` scope)

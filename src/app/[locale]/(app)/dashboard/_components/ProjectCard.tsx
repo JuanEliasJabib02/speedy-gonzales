@@ -1,23 +1,31 @@
 "use client"
 
 import { Link } from "@/src/i18n/routing"
-import type { Project } from "../_constants/mock-data"
+import type { Doc } from "@/convex/_generated/dataModel"
 
 type ProjectCardProps = {
-  project: Project
+  project: Doc<"projects">
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <Link href={`/projects/${project.id}`}>
+    <Link href={`/projects/${project._id}`}>
       <div className="cursor-pointer rounded-lg border border-border bg-card p-4 transition-colors hover:bg-accent">
         <h3 className="text-base font-medium">{project.name}</h3>
         <p className="mt-1 truncate text-sm text-muted-foreground">
-          {project.description}
+          {project.description ?? "No description"}
         </p>
-        <p className="mt-3 text-xs text-muted-foreground">
-          {project.activeFeatures} active · {project.totalFeatures} features · {project.ticketCount} tickets
-        </p>
+        <div className="mt-3 flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">
+            {project.repoOwner}/{project.repoName}
+          </span>
+          {project.syncStatus === "syncing" && (
+            <span className="text-xs text-status-in-progress">Syncing...</span>
+          )}
+          {project.syncStatus === "error" && (
+            <span className="text-xs text-status-blocked">Sync error</span>
+          )}
+        </div>
       </div>
     </Link>
   )

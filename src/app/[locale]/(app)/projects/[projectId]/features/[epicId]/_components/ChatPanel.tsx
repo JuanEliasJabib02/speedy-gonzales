@@ -1,18 +1,30 @@
 "use client"
 
+import { useRef, useEffect } from "react"
+import { useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import type { Id } from "@/convex/_generated/dataModel"
 import { ChatMessage } from "./ChatMessage"
 import { ChatInput } from "./ChatInput"
 import { ThemeToggle } from "@/src/lib/components/common/ThemeToggle"
 import { useCurrentUser } from "@/src/lib/hooks/useCurrentUser"
-import type { ChatMessage as ChatMessageType } from "../_constants/mock-data"
 
 type ChatPanelProps = {
   width: number
-  messages: ChatMessageType[]
+  epicId: string
 }
 
-export function ChatPanel({ width, messages }: ChatPanelProps) {
+export function ChatPanel({ width, epicId }: ChatPanelProps) {
   const { initial } = useCurrentUser()
+  const messages = useQuery(api.chat.getMessages, { epicId: epicId as Id<"epics"> })
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Auto-scroll on new messages
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    }
+  }, [messages?.length])
 
   return (
     <div
@@ -22,19 +34,39 @@ export function ChatPanel({ width, messages }: ChatPanelProps) {
       <div className="flex items-center gap-2 border-b border-border p-4">
         <h3 className="text-sm font-medium">Chat</h3>
         <div className="flex items-center gap-1.5">
-          <div className="size-2 rounded-full bg-status-todo" />
-          <span className="text-xs text-muted-foreground">coming soon</span>
+          <div className="size-2 rounded-full bg-status-completed" />
+          <span className="text-xs text-muted-foreground">connected</span>
         </div>
         <div className="ml-auto">
           <ThemeToggle />
         </div>
       </div>
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 scrollbar-thin">
-        {messages.map((message) => (
-          <ChatMessage key={message.id} message={message} userInitial={initial} />
-        ))}
+      <div ref={scrollRef} className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 scrollbar-thin">
+        {messages === undefined ? (
+          <div className="flex flex-1 items-center justify-center">
+            <span className="text-xs text-muted-foreground">Loading messages...</span>
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="flex flex-1 items-center justify-center">
+            <span className="text-xs text-muted-foreground">No messages yet. Start the conversation.</span>
+          </div>
+        ) : (
+          messages.map((message) => (
+            <ChatMessage
+              key={message._id}
+              message={{
+                id: message._id,
+                role: message.role as "user" | "agent",
+                type: "text",
+                content: message.content,
+                timestamp: new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              }}
+              userInitial={initial}
+            />
+          ))
+        )}
       </div>
-      <ChatInput />
+      <ChatInput epicId={epicId} />
     </div>
   )
 }

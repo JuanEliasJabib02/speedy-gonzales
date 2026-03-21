@@ -1,6 +1,6 @@
 # Manual Sync Button
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 
@@ -8,8 +8,8 @@ A "Sync now" button in the project header that triggers the sync action manually
 
 ## Checklist
 
-- [ ] Add "Sync now" button in ProjectHeader (already exists as UI)
-- [ ] Wire to `useAction(api.github.syncRepo)`
-- [ ] Show loading spinner while syncing
+- [x] Add "Sync now" button in ProjectHeader (UI)
+- [x] Wire to `useAction(api.githubSync.syncProject)`
+- [x] Show loading spinner while syncing (animate-spin on RefreshCw icon)
+- [x] Disable button during sync to prevent double-trigger
 - [ ] Show success/error toast after sync
-- [ ] Disable button during sync to prevent double-trigger

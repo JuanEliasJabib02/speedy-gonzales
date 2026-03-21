@@ -1,25 +1,22 @@
-# sendMessage Action
+# sendMessage Mutation
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 
-Convex action that sends a user message to the OpenClaw agent and stores the response. Includes full project context with each request.
+Convex mutation that stores a user message. The frontend then calls the Next.js API route to get the agent response.
 
 ## Checklist
 
-- [ ] Create `sendMessage` action in `convex/chat.ts`
-- [ ] Store user message in chat_messages table
-- [ ] Build context: project, repo, feature, current plan, chat history
-- [ ] Call OpenClaw API with message + context
-- [ ] Store agent response in chat_messages table
-- [ ] Handle streaming (if supported) or wait for full response
-- [ ] Return the agent's response
+- [x] Create `sendMessage` mutation in `convex/chat.ts`
+- [x] Store user message in chatMessages table with role "user"
+- [x] Create `saveAssistantMessage` mutation (public, called from API route)
+- [x] Create `getMessages` query with `by_epic` index
 
-## Context sent with each message
+## Flow
 
-- message (user's text)
-- projectId, epicId
-- repoUrl, branch, plansPath
-- currentPlanContent (currently viewed plan)
-- chatHistory (previous messages)
+1. User types message → `useMutation(api.chat.sendMessage)` persists it
+2. Frontend calls `POST /api/chat` with epicId + message
+3. API route calls OpenClaw, gets response
+4. API route calls `api.chat.saveAssistantMessage` to persist
+5. Convex reactive query updates ChatPanel automatically

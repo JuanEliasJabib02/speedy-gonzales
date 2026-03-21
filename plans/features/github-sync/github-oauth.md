@@ -6,7 +6,11 @@
 
 Allows users to connect their GitHub account. The OAuth token is used for all GitHub API calls (reading repos, creating webhooks, committing changes).
 
-## Checklist
+## Current approach (MVP)
+
+Using a **GitHub Personal Access Token (PAT)** stored as Convex env var `GITHUB_PAT`. This is simpler for MVP and sufficient for a single-user setup.
+
+## Checklist (future — OAuth)
 
 - [ ] Create GitHub OAuth app (or use existing)
 - [ ] Implement OAuth redirect flow (settings page → GitHub → callback)

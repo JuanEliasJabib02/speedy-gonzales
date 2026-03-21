@@ -1,24 +1,26 @@
 # syncRepo Action
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 
-Fetches the plans/ directory from GitHub, parses each .md file, and upserts the data into Convex.
+Fetches the plans/features/ directory from GitHub, parses each .md file, and upserts the data into Convex.
 
 ## Checklist
 
-- [ ] Get project details (owner, name, branch, plansPath, GitHub token)
-- [ ] Fetch directory tree via GitHub Trees API (recursive)
-- [ ] Filter to directories/files inside plansPath
-- [ ] For each .md file: fetch content via Contents API
-- [ ] Parse frontmatter (title, status, priority)
-- [ ] Parse checklist progress from body
-- [ ] Compute SHA-256 hash for change detection
-- [ ] Determine structure: root dirs = epics, nested dirs = tickets
-- [ ] Call internal mutation: `upsertPlans(projectId, plans[])`
-- [ ] Update `lastSyncAt` on the project
+- [x] Get project details (owner, name, branch, plansPath, GitHub token from env)
+- [x] Fetch directory tree via GitHub Trees API (recursive)
+- [x] Filter to `.md` files inside plansPath
+- [x] Group files into epics using `groupFilesIntoEpics()`
+- [x] Compare SHA hashes — only fetch content for changed files
+- [x] Parse frontmatter with `parsePlan()` (title, status, priority, checklist)
+- [x] Call `upsertPlans` internalMutation (atomic)
+- [x] Update syncStatus ("syncing" → "idle" or "error")
+- [x] Update `lastSyncAt` on success
 
-## Rate limits
+## Implementation
 
-GitHub API allows 5000 requests/hour with OAuth token. Optimize by only syncing changed files.
+- `convex/githubSync.ts` → `syncProject` (public action)
+- `convex/githubSync.ts` → `syncRepoInternal` (internalAction, core engine)
+- `convex/githubSync.ts` → `upsertPlans` (internalMutation)
+- `convex/githubSync.ts` → `updateSyncStatus` (internalMutation)
