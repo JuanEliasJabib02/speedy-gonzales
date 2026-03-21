@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server"
 
 export async function GET(req: NextRequest) {
+  const token = await convexAuthNextjsToken()
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   const owner = req.nextUrl.searchParams.get("owner")
   const repo = req.nextUrl.searchParams.get("repo")
   const path = req.nextUrl.searchParams.get("path")
