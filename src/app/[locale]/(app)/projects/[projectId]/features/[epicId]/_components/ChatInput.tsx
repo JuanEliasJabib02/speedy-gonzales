@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useRef } from "react"
-import { Loader2, SendHorizontal, X } from "lucide-react"
+import { Loader2, SendHorizontal, Square, X } from "lucide-react"
 import { Input } from "@/src/lib/components/ui/input"
 import { Button } from "@/src/lib/components/ui/button"
 
@@ -17,8 +17,10 @@ type ChatInputProps = {
   value: string
   onChange: (value: string) => void
   onSend: () => void
+  onStop: () => void
   onKeyDown: (e: React.KeyboardEvent) => void
   isSending: boolean
+  isStreaming: boolean
   pendingImage: PendingImage | null
   onPasteImage: (file: File) => void
   onRemoveImage: () => void
@@ -28,8 +30,10 @@ export function ChatInput({
   value,
   onChange,
   onSend,
+  onStop,
   onKeyDown,
   isSending,
+  isStreaming,
   pendingImage,
   onPasteImage,
   onRemoveImage,
@@ -98,15 +102,26 @@ export function ChatInput({
           className="flex-1"
           disabled={isSending}
         />
-        <Button
-          variant="ghost"
-          size="icon"
-          className="shrink-0"
-          onClick={onSend}
-          disabled={!canSend}
-        >
-          <SendHorizontal className="size-4" />
-        </Button>
+        {isStreaming ? (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0"
+            onClick={onStop}
+          >
+            <Square className="size-4 fill-current" />
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0"
+            onClick={onSend}
+            disabled={!canSend}
+          >
+            <SendHorizontal className="size-4" />
+          </Button>
+        )}
       </div>
     </div>
   )

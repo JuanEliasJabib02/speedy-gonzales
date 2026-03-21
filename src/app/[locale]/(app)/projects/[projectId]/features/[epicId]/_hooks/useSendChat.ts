@@ -44,6 +44,8 @@ export function useSendChat(projectId: string, epicId: string) {
   const [streamingContent, setStreamingContent] = useState<string | null>(null)
   const [pendingImage, setPendingImage] = useState<PendingImage | null>(null)
   const pendingImageRef = useRef<PendingImage | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const streamingContentRef = useRef<string>("")
 
   const typedEpicId = epicId as Id<"epics">
   const typedProjectId = projectId as Id<"projects">
@@ -53,6 +55,7 @@ export function useSendChat(projectId: string, epicId: string) {
   const tickets = useQuery(api.tickets.getByEpic, { epicId: typedEpicId })
   const messages = useQuery(api.chat.getMessages, { epicId: typedEpicId })
   const sendMessage = useMutation(api.chat.sendMessage)
+  const saveAssistantMessage = useMutation(api.chat.saveAssistantMessage)
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
   const getFileUrl = useMutation(api.files.getUrl)
 
@@ -149,6 +152,8 @@ export function useSendChat(projectId: string, epicId: string) {
 
       // Start streaming
       setStreamingContent("")
+      const controller = new AbortController()
+      abortControllerRef.current = controller
 
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -159,6 +164,7 @@ export function useSendChat(projectId: string, epicId: string) {
           context,
           history,
         }),
+        signal: controller.signal,
       })
 
       if (!res.ok || !res.body) {
@@ -172,6 +178,7 @@ export function useSendChat(projectId: string, epicId: string) {
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let accumulated = ""
+      streamingContentRef.current = ""
 
       while (true) {
         const { done, value: chunk } = await reader.read()
@@ -179,15 +186,36 @@ export function useSendChat(projectId: string, epicId: string) {
 
         const text = decoder.decode(chunk, { stream: true })
         accumulated += text
+        streamingContentRef.current = accumulated
         setStreamingContent(accumulated)
       }
     } catch (error) {
-      console.error("Failed to send message:", error)
+      if (error instanceof DOMException && error.name === "AbortError") {
+        // User stopped — partial content is already saved by handleStop
+      } else {
+        console.error("Failed to send message:", error)
+      }
     } finally {
+      abortControllerRef.current = null
       setStreamingContent(null)
       setIsSending(false)
     }
   }, [value, isSending, sendMessage, typedEpicId, epicId, buildContext, buildHistory, removePendingImage])
+
+  const handleStop = useCallback(async () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+    }
+    const partial = streamingContentRef.current
+    if (partial) {
+      try {
+        await saveAssistantMessage({ epicId: typedEpicId, content: partial })
+      } catch {
+        // Server may have already saved — ignore duplicate
+      }
+    }
+  }, [saveAssistantMessage, typedEpicId])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -205,6 +233,7 @@ export function useSendChat(projectId: string, epicId: string) {
     isSending,
     streamingContent,
     handleSend,
+    handleStop,
     handleKeyDown,
     messages: messages ?? [],
     pendingImage,
