@@ -431,3 +431,87 @@ export const storeWebhookInfo = internalMutation({
     await ctx.db.patch(projectId, { webhookId, webhookSecret })
   },
 })
+
+// Pushes a status change directly to GitHub by patching the .md file via GitHub API
+export const pushTicketStatusToGitHub = internalAction({
+  args: {
+    ticketId: v.id("tickets"),
+    newStatus: v.string(),
+  },
+  handler: async (ctx, { ticketId, newStatus }) => {
+    const ticket = await ctx.runQuery(internal.tickets.getTicketInternal, { ticketId })
+    if (!ticket) return
+
+    const project = await ctx.runQuery(internal.projects.getProjectInternal, {
+      projectId: ticket.projectId,
+    })
+    if (!project) return
+
+    const accessToken = process.env.GITHUB_PAT
+    if (!accessToken) {
+      console.error("[git-status-push] GITHUB_PAT not set")
+      return
+    }
+
+    const { repoOwner, repoName, branch } = project
+
+    // 1. Get current file content + SHA from GitHub
+    const fileRes = await fetch(
+      `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${ticket.path}?ref=${branch}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "application/vnd.github+json",
+        },
+      }
+    )
+
+    if (!fileRes.ok) {
+      console.error(`[git-status-push] Failed to fetch file: ${ticket.path}`, await fileRes.text())
+      return
+    }
+
+    const fileData = await fileRes.json()
+    const currentContent = atob(fileData.content.replace(/\n/g, ""))
+    const fileSha = fileData.sha
+
+    // 2. Replace **Status:** line
+    const updatedContent = currentContent.replace(
+      /\*\*Status:\*\*\s*\S+/,
+      `**Status:** ${newStatus}`
+    )
+
+    if (updatedContent === currentContent) {
+      console.log(`[git-status-push] No status change needed in ${ticket.path}`)
+      return
+    }
+
+    // 3. Commit the change via GitHub API
+    const encodedContent = btoa(unescape(encodeURIComponent(updatedContent)))
+
+    const updateRes = await fetch(
+      `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${ticket.path}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "application/vnd.github+json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: `chore(tickets): mark ${ticket.title} as ${newStatus}`,
+          content: encodedContent,
+          sha: fileSha,
+          branch,
+        }),
+      }
+    )
+
+    if (!updateRes.ok) {
+      console.error(`[git-status-push] Failed to commit status: ${ticket.path}`, await updateRes.text())
+      return
+    }
+
+    console.log(`[git-status-push] ✅ ${ticket.path} → ${newStatus}`)
+  },
+})

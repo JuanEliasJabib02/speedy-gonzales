@@ -1,5 +1,6 @@
 import { v } from "convex/values"
 import { query, mutation, internalQuery } from "./_generated/server"
+import { internal } from "./_generated/api"
 import { requireAuth } from "./helpers"
 
 export const getByEpic = query({
@@ -29,6 +30,19 @@ export const updateStatus = mutation({
       patch.blockedReason = undefined
     }
     await ctx.db.patch(ticketId, patch)
+
+    // Async: push status change to GitHub so the .md file stays in sync
+    await ctx.scheduler.runAfter(0, internal.githubSync.pushTicketStatusToGitHub, {
+      ticketId,
+      newStatus: status,
+    })
+  },
+})
+
+export const getTicketInternal = internalQuery({
+  args: { ticketId: v.id("tickets") },
+  handler: async (ctx, { ticketId }) => {
+    return ctx.db.get(ticketId)
   },
 })
 
