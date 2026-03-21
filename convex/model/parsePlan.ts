@@ -16,7 +16,8 @@ export function parseTitle(content: string): string {
 }
 
 export function parseField(content: string, field: string): string {
-  const pattern = new RegExp(`\\*\\*${field}:\\*\\*\\s*([\\w][\\w\\s-]*)`, "i")
+  // Use [^\n\r]+ to avoid capturing across newlines ([\w\s-]* was greedy and could include \n)
+  const pattern = new RegExp(`\\*\\*${field}:\\*\\*\\s*([^\\n\\r]+)`, "i")
   const match = content.match(pattern)
   return match ? match[1].trim().toLowerCase() : ""
 }
