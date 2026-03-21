@@ -1,4 +1,4 @@
-<img width="700" height="420" alt="image" src="https://github.com/user-attachments/assets/a168e031-bcd4-45b4-bfbb-2066a362662d" />
+![speedy gonzales](https://github.com/user-attachments/assets/eb8651eb-614c-4e83-9c3b-fd48c4bbeef4)
 
 # Speedy Gonzales
 
