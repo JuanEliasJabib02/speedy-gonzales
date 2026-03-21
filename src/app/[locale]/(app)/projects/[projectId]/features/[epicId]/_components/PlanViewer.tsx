@@ -54,7 +54,7 @@ export function PlanViewer({ title, status, priority, content, checklist }: Plan
           )
           if (line.startsWith("- [ ] ")) return (
             <label key={key} className="flex items-center gap-2 py-0.5 text-sm text-foreground">
-              <input type="checkbox" readOnly className="size-4 rounded accent-primary" />
+              <input type="checkbox" checked={false} readOnly className="size-4 rounded accent-primary" />
               {line.replace("- [ ] ", "")}
             </label>
           )

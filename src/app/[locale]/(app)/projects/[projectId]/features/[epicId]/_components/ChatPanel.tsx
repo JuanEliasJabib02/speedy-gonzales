@@ -1,30 +1,38 @@
 "use client"
 
 import { useRef, useEffect } from "react"
-import { useQuery } from "convex/react"
-import { api } from "@/convex/_generated/api"
-import type { Id } from "@/convex/_generated/dataModel"
 import { ChatMessage } from "./ChatMessage"
 import { ChatInput } from "./ChatInput"
 import { ThemeToggle } from "@/src/lib/components/common/ThemeToggle"
 import { useCurrentUser } from "@/src/lib/hooks/useCurrentUser"
+import { useSendChat } from "../_hooks/useSendChat"
 
 type ChatPanelProps = {
   width: number
+  projectId: string
   epicId: string
 }
 
-export function ChatPanel({ width, epicId }: ChatPanelProps) {
+export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
   const { initial } = useCurrentUser()
-  const messages = useQuery(api.chat.getMessages, { epicId: epicId as Id<"epics"> })
+  const {
+    value,
+    setValue,
+    isSending,
+    streamingContent,
+    handleSend,
+    handleKeyDown,
+    messages,
+  } = useSendChat(projectId, epicId)
+
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Auto-scroll on new messages
+  // Auto-scroll on new messages or streaming updates
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
-  }, [messages?.length])
+  }, [messages.length, streamingContent])
 
   return (
     <div
@@ -42,31 +50,49 @@ export function ChatPanel({ width, epicId }: ChatPanelProps) {
         </div>
       </div>
       <div ref={scrollRef} className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 scrollbar-thin">
-        {messages === undefined ? (
-          <div className="flex flex-1 items-center justify-center">
-            <span className="text-xs text-muted-foreground">Loading messages...</span>
-          </div>
-        ) : messages.length === 0 ? (
+        {messages.length === 0 && streamingContent === null ? (
           <div className="flex flex-1 items-center justify-center">
             <span className="text-xs text-muted-foreground">No messages yet. Start the conversation.</span>
           </div>
         ) : (
-          messages.map((message) => (
-            <ChatMessage
-              key={message._id}
-              message={{
-                id: message._id,
-                role: message.role as "user" | "agent",
-                type: "text",
-                content: message.content,
-                timestamp: new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-              }}
-              userInitial={initial}
-            />
-          ))
+          <>
+            {messages.map((message) => (
+              <ChatMessage
+                key={message._id}
+                message={{
+                  id: message._id,
+                  role: message.role as "user" | "agent",
+                  type: "text",
+                  content: message.content,
+                  commits: message.metadata?.commits,
+                  timestamp: new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                }}
+                userInitial={initial}
+              />
+            ))}
+            {streamingContent !== null && (
+              <ChatMessage
+                message={{
+                  id: "streaming",
+                  role: "agent",
+                  type: "text",
+                  content: streamingContent,
+                  timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                }}
+                userInitial={initial}
+                isStreaming
+              />
+            )}
+          </>
         )}
       </div>
-      <ChatInput epicId={epicId} />
+      <ChatInput
+        value={value}
+        onChange={setValue}
+        onSend={handleSend}
+        onKeyDown={handleKeyDown}
+        isSending={isSending}
+      />
     </div>
   )
 }

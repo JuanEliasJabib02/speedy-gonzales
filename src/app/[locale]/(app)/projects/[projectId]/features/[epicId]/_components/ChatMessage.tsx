@@ -13,13 +13,14 @@ type ChatMessageData = {
   role: "user" | "agent"
   type: "text" | "commit"
   content: string
-  commit?: CommitData
+  commits?: CommitData[]
   timestamp: string
 }
 
 type ChatMessageProps = {
   message: ChatMessageData
   userInitial: string
+  isStreaming?: boolean
 }
 
 function CommitCard({ commit }: { commit: CommitData }) {
@@ -43,8 +44,19 @@ function CommitCard({ commit }: { commit: CommitData }) {
   )
 }
 
-export function ChatMessage({ message, userInitial }: ChatMessageProps) {
+function StreamingIndicator() {
+  return (
+    <div className="flex items-center gap-1 px-1">
+      <span className="size-1.5 animate-pulse rounded-full bg-muted-foreground" />
+      <span className="size-1.5 animate-pulse rounded-full bg-muted-foreground [animation-delay:150ms]" />
+      <span className="size-1.5 animate-pulse rounded-full bg-muted-foreground [animation-delay:300ms]" />
+    </div>
+  )
+}
+
+export function ChatMessage({ message, userInitial, isStreaming }: ChatMessageProps) {
   const isUser = message.role === "user"
+  const hasContent = message.content.length > 0
 
   return (
     <div className={cn("flex gap-2.5", isUser ? "flex-row-reverse" : "flex-row")}>
@@ -62,18 +74,29 @@ export function ChatMessage({ message, userInitial }: ChatMessageProps) {
           {isUser ? "You" : "Speedy"}
         </span>
 
-        {message.type === "commit" && message.commit ? (
-          <CommitCard commit={message.commit} />
-        ) : (
-          <div
-            className={cn(
-              "max-w-[85%] rounded-lg p-3 text-sm",
-              isUser
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-secondary-foreground"
-            )}
-          >
-            {message.content}
+        <div
+          className={cn(
+            "max-w-[85%] rounded-lg p-3 text-sm whitespace-pre-wrap",
+            isUser
+              ? "bg-primary text-primary-foreground"
+              : "bg-secondary text-secondary-foreground"
+          )}
+        >
+          {isStreaming && !hasContent ? (
+            <StreamingIndicator />
+          ) : (
+            <>
+              {message.content}
+              {isStreaming && <span className="ml-0.5 inline-block animate-pulse">|</span>}
+            </>
+          )}
+        </div>
+
+        {message.commits && message.commits.length > 0 && (
+          <div className="flex flex-col gap-2 mt-1">
+            {message.commits.map((commit) => (
+              <CommitCard key={commit.hash} commit={commit} />
+            ))}
           </div>
         )}
 

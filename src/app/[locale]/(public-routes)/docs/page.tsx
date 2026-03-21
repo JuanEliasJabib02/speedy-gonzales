@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, FolderTree, GitBranch, MessageSquare, Rocket } from "lucide-react"
+import { ArrowRight, BookOpen, Brain, FolderTree, GitBranch, MessageSquare, Rocket } from "lucide-react"
 import Link from "next/link"
 
 const guides = [
@@ -32,6 +32,13 @@ const features = [
       "Per-feature AI chat powered by OpenClaw's Charizard agent. Context-aware conversations with memory.",
     href: "/docs/chat",
     icon: MessageSquare,
+  },
+  {
+    title: "Chat Memory",
+    description:
+      "How context injection works: plan files, ticket state, and chat history — auto-injected so the agent knows everything.",
+    href: "/docs/chat-memory",
+    icon: Brain,
   },
 ]
 

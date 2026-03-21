@@ -128,6 +128,53 @@ export default function SetupDocsPage() {
         </p>
       </section>
 
+      {/* Step 4 — OpenClaw */}
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Step 4 — Connect OpenClaw Chat</h2>
+        <p className="leading-relaxed text-muted-foreground">
+          The AI chat is powered by an OpenClaw agent via an OpenAI-compatible API.
+          The agent runs on a remote server exposed through a Cloudflare Tunnel.
+        </p>
+
+        <div className="space-y-3">
+          <h3 className="font-medium">Environment variables</h3>
+          <p className="text-sm text-muted-foreground">
+            Add these to your <code className="rounded bg-muted px-1.5 py-0.5">.env.local</code>:
+          </p>
+          <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+{`OPENCLAW_BASE_URL=https://<your-tunnel>.trycloudflare.com/v1
+OPENCLAW_API_KEY=<your-gateway-token>
+OPENCLAW_MODEL=openclaw:main`}
+          </pre>
+          <p className="text-sm text-muted-foreground">
+            Also set them in Convex for future use:
+          </p>
+          <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+{`npx convex env set OPENCLAW_BASE_URL "https://<your-tunnel>.trycloudflare.com/v1"
+npx convex env set OPENCLAW_API_KEY "<your-gateway-token>"
+npx convex env set OPENCLAW_MODEL "openclaw:main"`}
+          </pre>
+        </div>
+
+        <div className="space-y-3">
+          <h3 className="font-medium">How it works</h3>
+          <ul className="list-inside list-disc space-y-2 text-sm text-muted-foreground">
+            <li>The agent runs on a VPS, exposed via <strong className="text-foreground">Cloudflare Tunnel</strong> (temporary URL for development)</li>
+            <li>The Next.js API route at <code className="rounded bg-muted px-1.5 py-0.5">/api/chat</code> proxies requests, keeping credentials server-side</li>
+            <li>Streaming is supported via SSE &mdash; responses appear token-by-token</li>
+            <li>The <code className="rounded bg-muted px-1.5 py-0.5">user: &quot;juan&quot;</code> field enables persistent sessions across messages</li>
+          </ul>
+        </div>
+
+        <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
+          <p className="text-sm text-muted-foreground">
+            <strong className="text-foreground">Note:</strong> The Cloudflare Tunnel URL is temporary
+            and changes on restart. In production, this will be replaced with a permanent
+            Tailscale connection. The env vars are designed to be swappable &mdash; just update the URL.
+          </p>
+        </div>
+      </section>
+
       {/* Troubleshooting */}
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Troubleshooting</h2>
