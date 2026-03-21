@@ -2,13 +2,18 @@ import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import { homedir } from "node:os"
 import { ConvexHttpClient } from "convex/browser"
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import { parseCommitRefs } from "@/src/lib/helpers/parseCommitRefs"
 
-// Lazy init — avoids build-time evaluation when env var is not set
-function getConvex() {
-  return new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+// Creates an authenticated ConvexHttpClient using the user's session token
+async function getAuthenticatedConvex(): Promise<ConvexHttpClient | null> {
+  const token = await convexAuthNextjsToken()
+  if (!token) return null
+  const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+  client.setAuth(token)
+  return client
 }
 
 function getMemoryPath(projectId: string): string {
@@ -321,7 +326,12 @@ async function enrichCommits(fullContent: string, context: ChatContext | undefin
 }
 
 export async function POST(request: Request) {
-  const convex = getConvex()
+  // Auth check: reject unauthenticated requests
+  const convex = await getAuthenticatedConvex()
+  if (!convex) {
+    return new Response("Unauthorized", { status: 401 })
+  }
+
   const { epicId, projectId, message, context, history } = (await request.json()) as {
     epicId: string
     projectId?: string

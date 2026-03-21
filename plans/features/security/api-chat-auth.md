@@ -1,6 +1,6 @@
 # API Chat Endpoint Auth (SEC-02)
 
-**Status:** todo
+**Status:** review
 **Priority:** critical
 
 ## What it does
@@ -13,9 +13,9 @@ Verify user session before processing the request. Use the existing auth setup (
 
 ## Checklist
 
-- [ ] Import auth helper in `route.ts`
-- [ ] Check session at the top of the POST handler
-- [ ] Return 401 if no valid session
+- [x] Import auth helper in `route.ts`
+- [x] Check session at the top of the POST handler
+- [x] Return 401 if no valid session
 - [ ] Pass user ID to Convex mutations for audit trail
 
 ## Files
