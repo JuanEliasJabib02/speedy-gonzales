@@ -1,8 +1,10 @@
 import { GitCommitHorizontal, ExternalLink, Zap, Copy, Check } from "lucide-react"
 import { cn } from "@/src/lib/helpers/cn"
-import { type ReactNode, useState, useCallback } from "react"
+import { useState, useCallback } from "react"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
+import ReactMarkdown, { type Components } from "react-markdown"
+import remarkGfm from "remark-gfm"
 
 type CommitData = {
   hash: string
@@ -57,84 +59,6 @@ function StreamingIndicator() {
   )
 }
 
-const LINK_CLASS = "text-primary underline break-all"
-
-// Matches markdown links [text](url) and plain URLs
-const MESSAGE_LINK_RE =
-  /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<>)\]]+)/g
-
-function linkLabel(url: string): string {
-  try {
-    const u = new URL(url)
-    if (u.hostname === "github.com") {
-      const parts = u.pathname.split("/").filter(Boolean)
-      // /owner/repo/pull/123
-      if (parts[2] === "pull" && parts[3]) return `PR #${parts[3]}`
-      // /owner/repo/commit/abc123
-      if (parts[2] === "commit" && parts[3]) return parts[3].slice(0, 7)
-      // /owner/repo/blob/...filepath
-      if (parts[2] === "blob" && parts.length > 4) return parts.slice(4).join("/")
-      // /owner/repo/issues/123
-      if (parts[2] === "issues" && parts[3]) return `Issue #${parts[3]}`
-    }
-  } catch {
-    // not a valid URL — fall through
-  }
-  return url
-}
-
-function renderLinkedContent(text: string): ReactNode[] {
-  const parts: ReactNode[] = []
-  let lastIndex = 0
-  let match: RegExpExecArray | null
-
-  MESSAGE_LINK_RE.lastIndex = 0
-  while ((match = MESSAGE_LINK_RE.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index))
-    }
-
-    if (match[1] && match[2]) {
-      // markdown-style link [text](url)
-      parts.push(
-        <a
-          key={match.index}
-          href={match[2]}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={LINK_CLASS}
-        >
-          {match[1]}
-        </a>
-      )
-    } else {
-      // plain URL
-      const url = match[3]
-      parts.push(
-        <a
-          key={match.index}
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={LINK_CLASS}
-        >
-          {linkLabel(url)}
-        </a>
-      )
-    }
-
-    lastIndex = MESSAGE_LINK_RE.lastIndex
-  }
-
-  if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex))
-  }
-
-  return parts
-}
-
-// Matches fenced code blocks: ```lang\n...\n```
-const FENCED_CODE_RE = /```(\w*)\n([\s\S]*?)```/g
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
@@ -187,34 +111,64 @@ function CodeBlock({ language, code }: { language: string; code: string }) {
   )
 }
 
-function renderMessageContent(text: string): ReactNode[] {
-  const parts: ReactNode[] = []
-  let lastIndex = 0
-  let match: RegExpExecArray | null
+const markdownComponents: Components = {
+  code({ className, children, ...props }) {
+    const match = /language-(\w+)/.exec(className || "")
+    const codeString = String(children).replace(/\n$/, "")
 
-  FENCED_CODE_RE.lastIndex = 0
-  while ((match = FENCED_CODE_RE.exec(text)) !== null) {
-    // Render text before the code block (with link support)
-    if (match.index > lastIndex) {
-      const textBefore = text.slice(lastIndex, match.index)
-      parts.push(...renderLinkedContent(textBefore).map((node, i) =>
-        typeof node === "string" ? <span key={`t-${lastIndex}-${i}`}>{node}</span> : node
-      ))
+    if (match) {
+      return <CodeBlock language={match[1]} code={codeString} />
     }
 
-    parts.push(
-      <CodeBlock key={`code-${match.index}`} language={match[1]} code={match[2]} />
+    return (
+      <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
+        {children}
+      </code>
     )
-
-    lastIndex = FENCED_CODE_RE.lastIndex
-  }
-
-  // Render remaining text after last code block (with link support)
-  if (lastIndex < text.length) {
-    parts.push(...renderLinkedContent(text.slice(lastIndex)))
-  }
-
-  return parts
+  },
+  pre({ children }) {
+    return <>{children}</>
+  },
+  a({ href, children }) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline break-all">
+        {children}
+      </a>
+    )
+  },
+  p({ children }) {
+    return <p className="mb-3 last:mb-0">{children}</p>
+  },
+  ul({ children }) {
+    return <ul className="mb-3 ml-4 list-disc last:mb-0 [&>li]:mt-1">{children}</ul>
+  },
+  ol({ children }) {
+    return <ol className="mb-3 ml-4 list-decimal last:mb-0 [&>li]:mt-1">{children}</ol>
+  },
+  h1({ children }) {
+    return <h1 className="mb-3 mt-4 first:mt-0 text-lg font-bold">{children}</h1>
+  },
+  h2({ children }) {
+    return <h2 className="mb-2 mt-3 first:mt-0 text-base font-bold">{children}</h2>
+  },
+  h3({ children }) {
+    return <h3 className="mb-2 mt-3 first:mt-0 text-sm font-bold">{children}</h3>
+  },
+  blockquote({ children }) {
+    return <blockquote className="mb-3 border-l-2 border-muted-foreground/30 pl-3 text-muted-foreground last:mb-0">{children}</blockquote>
+  },
+  hr() {
+    return <hr className="my-3 border-muted-foreground/20" />
+  },
+  table({ children }) {
+    return <div className="mb-3 overflow-x-auto last:mb-0"><table className="w-full text-sm">{children}</table></div>
+  },
+  th({ children }) {
+    return <th className="border border-border px-2 py-1 text-left font-semibold">{children}</th>
+  },
+  td({ children }) {
+    return <td className="border border-border px-2 py-1">{children}</td>
+  },
 }
 
 export function ChatMessage({ message, userInitial, isStreaming }: ChatMessageProps) {
@@ -239,17 +193,23 @@ export function ChatMessage({ message, userInitial, isStreaming }: ChatMessagePr
 
         <div
           className={cn(
-            "max-w-[85%] rounded-lg p-3 text-sm whitespace-pre-wrap",
+            "max-w-[85%] rounded-lg text-sm",
             isUser
-              ? "bg-primary text-primary-foreground"
-              : "bg-secondary text-secondary-foreground"
+              ? "bg-primary text-primary-foreground p-3 whitespace-pre-wrap"
+              : "bg-secondary text-secondary-foreground p-4 leading-7"
           )}
         >
           {isStreaming && !hasContent ? (
             <StreamingIndicator />
           ) : (
             <>
-              {renderMessageContent(message.content)}
+              {isUser ? (
+                message.content
+              ) : (
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                  {message.content}
+                </ReactMarkdown>
+              )}
               {isStreaming && <span className="ml-0.5 inline-block animate-pulse">|</span>}
             </>
           )}

@@ -1,6 +1,6 @@
 # Streaming UX — ChatGPT-style Incremental Rendering
 
-**Status:** todo
+**Status:** completed
 **Priority:** high
 
 ## What it does
@@ -13,13 +13,13 @@ Use `react-markdown` with `remarkGfm` to parse and render markdown incrementally
 
 ## Checklist
 
-- [ ] Install `react-markdown` and `remark-gfm` if not present
-- [ ] Replace plain text rendering in `ChatMessage.tsx` with `<ReactMarkdown remarkPlugins={[remarkGfm]}>`
-- [ ] Apply to both streaming (in-progress) messages and completed messages
-- [ ] Ensure the blinking cursor indicator still shows during streaming
-- [ ] Test: code blocks, bold, italic, lists, links — all render correctly mid-stream
-- [ ] Remove any existing regex-based text parsing that conflicts with react-markdown
-- [ ] Coordinate with `syntax-highlighting` ticket — use react-markdown's `components.code` for code block rendering
+- [x] Install `react-markdown` and `remark-gfm` if not present
+- [x] Replace plain text rendering in `ChatMessage.tsx` with `<ReactMarkdown remarkPlugins={[remarkGfm]}>`
+- [x] Apply to both streaming (in-progress) messages and completed messages
+- [x] Ensure the blinking cursor indicator still shows during streaming
+- [x] Test: code blocks, bold, italic, lists, links — all render correctly mid-stream
+- [x] Remove any existing regex-based text parsing that conflicts with react-markdown
+- [x] Coordinate with `syntax-highlighting` ticket — use react-markdown's `components.code` for code block rendering
 
 ## Files
 
