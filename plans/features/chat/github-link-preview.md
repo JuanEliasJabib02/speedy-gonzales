@@ -1,6 +1,6 @@
 # GitHub Link Preview in Chat
 
-**Status:** in-progress
+**Status:** review
 **Priority:** medium
 
 ## What it does
@@ -22,14 +22,14 @@ Detect URL type and render tailored content:
 
 ## Checklist
 
-- [ ] Detect GitHub URLs in rendered message content
-- [ ] Create a server-side `/api/link-preview` route to fetch OG metadata (avoids CORS)
-- [ ] Render `LinkPreviewCard` component below the link text
-- [ ] Implement commit URL renderer (Level 2 - commit)
-- [ ] Implement blob/file URL renderer (Level 2 - file)
-- [ ] Implement PR URL renderer (Level 2 - PR)
-- [ ] Lazy-load previews (don't block message render)
-- [ ] Cache preview results in Convex or session storage
+- [x] Detect GitHub URLs in rendered message content
+- [x] Create a server-side `/api/link-preview` route to fetch OG metadata (avoids CORS)
+- [x] Render `LinkPreviewCard` component below the link text
+- [x] Implement commit URL renderer (Level 2 - commit)
+- [x] Implement blob/file URL renderer (Level 2 - file)
+- [x] Implement PR URL renderer (Level 2 - PR)
+- [x] Lazy-load previews (don't block message render)
+- [x] Cache preview results in Convex or session storage
 
 ## Files
 
