@@ -231,21 +231,25 @@ export function FileTree({ owner, repo, branch, onFileSelect, selectedFile }: Fi
     }
   }, [owner, repo])
 
-  const fetchBranches = useCallback(async () => {
+  const fetchBranches = useCallback(async (cancelledRef?: { current: boolean }) => {
     try {
       const params = new URLSearchParams({ owner, repo })
       const res = await fetch(`/api/repo-tree/branches?${params}`)
-      if (!res.ok) return
+      if (!res.ok || cancelledRef?.current) return
       const data = await res.json()
-      setBranches(data.branches ?? [])
+      if (!cancelledRef?.current) {
+        setBranches(data.branches ?? [])
+      }
     } catch {
       // branches are optional, fail silently
     }
   }, [owner, repo])
 
   useEffect(() => {
+    const cancelled = { current: false }
     fetchTree(currentBranch)
-    fetchBranches()
+    fetchBranches(cancelled)
+    return () => { cancelled.current = true }
   }, [currentBranch, fetchTree, fetchBranches])
 
   useEffect(() => {

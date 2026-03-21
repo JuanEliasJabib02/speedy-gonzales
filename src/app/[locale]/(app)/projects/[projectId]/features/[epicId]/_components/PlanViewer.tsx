@@ -169,6 +169,7 @@ function CommitsSection({
   const [details, setDetails] = useState<Record<string, CommitDetail>>({})
 
   useEffect(() => {
+    let cancelled = false
     for (const sha of commits) {
       if (details[sha]) continue
       setDetails((prev) => ({
@@ -178,25 +179,30 @@ function CommitsSection({
       fetch(`/api/commit-diff?owner=${encodeURIComponent(repoOwner)}&repo=${encodeURIComponent(repoName)}&sha=${encodeURIComponent(sha)}`)
         .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
         .then((data) => {
-          setDetails((prev) => ({
-            ...prev,
-            [sha]: {
-              sha,
-              message: data.message?.split("\n")[0] ?? "",
-              filesChanged: data.files?.length ?? 0,
-              additions: data.stats?.additions ?? 0,
-              deletions: data.stats?.deletions ?? 0,
-              loading: false,
-            },
-          }))
+          if (!cancelled) {
+            setDetails((prev) => ({
+              ...prev,
+              [sha]: {
+                sha,
+                message: data.message?.split("\n")[0] ?? "",
+                filesChanged: data.files?.length ?? 0,
+                additions: data.stats?.additions ?? 0,
+                deletions: data.stats?.deletions ?? 0,
+                loading: false,
+              },
+            }))
+          }
         })
         .catch((err) => {
-          setDetails((prev) => ({
-            ...prev,
-            [sha]: { sha, message: "", filesChanged: 0, additions: 0, deletions: 0, loading: false, error: err.message },
-          }))
+          if (!cancelled) {
+            setDetails((prev) => ({
+              ...prev,
+              [sha]: { sha, message: "", filesChanged: 0, additions: 0, deletions: 0, loading: false, error: err.message },
+            }))
+          }
         })
     }
+    return () => { cancelled = true }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [commits.join(","), repoOwner, repoName])
 
