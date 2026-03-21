@@ -80,7 +80,12 @@ export function ProjectHeader({
           variant="secondary"
           size="sm"
           disabled={isSyncing}
-          onClick={() => syncProject({ projectId })}
+          onClick={() => {
+            const ok = window.confirm(
+              "Make sure you pushed your latest plan changes to GitHub.\n\nSync reads from GitHub, not your local files. Continue?"
+            )
+            if (ok) syncProject({ projectId })
+          }}
         >
           <RefreshCw className={cn("size-4", isSyncing && "animate-spin")} />
           {isSyncing ? "Syncing..." : "Sync now"}
