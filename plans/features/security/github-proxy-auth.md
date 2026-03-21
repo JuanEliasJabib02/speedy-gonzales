@@ -1,6 +1,6 @@
 # GitHub Proxy Endpoints Auth (SEC-01/02/03 v2)
 
-**Status:** todo
+**Status:** review
 **Priority:** critical
 
 ## What it does
@@ -32,8 +32,8 @@ export async function GET(req: NextRequest) {
 
 ## Checklist
 
-- [ ] Add auth to `commit-diff/route.ts`
-- [ ] Add auth to `repo-tree/route.ts`
-- [ ] Add auth to `repo-tree/branches/route.ts`
-- [ ] Add auth to `repo-file/route.ts`
-- [ ] Update status to review
+- [x] Add auth to `commit-diff/route.ts`
+- [x] Add auth to `repo-tree/route.ts`
+- [x] Add auth to `repo-tree/branches/route.ts`
+- [x] Add auth to `repo-file/route.ts`
+- [x] Update status to review
