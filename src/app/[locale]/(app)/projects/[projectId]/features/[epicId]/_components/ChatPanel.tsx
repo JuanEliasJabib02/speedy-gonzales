@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useEffect, useMemo } from "react"
+import { useRef, useEffect, useMemo, useCallback } from "react"
 import { ChatMessage } from "./ChatMessage"
 import { ChatInput } from "./ChatInput"
 import { ContextSummaryCard } from "./ContextSummaryCard"
@@ -43,6 +43,27 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
     [tickets],
   )
 
+  const MAX_TOKENS = 200_000
+
+  const totalTokens = useMemo(
+    () => messages.reduce((sum, m) => sum + (m.tokenCount ?? 0), 0),
+    [messages],
+  )
+
+  const tokenRatio = MAX_TOKENS > 0 ? totalTokens / MAX_TOKENS : 0
+
+  const formatTokens = useCallback((n: number) => {
+    if (n >= 1000) return `${(n / 1000).toFixed(1)}k`
+    return String(n)
+  }, [])
+
+  const tokenColorClass =
+    tokenRatio >= 0.8
+      ? "bg-red-500"
+      : tokenRatio >= 0.5
+        ? "bg-yellow-500"
+        : "bg-green-500"
+
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Auto-scroll on new messages or streaming updates
@@ -63,7 +84,15 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
           <div className="size-2 rounded-full bg-status-completed" />
           <span className="text-xs text-muted-foreground">connected</span>
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-3">
+          {totalTokens > 0 && (
+            <div className="flex items-center gap-1.5">
+              <div className={`size-2 rounded-full ${tokenColorClass}`} />
+              <span className="text-xs text-muted-foreground">
+                {formatTokens(totalTokens)} / {formatTokens(MAX_TOKENS)} tokens
+              </span>
+            </div>
+          )}
           <ThemeToggle />
         </div>
       </div>

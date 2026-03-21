@@ -6,6 +6,7 @@ export const chatMessages = defineTable({
   role: v.string(), // "user" | "assistant"
   content: v.string(),
   metadata: v.optional(v.any()),
+  tokenCount: v.optional(v.number()),
   createdAt: v.number(),
 })
   .index("by_epic", ["epicId"])

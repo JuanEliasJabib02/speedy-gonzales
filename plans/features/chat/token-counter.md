@@ -1,6 +1,6 @@
 # Token Counter / Cost Indicator
 
-**Status:** todo
+**Status:** review
 **Priority:** low
 
 ## What it does
@@ -9,11 +9,11 @@ Show a live token count and estimated cost for the current conversation, like Cu
 
 ## Checklist
 
-- [ ] Track token count returned from the API response (`usage.total_tokens`)
-- [ ] Store token count in Convex alongside each message
-- [ ] Display running total in the chat header (e.g. `4.2k / 200k tokens`)
+- [x] Track token count returned from the API response (`usage.total_tokens`)
+- [x] Store token count in Convex alongside each message
+- [x] Display running total in the chat header (e.g. `4.2k / 200k tokens`)
 - [ ] Optional: show estimated cost based on model pricing
-- [ ] Color indicator: green → yellow → red as context fills up
+- [x] Color indicator: green → yellow → red as context fills up
 
 ## Files
 
