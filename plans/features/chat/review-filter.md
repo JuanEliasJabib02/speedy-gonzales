@@ -1,6 +1,6 @@
 # Add Review Filter Tab to Ticket Sidebar
 
-**Status:** todo
+**Status:** completed
 **Priority:** medium
 **Feature:** OpenClaw Chat
 

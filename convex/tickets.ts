@@ -1,5 +1,5 @@
 import { v } from "convex/values"
-import { query, internalQuery } from "./_generated/server"
+import { query, mutation, internalQuery } from "./_generated/server"
 import { requireAuth } from "./helpers"
 
 export const getByEpic = query({
@@ -11,6 +11,17 @@ export const getByEpic = query({
       .withIndex("by_epic", (q) => q.eq("epicId", epicId))
       .collect()
     return tickets.filter((t) => !t.isDeleted)
+  },
+})
+
+export const updateStatus = mutation({
+  args: {
+    ticketId: v.id("tickets"),
+    status: v.string(),
+  },
+  handler: async (ctx, { ticketId, status }) => {
+    await requireAuth(ctx)
+    await ctx.db.patch(ticketId, { status })
   },
 })
 

@@ -28,6 +28,7 @@ const STATUS_TABS = [
   { key: "all", label: "All", match: () => true },
   { key: "todo", label: "Todo", match: (s: string) => s === "todo" },
   { key: "in-progress", label: "In Progress", match: (s: string) => s === "in-progress" },
+  { key: "review", label: "Review", match: (s: string) => s === "review" },
   { key: "completed", label: "Done", match: (s: string) => s === "completed" },
 ] as const
 
