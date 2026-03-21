@@ -1,6 +1,6 @@
 # syncRepo Action
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 

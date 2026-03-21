@@ -1,6 +1,6 @@
 # Real-time Message Updates
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 

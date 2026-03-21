@@ -1,6 +1,6 @@
 # Ticket Sidebar
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 

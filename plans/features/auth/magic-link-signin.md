@@ -1,6 +1,6 @@
 # Magic Link Sign-in
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 

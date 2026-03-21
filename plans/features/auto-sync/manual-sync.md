@@ -1,6 +1,6 @@
 # Manual Sync Button
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 

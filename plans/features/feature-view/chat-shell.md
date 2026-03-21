@@ -1,6 +1,6 @@
 # Chat Panel Shell
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 

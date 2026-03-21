@@ -1,6 +1,6 @@
 # OTP Verification Dialog
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 

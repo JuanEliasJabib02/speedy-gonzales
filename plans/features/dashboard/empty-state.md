@@ -1,6 +1,6 @@
 # Empty State
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 

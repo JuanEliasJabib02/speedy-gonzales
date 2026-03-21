@@ -1,6 +1,6 @@
 # Project Cards Grid
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 

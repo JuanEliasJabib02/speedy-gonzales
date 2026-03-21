@@ -1,6 +1,6 @@
 # Basic Markdown Rendering
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 

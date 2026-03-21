@@ -1,6 +1,6 @@
 # Webhook Handler Endpoint
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 

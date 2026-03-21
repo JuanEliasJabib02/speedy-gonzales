@@ -1,6 +1,6 @@
 # OpenClaw API Integration
 
-**Status:** todo
+**Status:** in-progress
 
 ## What it does
 

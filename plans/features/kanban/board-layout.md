@@ -1,6 +1,6 @@
 # Kanban Board Layout
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 

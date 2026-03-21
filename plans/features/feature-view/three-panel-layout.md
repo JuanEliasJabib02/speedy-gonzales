@@ -1,6 +1,6 @@
 # Three-Panel Layout
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 

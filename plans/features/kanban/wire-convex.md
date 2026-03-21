@@ -1,6 +1,6 @@
 # Wire Kanban to Convex
 
-**Status:** todo
+**Status:** in-progress
 
 ## What it does
 

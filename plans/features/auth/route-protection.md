@@ -1,6 +1,6 @@
 # Route Protection Middleware
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 

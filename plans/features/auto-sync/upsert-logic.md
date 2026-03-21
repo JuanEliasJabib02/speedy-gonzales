@@ -1,6 +1,6 @@
 # Upsert Logic (Epics + Tickets)
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 
