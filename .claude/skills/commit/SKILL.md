@@ -55,6 +55,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
 ### Body guidelines
 - **Always include a body** — the subject line is the "what", the body is the "context"
 - Write it as a brief summary a developer can scan in 10 seconds
+- **Be human and descriptive** — write what you actually did, not just what files changed. Example: "Changed the text color of agent messages from gray to white so they're easier to read on dark backgrounds" beats "Updated ChatMessage.tsx". Describe the visible change or behavior, not the code.
 - Group by area if the commit touches multiple things (e.g. "Public docs:", "Sync fixes:")
 - Use plain sentences, not bullet-per-file — describe the work, not the diff
 - Keep it under ~10 lines
