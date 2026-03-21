@@ -33,7 +33,8 @@ export function useLoginForm() {
       try {
         await signIn("email", { email })
         setOtpOpen(true)
-      } catch {
+      } catch (err) {
+        console.error("[auth] signIn failed:", err)
         setError(t("sendFailed"))
       } finally {
         setIsSending(false)

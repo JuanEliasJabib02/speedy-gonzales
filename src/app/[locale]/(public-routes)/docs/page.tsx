@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, Brain, CheckCircle, Circle, Clock, Code, FolderTree, GitBranch, MessageSquare, Rocket } from "lucide-react"
+import { ArrowRight, BookOpen, Brain, CheckCircle, Circle, Clock, Code, FolderTree, GitBranch, MessageSquare, Rocket, Zap } from "lucide-react"
 import Link from "next/link"
 
 const guides = [
@@ -46,6 +46,13 @@ const features = [
       "How context injection works: plan files, ticket state, and chat history — auto-injected so the agent knows everything.",
     href: "/docs/chat-memory",
     icon: Brain,
+  },
+  {
+    title: "AI Development Workflow",
+    description:
+      "How to leverage Charizard and Perro salchicha for faster development. Best practices, chat patterns, and when to use AI.",
+    href: "/docs/ai-workflow",
+    icon: Zap,
   },
 ]
 

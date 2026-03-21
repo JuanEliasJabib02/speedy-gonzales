@@ -36,6 +36,10 @@ export default convexAuthNextjsMiddleware(
 
     return intlMiddleware(request)
   },
+  {
+    convexUrl: process.env.NEXT_PUBLIC_CONVEX_URL,
+    verbose: true,
+  },
 )
 
 export const config = {
