@@ -68,6 +68,7 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
         selectedId={selectedTicketId}
         onSelect={setSelectedTicketId}
         projectId={projectId}
+        epicId={epicId}
       />
       <PlanViewer
         title={selectedTicket?.title ?? epic.title}

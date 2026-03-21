@@ -6,6 +6,7 @@ import { useRouter } from "@/src/i18n/routing"
 import { Button } from "@/src/lib/components/ui/button"
 import { Input } from "@/src/lib/components/ui/input"
 import { TicketItem } from "./TicketItem"
+import { RoadmapModal } from "./RoadmapModal"
 
 type Ticket = {
   id: string
@@ -20,6 +21,7 @@ type TicketSidebarProps = {
   selectedId: string
   onSelect: (id: string) => void
   projectId: string
+  epicId: string
 }
 
 const STATUS_TABS = [
@@ -31,7 +33,7 @@ const STATUS_TABS = [
 
 type TabKey = (typeof STATUS_TABS)[number]["key"]
 
-export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId }: TicketSidebarProps) {
+export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId, epicId }: TicketSidebarProps) {
   const router = useRouter()
   const [search, setSearch] = useState("")
   const [activeTab, setActiveTab] = useState<TabKey>("all")
@@ -71,19 +73,20 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
         <GitBranch className="size-3.5 text-muted-foreground shrink-0" />
         <span className="text-xs text-muted-foreground font-mono truncate">{branch}</span>
       </div>
-      {contextTicket && (
-        <div className="px-3 pb-3">
+      <div className="flex gap-2 px-3 pb-3">
+        {contextTicket && (
           <Button
             variant="outline"
             size="sm"
-            className="w-full h-7 text-xs gap-1.5"
+            className="flex-1 h-7 text-xs gap-1.5"
             onClick={() => onSelect(contextTicket.id)}
           >
             <Eye className="size-3.5" />
             Overview
           </Button>
-        </div>
-      )}
+        )}
+        <RoadmapModal epicId={epicId} />
+      </div>
       <div className="px-3 pb-3">
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
