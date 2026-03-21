@@ -14,7 +14,7 @@ export default function SetupDocsPage() {
         </Link>
         <h1 className="text-3xl font-semibold tracking-tight">Setup Guide</h1>
         <p className="mt-2 text-muted-foreground">
-          Connect your GitHub repo to Speedy Gonzales in 3 steps.
+          Connect your GitHub repo to Speedy Gonzales and deploy to production.
         </p>
       </div>
 
@@ -212,6 +212,149 @@ npx convex env set OPENCLAW_MODEL "openclaw:main"`}
             <strong className="text-foreground"> Tailscale</strong> for a permanent, secure connection.
             The Cloudflare Tunnel URL is temporary and changes on restart. Since connection
             details are env vars, the migration is just updating <code className="rounded bg-muted px-1.5 py-0.5">OPENCLAW_BASE_URL</code> &mdash; no code changes needed.
+          </p>
+        </div>
+      </section>
+
+      {/* Step 5 — Deploy to production */}
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Step 5 — Deploy to production (Vercel)</h2>
+        <p className="leading-relaxed text-muted-foreground">
+          Once everything works locally, deploy to Vercel so your app is live and
+          auto-deploys on every push.
+        </p>
+
+        {/* 5.1 Connect repo */}
+        <div className="space-y-3">
+          <h3 className="font-medium">1. Connect your repo to Vercel</h3>
+          <div className="flex flex-col gap-2">
+            {[
+              { step: "1", label: "Sign in", desc: "Go to vercel.com and sign in with GitHub" },
+              { step: "2", label: "Add project", desc: "Click \"Add New Project\" → import your GitHub repository" },
+              { step: "3", label: "Deploy", desc: "Vercel auto-detects Next.js — click Deploy, no config needed" },
+            ].map((item) => (
+              <div key={item.step} className="flex items-start gap-3 rounded-md bg-muted/50 px-4 py-3">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                  {item.step}
+                </span>
+                <div>
+                  <span className="font-medium">{item.label}</span>
+                  <span className="text-muted-foreground"> &mdash; {item.desc}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 5.2 Vercel env vars */}
+        <div className="space-y-3">
+          <h3 className="font-medium">2. Required environment variables in Vercel</h3>
+          <p className="text-sm text-muted-foreground">
+            Go to your Vercel project → <strong className="text-foreground">Settings</strong> → <strong className="text-foreground">Environment Variables</strong> and add:
+          </p>
+          <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+{`NEXT_PUBLIC_CONVEX_URL=https://<your-deployment>.convex.cloud
+OPENCLAW_BASE_URL=https://<your-tunnel-url>/v1
+OPENCLAW_API_KEY=<your-gateway-token>
+OPENCLAW_MODEL=openclaw:main`}
+          </pre>
+          <p className="text-sm text-muted-foreground">
+            Find <code className="rounded bg-muted px-1.5 py-0.5">NEXT_PUBLIC_CONVEX_URL</code> in the Convex dashboard under <strong className="text-foreground">Settings → URL</strong>.
+          </p>
+        </div>
+
+        {/* 5.3 Convex env vars */}
+        <div className="space-y-3">
+          <h3 className="font-medium">3. Required environment variables in Convex</h3>
+          <p className="text-sm text-muted-foreground">
+            These go in the <strong className="text-foreground">Convex dashboard</strong> (not Vercel) under <strong className="text-foreground">Settings → Environment Variables</strong>:
+          </p>
+          <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+{`RESEND_API_KEY=<from resend.com — free tier, for magic link login>
+AUTH_SECRET=<random string — run: openssl rand -hex 32>
+SITE_URL=https://<your-app>.vercel.app`}
+          </pre>
+          <p className="text-sm text-muted-foreground">
+            Generate <code className="rounded bg-muted px-1.5 py-0.5">AUTH_SECRET</code> with:
+          </p>
+          <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+{`openssl rand -hex 32`}
+          </pre>
+        </div>
+
+        {/* 5.4 Tunnel setup */}
+        <div className="space-y-3">
+          <h3 className="font-medium">4. Tunnel setup (so Vercel can reach OpenClaw)</h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            OpenClaw runs on your VPS at <code className="rounded bg-muted px-1.5 py-0.5">127.0.0.1:18789</code>.
+            Vercel runs in the cloud and can&apos;t reach localhost, so you need a tunnel to expose it with a public URL.
+          </p>
+
+          <div className="overflow-hidden rounded-lg border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-muted/50">
+                  <th className="px-4 py-2.5 text-left font-medium">Option</th>
+                  <th className="px-4 py-2.5 text-left font-medium">Setup</th>
+                  <th className="px-4 py-2.5 text-left font-medium">URL stability</th>
+                </tr>
+              </thead>
+              <tbody className="text-muted-foreground">
+                <tr className="border-t border-border">
+                  <td className="px-4 py-2.5 font-medium text-foreground">ngrok</td>
+                  <td className="px-4 py-2.5">Free account → <code className="rounded bg-muted px-1.5 py-0.5">ngrok http 18789</code></td>
+                  <td className="px-4 py-2.5">Fixed URL on free tier (1 static domain)</td>
+                </tr>
+                <tr className="border-t border-border">
+                  <td className="px-4 py-2.5 font-medium text-foreground">Cloudflare Tunnel</td>
+                  <td className="px-4 py-2.5">Custom domain → permanent URL</td>
+                  <td className="px-4 py-2.5">Permanent with a domain you own</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p className="text-sm text-muted-foreground">
+            After setting up the tunnel, update <code className="rounded bg-muted px-1.5 py-0.5">OPENCLAW_BASE_URL</code> in Vercel with the tunnel URL
+            (e.g. <code className="rounded bg-muted px-1.5 py-0.5">https://your-domain.com/v1</code>).
+          </p>
+
+          <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
+            <p className="text-sm text-muted-foreground">
+              <strong className="text-foreground">Important:</strong> Without a tunnel,
+              the AI chat won&apos;t work in production. Vercel serverless functions
+              cannot reach <code className="rounded bg-muted px-1.5 py-0.5">127.0.0.1</code> on
+              your VPS &mdash; they need a public HTTPS URL.
+            </p>
+          </div>
+        </div>
+
+        {/* 5.5 Auto-deploy */}
+        <div className="space-y-3">
+          <h3 className="font-medium">5. How auto-deploy works</h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Once connected, Vercel handles everything automatically:
+          </p>
+          <div className="flex flex-col gap-2">
+            {[
+              { step: "1", label: "Push to main", desc: "Every push to main triggers a Vercel build automatically" },
+              { step: "2", label: "Build", desc: "Vercel builds your Next.js app (~2 min)" },
+              { step: "3", label: "Live", desc: "The new version is live in production — no manual steps" },
+            ].map((item) => (
+              <div key={item.step} className="flex items-start gap-3 rounded-md bg-muted/50 px-4 py-3">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                  {item.step}
+                </span>
+                <div>
+                  <span className="font-medium">{item.label}</span>
+                  <span className="text-muted-foreground"> &mdash; {item.desc}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-sm text-muted-foreground">
+            No need to SSH into the server or run <code className="rounded bg-muted px-1.5 py-0.5">git pull</code> manually.
+            The agent pushes code, Vercel builds, and it&apos;s live.
           </p>
         </div>
       </section>
