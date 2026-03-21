@@ -1,6 +1,6 @@
 # Hydration Mismatch Fix (BUG-01 v2)
 
-**Status:** todo
+**Status:** review
 **Priority:** medium
 
 ## What it does
@@ -25,5 +25,5 @@ style={{ width: `${SKELETON_WIDTHS[i % SKELETON_WIDTHS.length]}%`, marginLeft: `
 
 ## Checklist
 
-- [ ] Fix SkeletonRows in FileTree.tsx
-- [ ] Fix skeleton in FileViewer.tsx
+- [x] Fix SkeletonRows in FileTree.tsx
+- [x] Fix skeleton in FileViewer.tsx
