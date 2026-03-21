@@ -2,4 +2,4 @@
 
 # Speedy Gonzales
 
-Git-native project management powered by AI agents. Plans live as markdown in your repos. Agents read them, code them, and move tickets across your kanban — in real-time.
+Speedy Gonzales is an AI development platform where you plan features in markdown, chat with AI agents that write and commit code, and track everything on a real-time kanban. Plans live in your git repos as the source of truth. You architect, agents build.
