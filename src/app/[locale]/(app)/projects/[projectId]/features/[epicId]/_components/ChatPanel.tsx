@@ -29,6 +29,7 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
     messages,
     epic,
     tickets,
+    optimisticMessage,
     pendingImage,
     handlePasteImage,
     removePendingImage,
@@ -50,7 +51,7 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
-  }, [messages.length, streamingContent])
+  }, [messages.length, streamingContent, optimisticMessage])
 
   return (
     <div
@@ -68,7 +69,7 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
         </div>
       </div>
       <div ref={scrollRef} className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 scrollbar-thin">
-        {messages.length === 0 && streamingContent === null ? (
+        {messages.length === 0 && streamingContent === null && optimisticMessage === null ? (
           <div className="flex flex-1 items-center justify-center">
             <span className="text-xs text-muted-foreground">No messages yet. Start the conversation.</span>
           </div>
@@ -97,6 +98,31 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
                 onRetry={handleRetry}
               />
             ))}
+            {optimisticMessage !== null && (
+              <ChatMessage
+                message={{
+                  id: "optimistic",
+                  role: "user",
+                  type: "text",
+                  content: optimisticMessage,
+                  timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                }}
+                userInitial={initial}
+              />
+            )}
+            {isSending && streamingContent === null && (
+              <ChatMessage
+                message={{
+                  id: "typing",
+                  role: "agent",
+                  type: "text",
+                  content: "",
+                  timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                }}
+                userInitial={initial}
+                isStreaming
+              />
+            )}
             {streamingContent !== null && (
               <ChatMessage
                 message={{
