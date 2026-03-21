@@ -103,6 +103,7 @@ export function useSendChat(projectId: string, epicId: string) {
   const streamingMessageIdRef = useRef<string | null>(null)
   const queuedMessageRef = useRef<string | null>(null)
   const [hasQueued, setHasQueued] = useState(false)
+  const [queueLength, setQueueLength] = useState(0)
   const [optimisticMessage, setOptimisticMessage] = useState<string | null>(null)
 
   const typedEpicId = epicId as Id<"epics">
@@ -299,6 +300,7 @@ export function useSendChat(projectId: string, epicId: string) {
       const existing = queuedMessageRef.current
       queuedMessageRef.current = existing ? `${existing}\n\n${content}` : content
       setHasQueued(true)
+      setQueueLength((prev) => prev + 1)
       setValue("")
       clearDraft(epicId)
       clearAllPendingImages()
@@ -333,6 +335,7 @@ export function useSendChat(projectId: string, epicId: string) {
       if (queued) {
         queuedMessageRef.current = null
         setHasQueued(false)
+        setQueueLength(0)
         setIsSending(true)
         setOptimisticMessage(queued)
         try {
@@ -419,6 +422,7 @@ export function useSendChat(projectId: string, epicId: string) {
       const existing = queuedMessageRef.current
       queuedMessageRef.current = existing ? `${existing}\n\n${content}` : content
       setHasQueued(true)
+      setQueueLength((prev) => prev + 1)
       return
     }
     setIsSending(true)
@@ -450,6 +454,7 @@ export function useSendChat(projectId: string, epicId: string) {
     handleRetry,
     handleKeyDown,
     hasQueued,
+    queueLength,
     messages: (messages ?? []).filter((m) => m.isStreaming !== true),
     epic,
     tickets: tickets ?? [],

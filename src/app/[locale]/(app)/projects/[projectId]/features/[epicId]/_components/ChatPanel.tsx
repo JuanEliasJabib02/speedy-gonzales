@@ -29,6 +29,7 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady }: ChatP
     handleRetry,
     handleKeyDown,
     hasQueued,
+    queueLength,
     messages,
     epic,
     tickets,
@@ -223,6 +224,7 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady }: ChatP
         isSending={isSending}
         isStreaming={streamingContent !== null}
         hasQueued={hasQueued}
+        queueLength={queueLength}
         pendingImages={pendingImages}
         onPasteImage={handlePasteImage}
         onRemoveImage={removePendingImage}
