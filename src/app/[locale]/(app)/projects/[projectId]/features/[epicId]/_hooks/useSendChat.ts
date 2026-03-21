@@ -48,6 +48,7 @@ export function useSendChat(projectId: string, epicId: string) {
   const streamingContentRef = useRef<string>("")
   const queuedMessageRef = useRef<string | null>(null)
   const [hasQueued, setHasQueued] = useState(false)
+  const [optimisticMessage, setOptimisticMessage] = useState<string | null>(null)
 
   const typedEpicId = epicId as Id<"epics">
   const typedProjectId = projectId as Id<"projects">
@@ -221,9 +222,11 @@ export function useSendChat(projectId: string, epicId: string) {
     setIsSending(true)
     setValue("")
     removePendingImage()
+    setOptimisticMessage(content)
 
     try {
       await sendMessage({ epicId: typedEpicId, content })
+      setOptimisticMessage(null)
       await streamResponse(content)
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
@@ -234,6 +237,7 @@ export function useSendChat(projectId: string, epicId: string) {
     } finally {
       abortControllerRef.current = null
       setStreamingContent(null)
+      setOptimisticMessage(null)
       setIsSending(false)
 
       // Process queued message
@@ -242,8 +246,10 @@ export function useSendChat(projectId: string, epicId: string) {
         queuedMessageRef.current = null
         setHasQueued(false)
         setIsSending(true)
+        setOptimisticMessage(queued)
         try {
           await sendMessage({ epicId: typedEpicId, content: queued })
+          setOptimisticMessage(null)
           await streamResponse(queued)
         } catch (qError) {
           if (!(qError instanceof DOMException && qError.name === "AbortError")) {
@@ -252,6 +258,7 @@ export function useSendChat(projectId: string, epicId: string) {
         } finally {
           abortControllerRef.current = null
           setStreamingContent(null)
+          setOptimisticMessage(null)
           setIsSending(false)
         }
       }
@@ -327,6 +334,7 @@ export function useSendChat(projectId: string, epicId: string) {
     messages: messages ?? [],
     epic,
     tickets: tickets ?? [],
+    optimisticMessage,
     pendingImage,
     handlePasteImage,
     removePendingImage,
