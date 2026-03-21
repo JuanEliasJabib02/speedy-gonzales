@@ -1,8 +1,7 @@
 "use client"
 
-import { useCallback, useRef } from "react"
+import { useCallback, useRef, useEffect } from "react"
 import { Loader2, SendHorizontal, Square, X } from "lucide-react"
-import { Input } from "@/src/lib/components/ui/input"
 import { Button } from "@/src/lib/components/ui/button"
 
 type PendingImage = {
@@ -21,6 +20,7 @@ type ChatInputProps = {
   onKeyDown: (e: React.KeyboardEvent) => void
   isSending: boolean
   isStreaming: boolean
+  hasQueued: boolean
   pendingImage: PendingImage | null
   onPasteImage: (file: File) => void
   onRemoveImage: () => void
@@ -34,11 +34,12 @@ export function ChatInput({
   onKeyDown,
   isSending,
   isStreaming,
+  hasQueued,
   pendingImage,
   onPasteImage,
   onRemoveImage,
 }: ChatInputProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const handlePaste = useCallback(
     (e: React.ClipboardEvent) => {
@@ -56,6 +57,14 @@ export function ChatInput({
     },
     [onPasteImage],
   )
+
+  // Auto-resize textarea
+  useEffect(() => {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = "auto"
+    el.style.height = `${Math.min(el.scrollHeight, 120)}px`
+  }, [value])
 
   const canSend = (value.trim() || pendingImage?.storageUrl) && !isSending
 
@@ -91,16 +100,21 @@ export function ChatInput({
           </Button>
         </div>
       )}
-      <div className="flex items-center gap-2">
-        <Input
-          ref={inputRef}
+      {hasQueued && (
+        <div className="mb-2 text-xs text-muted-foreground">
+          Message queued — will send after current response
+        </div>
+      )}
+      <div className="flex items-end gap-2">
+        <textarea
+          ref={textareaRef}
           placeholder="Type a message or paste an image..."
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={onKeyDown}
           onPaste={handlePaste}
-          className="flex-1"
-          disabled={isSending}
+          rows={1}
+          className="flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         />
         {isStreaming ? (
           <Button

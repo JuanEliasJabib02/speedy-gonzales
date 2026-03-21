@@ -25,6 +25,7 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
     handleStop,
     handleRetry,
     handleKeyDown,
+    hasQueued,
     messages,
     epic,
     tickets,
@@ -111,6 +112,7 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
         onKeyDown={handleKeyDown}
         isSending={isSending}
         isStreaming={streamingContent !== null}
+        hasQueued={hasQueued}
         pendingImage={pendingImage}
         onPasteImage={handlePasteImage}
         onRemoveImage={removePendingImage}

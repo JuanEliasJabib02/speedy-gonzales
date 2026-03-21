@@ -46,6 +46,8 @@ export function useSendChat(projectId: string, epicId: string) {
   const pendingImageRef = useRef<PendingImage | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
   const streamingContentRef = useRef<string>("")
+  const queuedMessageRef = useRef<string | null>(null)
+  const [hasQueued, setHasQueued] = useState(false)
 
   const typedEpicId = epicId as Id<"epics">
   const typedProjectId = projectId as Id<"projects">
@@ -131,10 +133,7 @@ export function useSendChat(projectId: string, epicId: string) {
   const handleSend = useCallback(async () => {
     const trimmed = value.trim()
     const currentImage = pendingImageRef.current
-    if ((!trimmed && !currentImage?.storageUrl) || isSending) return
-
-    setIsSending(true)
-    setValue("")
+    if (!trimmed && !currentImage?.storageUrl) return
 
     // Build content with image if present
     let content = trimmed
@@ -142,10 +141,22 @@ export function useSendChat(projectId: string, epicId: string) {
       const imgMarkdown = `![screenshot](${currentImage.storageUrl})`
       content = content ? `${imgMarkdown}\n\n${content}` : imgMarkdown
     }
+
+    // Queue if already sending/streaming
+    if (isSending) {
+      const existing = queuedMessageRef.current
+      queuedMessageRef.current = existing ? `${existing}\n\n${content}` : content
+      setHasQueued(true)
+      setValue("")
+      removePendingImage()
+      return
+    }
+
+    setIsSending(true)
+    setValue("")
     removePendingImage()
 
     try {
-      // Save user message to Convex
       await sendMessage({ epicId: typedEpicId, content })
       await streamResponse(content)
     } catch (error) {
@@ -158,6 +169,26 @@ export function useSendChat(projectId: string, epicId: string) {
       abortControllerRef.current = null
       setStreamingContent(null)
       setIsSending(false)
+
+      // Process queued message
+      const queued = queuedMessageRef.current
+      if (queued) {
+        queuedMessageRef.current = null
+        setHasQueued(false)
+        setIsSending(true)
+        try {
+          await sendMessage({ epicId: typedEpicId, content: queued })
+          await streamResponse(queued)
+        } catch (qError) {
+          if (!(qError instanceof DOMException && qError.name === "AbortError")) {
+            console.error("Failed to send queued message:", qError)
+          }
+        } finally {
+          abortControllerRef.current = null
+          setStreamingContent(null)
+          setIsSending(false)
+        }
+      }
     }
   }, [value, isSending, sendMessage, typedEpicId, streamResponse, removePendingImage])
 
@@ -269,6 +300,7 @@ export function useSendChat(projectId: string, epicId: string) {
     handleStop,
     handleRetry,
     handleKeyDown,
+    hasQueued,
     messages: messages ?? [],
     epic,
     tickets: tickets ?? [],
