@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const res = await fetch(
-      `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/git/trees/${encodeURIComponent(branch)}?recursive=1`,
+      `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/git/trees/${branch.split("/").map(encodeURIComponent).join("/")}?recursive=1`,
       {
         headers: {
           Authorization: `Bearer ${githubPat}`,
