@@ -1,7 +1,14 @@
-import { ArrowRight, BookOpen, FolderTree, GitBranch, MessageSquare } from "lucide-react"
+import { ArrowRight, BookOpen, FolderTree, GitBranch, MessageSquare, Rocket } from "lucide-react"
 import Link from "next/link"
 
 const guides = [
+  {
+    title: "Setup Guide",
+    description:
+      "Connect your GitHub repo to Speedy Gonzales. Create a project, configure the webhook, and test auto-sync.",
+    href: "/docs/setup",
+    icon: Rocket,
+  },
   {
     title: "Plan Structure",
     description:
