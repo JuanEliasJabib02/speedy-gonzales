@@ -1,6 +1,6 @@
 # Wire Dashboard to Convex
 
-**Status:** todo
+**Status:** in-progress
 
 ## What it does
 
