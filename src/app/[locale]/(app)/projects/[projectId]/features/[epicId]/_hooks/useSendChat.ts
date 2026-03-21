@@ -270,6 +270,8 @@ export function useSendChat(projectId: string, epicId: string) {
     handleRetry,
     handleKeyDown,
     messages: messages ?? [],
+    epic,
+    tickets: tickets ?? [],
     pendingImage,
     handlePasteImage,
     removePendingImage,

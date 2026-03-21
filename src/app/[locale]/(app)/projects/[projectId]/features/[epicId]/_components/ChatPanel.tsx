@@ -3,6 +3,7 @@
 import { useRef, useEffect } from "react"
 import { ChatMessage } from "./ChatMessage"
 import { ChatInput } from "./ChatInput"
+import { ContextSummaryCard } from "./ContextSummaryCard"
 import { ThemeToggle } from "@/src/lib/components/common/ThemeToggle"
 import { useCurrentUser } from "@/src/lib/hooks/useCurrentUser"
 import { useSendChat } from "../_hooks/useSendChat"
@@ -25,6 +26,8 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
     handleRetry,
     handleKeyDown,
     messages,
+    epic,
+    tickets,
     pendingImage,
     handlePasteImage,
     removePendingImage,
@@ -61,6 +64,14 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
           </div>
         ) : (
           <>
+            {messages.length > 0 && epic && (
+              <ContextSummaryCard
+                epicTitle={epic.title}
+                epicStatus={epic.status}
+                pendingTickets={tickets.filter((t) => t.status !== "completed").length}
+                totalTickets={tickets.length}
+              />
+            )}
             {messages.map((message) => (
               <ChatMessage
                 key={message._id}

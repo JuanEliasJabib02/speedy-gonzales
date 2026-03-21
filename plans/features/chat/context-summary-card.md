@@ -1,6 +1,6 @@
 # Chat Context Summary Card on Entry
 
-**Status:** in-progress
+**Status:** review
 **Priority:** medium
 
 ## What it does
