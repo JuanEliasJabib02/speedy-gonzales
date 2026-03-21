@@ -35,6 +35,7 @@ type ChatInputProps = {
   isSending: boolean
   isStreaming: boolean
   hasQueued: boolean
+  queueLength: number
   pendingImages: PendingImage[]
   onPasteImage: (file: File) => void
   onRemoveImage: (index: number) => void
@@ -50,6 +51,7 @@ export function ChatInput({
   isSending,
   isStreaming,
   hasQueued,
+  queueLength,
   pendingImages,
   onPasteImage,
   onRemoveImage,
@@ -259,11 +261,16 @@ export function ChatInput({
           )}
         </div>
       )}
-      {hasQueued && (
-        <div className="mb-2 text-xs text-muted-foreground">
-          Message queued — will send after current response
-        </div>
-      )}
+      <div
+        className={`mb-2 flex items-center gap-1.5 text-xs text-muted-foreground transition-opacity duration-300 ${
+          queueLength > 0 ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <Loader2 className="size-3 animate-spin" />
+        <span>
+          {queueLength} {queueLength === 1 ? "message" : "messages"} queued...
+        </span>
+      </div>
       {slashQuery !== null && filteredSlashCommands.length > 0 && (
         <div className="absolute bottom-full left-3 right-3 mb-1 max-h-48 overflow-y-auto rounded-md border border-border bg-popover p-1 shadow-md">
           {filteredSlashCommands.map((cmd, i) => (

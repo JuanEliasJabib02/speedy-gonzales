@@ -1,6 +1,6 @@
 # Queue Status Indicator
 
-**Status:** todo
+**Status:** review
 **Priority:** low
 
 ## What it does
@@ -19,10 +19,10 @@ When the user sends multiple messages rapidly (multi-message queue), show a smal
 
 ## Checklist
 
-- [ ] Expose `queueLength` (number) from useSendChat instead of just `hasQueued`
-- [ ] Add queue indicator UI in ChatInput or ChatPanel (below the input)
-- [ ] Style: small muted text "X messages queued" with a spinner icon
-- [ ] Animate out smoothly when queue empties
+- [x] Expose `queueLength` (number) from useSendChat instead of just `hasQueued`
+- [x] Add queue indicator UI in ChatInput or ChatPanel (below the input)
+- [x] Style: small muted text "X messages queued" with a spinner icon
+- [x] Animate out smoothly when queue empties
 
 ## Files
 
