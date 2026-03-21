@@ -1,10 +1,10 @@
 # Ticket Sidebar
 
-**Status:** todo
+**Status:** completed
 
 ## What it does
 
-Left panel showing all tickets for the current feature. Each ticket has a status dot and title. Clicking a ticket shows its plan in the center viewer. Includes a git branch indicator and a search bar to filter tickets.
+Left panel showing all tickets for the current feature. Each ticket has a status dot and title. Clicking a ticket shows its plan in the center viewer. Includes a git branch indicator, a search bar, and status filter tabs to filter tickets.
 
 ## Checklist
 
@@ -18,6 +18,10 @@ Left panel showing all tickets for the current feature. Each ticket has a status
 - [x] Status dots colored by ticket status
 - [x] Active ticket highlighted with bg-accent
 - [x] Scrollable with scrollbar-thin
+- [x] Status filter tabs (All, Todo, In Progress, Done) with pill styling
+- [x] Count badges on each tab showing number of tickets per status
+- [x] Active tab styled with status-matching color (muted, blue, green)
+- [x] Filters compose with search (search within selected tab)
 
 ## Files
 

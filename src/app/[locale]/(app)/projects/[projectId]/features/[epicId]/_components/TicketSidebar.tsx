@@ -5,6 +5,7 @@ import { ArrowLeft, FileText, GitBranch, Search } from "lucide-react"
 import { useRouter } from "@/src/i18n/routing"
 import { Button } from "@/src/lib/components/ui/button"
 import { Input } from "@/src/lib/components/ui/input"
+import { cn } from "@/src/lib/helpers/cn"
 import { TicketItem } from "./TicketItem"
 
 type Ticket = {
@@ -22,13 +23,40 @@ type TicketSidebarProps = {
   projectId: string
 }
 
+const STATUS_TABS = [
+  { key: "all", label: "All", match: () => true },
+  { key: "todo", label: "Todo", match: (s: string) => s === "todo" },
+  { key: "in-progress", label: "In Progress", match: (s: string) => s === "in-progress" },
+  { key: "completed", label: "Done", match: (s: string) => s === "completed" },
+] as const
+
+type TabKey = (typeof STATUS_TABS)[number]["key"]
+
+const TAB_ACTIVE_STYLES: Record<TabKey, string> = {
+  all: "bg-muted text-foreground",
+  todo: "bg-muted text-foreground",
+  "in-progress": "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+  completed: "bg-green-500/15 text-green-600 dark:text-green-400",
+}
+
 export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId }: TicketSidebarProps) {
   const router = useRouter()
   const [search, setSearch] = useState("")
+  const [activeTab, setActiveTab] = useState<TabKey>("all")
 
-  const filteredTickets = search
-    ? tickets.filter((t) => t.title.toLowerCase().includes(search.toLowerCase()))
-    : tickets
+  const activeFilter = STATUS_TABS.find((t) => t.key === activeTab)!
+
+  const filteredTickets = tickets
+    .filter((t) => activeFilter.match(t.status))
+    .filter((t) => !search || t.title.toLowerCase().includes(search.toLowerCase()))
+
+  const counts = STATUS_TABS.reduce(
+    (acc, tab) => {
+      acc[tab.key] = tickets.filter((t) => tab.match(t.status)).length
+      return acc
+    },
+    {} as Record<TabKey, number>,
+  )
 
   return (
     <div className="flex w-[280px] shrink-0 flex-col border-r border-border bg-card overflow-y-auto scrollbar-thin">
@@ -58,6 +86,23 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
             className="h-8 pl-8 text-xs"
           />
         </div>
+      </div>
+      <div className="flex items-center gap-1 px-3 pb-3">
+        {STATUS_TABS.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={cn(
+              "rounded-full px-2 py-0.5 text-xs font-medium transition-colors",
+              activeTab === tab.key
+                ? TAB_ACTIVE_STYLES[tab.key]
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+            )}
+          >
+            {tab.label}
+            <span className="ml-1 opacity-70">({counts[tab.key]})</span>
+          </button>
+        ))}
       </div>
       <div className="mx-4 border-t border-border" />
       <div className="flex flex-col gap-1 p-2">
