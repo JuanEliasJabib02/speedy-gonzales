@@ -393,6 +393,53 @@ SITE_URL=https://<your-app>.vercel.app`}
         </div>
       </section>
 
+      {/* Auto-sync broken - quick fix */}
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Auto-sync broken? Quick fix</h2>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          If auto-sync stopped working after moving to cloud (or after updating your setup), the most common cause
+          is that the GitHub webhook URL points to <code className="rounded bg-muted px-1.5 py-0.5">localhost</code> or an
+          expired ngrok URL. The fix is simple — the webhook must <strong className="text-foreground">always</strong> point
+          to Convex, not to Next.js.
+        </p>
+
+        <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 space-y-2">
+          <p className="text-sm font-semibold text-destructive">❌ Wrong webhook URL (breaks on cloud)</p>
+          <pre className="overflow-x-auto rounded-lg bg-muted p-3 text-xs">{`https://localhost:3000/github-webhook
+https://abc123.ngrok-free.app/github-webhook`}</pre>
+          <p className="text-sm font-semibold text-green-600 dark:text-green-400 mt-3">✅ Correct webhook URL (always works)</p>
+          <pre className="overflow-x-auto rounded-lg bg-muted p-3 text-xs">{`https://your-deployment.convex.site/github-webhook`}</pre>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          {[
+            { step: "1", label: "Find your Convex site URL", desc: "dashboard.convex.dev → your project → Settings → HTTP Actions URL (ends in .convex.site)" },
+            { step: "2", label: "Go to GitHub", desc: "Your repo → Settings → Webhooks → click the webhook" },
+            { step: "3", label: "Update Payload URL", desc: "Replace with https://your-deployment.convex.site/github-webhook" },
+            { step: "4", label: "Save and test", desc: "Click Update webhook — then push a small change to verify sync works" },
+          ].map((item) => (
+            <div key={item.step} className="flex items-start gap-3 rounded-md bg-muted/50 px-4 py-3">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                {item.step}
+              </span>
+              <div>
+                <span className="font-medium">{item.label}</span>
+                <span className="text-muted-foreground"> &mdash; {item.desc}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-4">
+          <p className="text-sm font-medium text-blue-700 dark:text-blue-400">Why this works</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Convex is always deployed in the cloud — it doesn&apos;t matter if Speedy runs locally or on Vercel.
+            GitHub fires the webhook directly to Convex, which handles the sync internally.
+            The GitHub sync and the chat agent connection are completely independent.
+          </p>
+        </div>
+      </section>
+
       {/* Switching between local and production */}
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Switching Between Local and Production</h2>
