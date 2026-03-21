@@ -358,6 +358,9 @@ export async function POST(request: Request) {
   try {
     console.log("[chat] Calling OpenClaw:", baseURL, "model:", model)
 
+    const timeoutController = new AbortController()
+    const timeoutId = setTimeout(() => timeoutController.abort(), 60_000)
+
     const res = await fetch(`${baseURL}/chat/completions`, {
       method: "POST",
       headers: {
@@ -367,11 +370,13 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         model,
         messages: allMessages,
-        user: "juan",
         stream: true,
         stream_options: { include_usage: true },
       }),
+      signal: timeoutController.signal,
     })
+
+    clearTimeout(timeoutId)
 
     console.log("[chat] Response:", res.status, res.headers.get("content-type"))
 

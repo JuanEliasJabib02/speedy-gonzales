@@ -119,15 +119,22 @@ export function useSendChat(projectId: string, epicId: string) {
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
   const getFileUrl = useMutation(api.files.getUrl)
 
+  // Revoke blob URLs on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      pendingImagesRef.current.forEach((img) => {
+        if (img.previewUrl) URL.revokeObjectURL(img.previewUrl)
+      })
+    }
+  }, [])
+
   // On mount: check for orphaned streaming messages left by a previous page load
   const hasCheckedOrphansRef = useRef(false)
   useEffect(() => {
     if (!messages || hasCheckedOrphansRef.current) return
     hasCheckedOrphansRef.current = true
-    const orphaned = messages.find((m) => m.isStreaming === true)
-    if (orphaned) {
-      markInterrupted({ messageId: orphaned._id })
-    }
+    const orphans = messages.filter((m) => m.isStreaming === true)
+    orphans.forEach((o) => markInterrupted({ messageId: o._id }))
   }, [messages, markInterrupted])
 
   const handlePasteImage = useCallback(async (file: File) => {
