@@ -95,6 +95,56 @@ export default function ChatDocsPage() {
         </p>
       </section>
 
+      {/* Agent modifies repo */}
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold">The full loop: chat → commit → live update</h2>
+        <p className="leading-relaxed text-muted-foreground">
+          Charizard doesn&apos;t just answer questions — it can directly modify your plan files and push to GitHub.
+          When it does, the auto-sync fires automatically and your Kanban updates in real time. No manual steps needed.
+        </p>
+        <div className="flex flex-col gap-2">
+          {[
+            { step: "1", label: "You ask", desc: "\"Create a ticket for syntax highlighting in the chat\"" },
+            { step: "2", label: "Charizard writes", desc: "Creates plans/features/chat/syntax-highlighting.md in the repo clone on the VPS" },
+            { step: "3", label: "Git push", desc: "Charizard commits and pushes to the main branch" },
+            { step: "4", label: "Webhook fires", desc: "GitHub sends a webhook to Convex — plan files changed" },
+            { step: "5", label: "Sync runs", desc: "Convex fetches and parses the new ticket from GitHub" },
+            { step: "6", label: "Live update", desc: "The new ticket appears in Speedy in real time — no refresh needed" },
+          ].map((item) => (
+            <div key={item.step} className="flex items-start gap-3 rounded-md bg-muted/50 px-4 py-3">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                {item.step}
+              </span>
+              <div>
+                <span className="font-medium">{item.label}</span>
+                <span className="text-muted-foreground"> &mdash; {item.desc}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="text-sm text-muted-foreground">
+          This works because Charizard runs on the same VPS as OpenClaw, has a deploy key on the repo,
+          and the GitHub auto-sync webhook is configured for the project.
+        </p>
+      </section>
+
+      {/* How Charizard gets git access */}
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold">Giving the agent repo access</h2>
+        <p className="leading-relaxed text-muted-foreground">
+          For Charizard to push plan changes, the OpenClaw VPS needs a deploy key with write access:
+        </p>
+        <ol className="list-inside list-decimal space-y-2 text-muted-foreground">
+          <li>Get the agent&apos;s public SSH key (ask Charizard for it — it lives in <code className="rounded bg-muted px-1.5 py-0.5 text-sm">~/.ssh/id_ed25519_github.pub</code>)</li>
+          <li>Go to your repo → <strong>Settings → Deploy keys → Add deploy key</strong></li>
+          <li>Paste the key and enable <strong>&quot;Allow write access&quot;</strong></li>
+          <li>Clone the repo on the VPS: Charizard does this automatically on first use</li>
+        </ol>
+        <p className="text-sm text-muted-foreground">
+          Once configured, Charizard can create tickets, update statuses, and push plan changes — all from a chat message.
+        </p>
+      </section>
+
       {/* Protocol */}
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">Technical details</h2>
