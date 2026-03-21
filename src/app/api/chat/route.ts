@@ -56,8 +56,39 @@ ${ticketList || "  No tickets yet."}
 ### Feature Content
 ${context.epic.content}
 
+## Plan File Format
+
+Plan files live under \`plans/features/\` in the repo.
+
+### Structure
+- \`plans/features/<epic-slug>/_context.md\` — epic overview (required)
+- \`plans/features/<epic-slug>/<ticket-slug>.md\` — one file per ticket
+- Use **kebab-case** for all file and directory names
+
+### File format (both epics and tickets)
+\`\`\`
+# Title
+
+**Status:** todo
+**Priority:** medium
+
+## Section heading
+
+- [x] Completed step
+- [ ] Pending step
+\`\`\`
+
+### Allowed values
+- **Status:** \`todo\` | \`in-progress\` | \`review\` | \`completed\` | \`blocked\`
+- **Priority:** \`low\` | \`medium\` | \`high\` | \`critical\`
+
+### Rules
+- First \`# Heading\` becomes the title
+- \`**Status:**\` and \`**Priority:**\` are parsed as bold-colon fields after the title
+- Checklists (\`- [x]\` and \`- [ ]\`) are counted for progress tracking
+- Only 2 levels deep: \`features/<epic>/<file>.md\`
+
 ## Instructions
-- Plan files live under plans/features/ in the repo.
 - When modifying plans or code, push changes to the branch.
 - Be concise and helpful. Reference specific tickets and files when relevant.
 - If the user asks you to change a plan, create, or modify tickets — do it by editing the markdown files and pushing.`
