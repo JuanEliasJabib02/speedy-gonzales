@@ -1,6 +1,6 @@
 # Wire Feature View to Convex
 
-**Status:** in-progress
+**Status:** todo
 
 ## What it does
 

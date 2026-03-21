@@ -1,6 +1,6 @@
 # Chat Messages Schema
 
-**Status:** completed
+**Status:** todo
 
 ## What it does
 

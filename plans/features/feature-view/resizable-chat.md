@@ -1,6 +1,6 @@
 # Resizable Chat Panel
 
-**Status:** completed
+**Status:** todo
 
 ## What it does
 
