@@ -1,6 +1,8 @@
-import { GitCommitHorizontal, ExternalLink, Zap } from "lucide-react"
+import { GitCommitHorizontal, ExternalLink, Zap, Copy, Check } from "lucide-react"
 import { cn } from "@/src/lib/helpers/cn"
-import { type ReactNode } from "react"
+import { type ReactNode, useState, useCallback } from "react"
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
 
 type CommitData = {
   hash: string
@@ -131,6 +133,90 @@ function renderLinkedContent(text: string): ReactNode[] {
   return parts
 }
 
+// Matches fenced code blocks: ```lang\n...\n```
+const FENCED_CODE_RE = /```(\w*)\n([\s\S]*?)```/g
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = useCallback(async () => {
+    await navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }, [text])
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="absolute top-2 right-2 flex items-center gap-1 rounded border border-white/10 bg-white/5 px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-white/10"
+    >
+      {copied ? (
+        <>
+          <Check className="size-3" />
+          Copied
+        </>
+      ) : (
+        <>
+          <Copy className="size-3" />
+          Copy
+        </>
+      )}
+    </button>
+  )
+}
+
+function CodeBlock({ language, code }: { language: string; code: string }) {
+  const trimmedCode = code.replace(/\n$/, "")
+
+  return (
+    <div className="relative my-2 overflow-hidden rounded-md">
+      {language && (
+        <div className="bg-[#1e1e1e] px-3 py-1 text-xs text-muted-foreground border-b border-white/10">
+          {language}
+        </div>
+      )}
+      <CopyButton text={trimmedCode} />
+      <SyntaxHighlighter
+        language={language || "text"}
+        style={vscDarkPlus}
+        customStyle={{ margin: 0, borderRadius: language ? "0 0 0.375rem 0.375rem" : "0.375rem", fontSize: "0.8125rem" }}
+      >
+        {trimmedCode}
+      </SyntaxHighlighter>
+    </div>
+  )
+}
+
+function renderMessageContent(text: string): ReactNode[] {
+  const parts: ReactNode[] = []
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  FENCED_CODE_RE.lastIndex = 0
+  while ((match = FENCED_CODE_RE.exec(text)) !== null) {
+    // Render text before the code block (with link support)
+    if (match.index > lastIndex) {
+      const textBefore = text.slice(lastIndex, match.index)
+      parts.push(...renderLinkedContent(textBefore).map((node, i) =>
+        typeof node === "string" ? <span key={`t-${lastIndex}-${i}`}>{node}</span> : node
+      ))
+    }
+
+    parts.push(
+      <CodeBlock key={`code-${match.index}`} language={match[1]} code={match[2]} />
+    )
+
+    lastIndex = FENCED_CODE_RE.lastIndex
+  }
+
+  // Render remaining text after last code block (with link support)
+  if (lastIndex < text.length) {
+    parts.push(...renderLinkedContent(text.slice(lastIndex)))
+  }
+
+  return parts
+}
+
 export function ChatMessage({ message, userInitial, isStreaming }: ChatMessageProps) {
   const isUser = message.role === "user"
   const hasContent = message.content.length > 0
@@ -163,7 +249,7 @@ export function ChatMessage({ message, userInitial, isStreaming }: ChatMessagePr
             <StreamingIndicator />
           ) : (
             <>
-              {renderLinkedContent(message.content)}
+              {renderMessageContent(message.content)}
               {isStreaming && <span className="ml-0.5 inline-block animate-pulse">|</span>}
             </>
           )}

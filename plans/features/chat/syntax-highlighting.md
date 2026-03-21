@@ -1,6 +1,6 @@
 # Syntax Highlighting in Chat Messages
 
-**Status:** todo
+**Status:** completed
 **Priority:** high
 
 ## What it does
@@ -9,11 +9,11 @@ Code blocks in chat messages render as plain text. Add syntax highlighting + cop
 
 ## Checklist
 
-- [ ] Install `shiki` or `react-syntax-highlighter`
-- [ ] Detect fenced code blocks in message content (` ```lang ... ``` `)
-- [ ] Render code blocks with syntax highlighting (language auto-detected from fence)
-- [ ] Add "Copy" button on each code block (copies raw code to clipboard)
-- [ ] Style: dark background, consistent with app theme
+- [x] Install `shiki` or `react-syntax-highlighter`
+- [x] Detect fenced code blocks in message content (` ```lang ... ``` `)
+- [x] Render code blocks with syntax highlighting (language auto-detected from fence)
+- [x] Add "Copy" button on each code block (copies raw code to clipboard)
+- [x] Style: dark background, consistent with app theme
 
 ## Files
 
