@@ -169,7 +169,7 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
           checklist={ticketData.checklist}
           ticketId={selectedTicket?.id !== "_context" ? selectedTicket?.id : undefined}
           blockedReason={selectedTicket?.blockedReason}
-          commits={"commits" in (selectedTicket ?? {}) ? (selectedTicket as { commits: string[] }).commits : []}
+          commits={(selectedTicket as { commits?: string[] } | undefined)?.commits ?? []}
           repoOwner={repoOwner}
           repoName={repoName}
         />
