@@ -1,10 +1,12 @@
 "use client"
 
-import { useRef, useEffect, useMemo } from "react"
+import { useRef, useEffect, useMemo, useCallback } from "react"
+import { Download } from "lucide-react"
 import { ChatMessage } from "./ChatMessage"
 import { ChatInput } from "./ChatInput"
 import { ContextSummaryCard } from "./ContextSummaryCard"
 import { ThemeToggle } from "@/src/lib/components/common/ThemeToggle"
+import { Button } from "@/src/lib/components/ui/button"
 import { useCurrentUser } from "@/src/lib/hooks/useCurrentUser"
 import { useSendChat } from "../_hooks/useSendChat"
 
@@ -46,6 +48,33 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  const handleExport = useCallback(() => {
+    if (messages.length === 0) return
+
+    const date = new Date().toISOString().slice(0, 10)
+    const epicSlug = (epic?.title ?? "chat")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "")
+    const filename = `chat-${epicSlug}-${date}.md`
+
+    const lines = [`# ${epic?.title ?? "Chat"} — ${date}\n`]
+    for (const msg of messages) {
+      const time = new Date(msg.createdAt).toLocaleString()
+      const label = msg.role === "user" ? "User" : "Agent"
+      lines.push(`### ${label} — ${time}\n`)
+      lines.push(`${msg.content}\n`)
+    }
+
+    const blob = new Blob([lines.join("\n")], { type: "text/markdown" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [messages, epic])
+
   // Auto-scroll on new messages or streaming updates
   useEffect(() => {
     if (scrollRef.current) {
@@ -64,7 +93,17 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
           <div className="size-2 rounded-full bg-status-completed" />
           <span className="text-xs text-muted-foreground">connected</span>
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            onClick={handleExport}
+            disabled={messages.length === 0}
+            title="Export conversation"
+          >
+            <Download className="size-4" />
+          </Button>
           <ThemeToggle />
         </div>
       </div>
