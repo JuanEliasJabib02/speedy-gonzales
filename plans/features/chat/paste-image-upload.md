@@ -1,6 +1,6 @@
 # Paste Image Upload (Ctrl+V Screenshots)
 
-**Status:** in-progress
+**Status:** review
 **Priority:** high
 
 ## What it does

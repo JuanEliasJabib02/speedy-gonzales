@@ -12,6 +12,7 @@ import type * as auth from "../auth.js";
 import type * as chat from "../chat.js";
 import type * as epics from "../epics.js";
 import type * as errors from "../errors.js";
+import type * as files from "../files.js";
 import type * as githubSync from "../githubSync.js";
 import type * as helpers from "../helpers.js";
 import type * as http from "../http.js";
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   chat: typeof chat;
   epics: typeof epics;
   errors: typeof errors;
+  files: typeof files;
   githubSync: typeof githubSync;
   helpers: typeof helpers;
   http: typeof http;

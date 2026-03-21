@@ -1,9 +1,17 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
+
+type PendingImage = {
+  file: File
+  previewUrl: string
+  storageUrl: string | null
+  isUploading: boolean
+  error: string | null
+}
 
 type ChatContext = {
   project: {
@@ -34,6 +42,8 @@ export function useSendChat(projectId: string, epicId: string) {
   const [value, setValue] = useState("")
   const [isSending, setIsSending] = useState(false)
   const [streamingContent, setStreamingContent] = useState<string | null>(null)
+  const [pendingImage, setPendingImage] = useState<PendingImage | null>(null)
+  const pendingImageRef = useRef<PendingImage | null>(null)
 
   const typedEpicId = epicId as Id<"epics">
   const typedProjectId = projectId as Id<"projects">
@@ -43,6 +53,44 @@ export function useSendChat(projectId: string, epicId: string) {
   const tickets = useQuery(api.tickets.getByEpic, { epicId: typedEpicId })
   const messages = useQuery(api.chat.getMessages, { epicId: typedEpicId })
   const sendMessage = useMutation(api.chat.sendMessage)
+  const generateUploadUrl = useMutation(api.files.generateUploadUrl)
+  const getFileUrl = useMutation(api.files.getUrl)
+
+  const handlePasteImage = useCallback(async (file: File) => {
+    const previewUrl = URL.createObjectURL(file)
+    const img: PendingImage = { file, previewUrl, storageUrl: null, isUploading: true, error: null }
+    setPendingImage(img)
+    pendingImageRef.current = img
+
+    try {
+      const uploadUrl = await generateUploadUrl()
+      const res = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      })
+      if (!res.ok) throw new Error("Upload failed")
+      const { storageId } = await res.json()
+      const storageUrl = await getFileUrl({ storageId })
+
+      if (!storageUrl) throw new Error("Failed to get file URL")
+      const updated: PendingImage = { ...img, storageUrl, isUploading: false }
+      setPendingImage(updated)
+      pendingImageRef.current = updated
+    } catch {
+      const errored: PendingImage = { ...img, isUploading: false, error: "Upload failed" }
+      setPendingImage(errored)
+      pendingImageRef.current = errored
+    }
+  }, [generateUploadUrl, getFileUrl])
+
+  const removePendingImage = useCallback(() => {
+    if (pendingImage?.previewUrl) {
+      URL.revokeObjectURL(pendingImage.previewUrl)
+    }
+    setPendingImage(null)
+    pendingImageRef.current = null
+  }, [pendingImage])
 
   const buildContext = useCallback((): ChatContext | null => {
     if (!project || !epic) return null
@@ -78,14 +126,23 @@ export function useSendChat(projectId: string, epicId: string) {
 
   const handleSend = useCallback(async () => {
     const trimmed = value.trim()
-    if (!trimmed || isSending) return
+    const currentImage = pendingImageRef.current
+    if ((!trimmed && !currentImage?.storageUrl) || isSending) return
 
     setIsSending(true)
     setValue("")
 
+    // Build content with image if present
+    let content = trimmed
+    if (currentImage?.storageUrl) {
+      const imgMarkdown = `![screenshot](${currentImage.storageUrl})`
+      content = content ? `${imgMarkdown}\n\n${content}` : imgMarkdown
+    }
+    removePendingImage()
+
     try {
       // Save user message to Convex
-      await sendMessage({ epicId: typedEpicId, content: trimmed })
+      await sendMessage({ epicId: typedEpicId, content })
 
       const context = buildContext()
       const history = buildHistory()
@@ -98,7 +155,7 @@ export function useSendChat(projectId: string, epicId: string) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           epicId,
-          message: trimmed,
+          message: content,
           context,
           history,
         }),
@@ -130,7 +187,7 @@ export function useSendChat(projectId: string, epicId: string) {
       setStreamingContent(null)
       setIsSending(false)
     }
-  }, [value, isSending, sendMessage, typedEpicId, epicId, buildContext, buildHistory])
+  }, [value, isSending, sendMessage, typedEpicId, epicId, buildContext, buildHistory, removePendingImage])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -150,5 +207,8 @@ export function useSendChat(projectId: string, epicId: string) {
     handleSend,
     handleKeyDown,
     messages: messages ?? [],
+    pendingImage,
+    handlePasteImage,
+    removePendingImage,
   }
 }

@@ -23,6 +23,9 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
     handleSend,
     handleKeyDown,
     messages,
+    pendingImage,
+    handlePasteImage,
+    removePendingImage,
   } = useSendChat(projectId, epicId)
 
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -92,6 +95,9 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
         onSend={handleSend}
         onKeyDown={handleKeyDown}
         isSending={isSending}
+        pendingImage={pendingImage}
+        onPasteImage={handlePasteImage}
+        onRemoveImage={removePendingImage}
       />
     </div>
   )
