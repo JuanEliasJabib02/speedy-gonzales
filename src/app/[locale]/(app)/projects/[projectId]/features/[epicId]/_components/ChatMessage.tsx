@@ -1,4 +1,5 @@
 import { ExternalLink, Zap, Copy, Check, GitCommitHorizontal, RotateCcw, AlertTriangle } from "lucide-react"
+import { ActionCard, parseActions } from "./ActionCard"
 import { cn } from "@/src/lib/helpers/cn"
 import { useState, useCallback } from "react"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
@@ -296,6 +297,17 @@ export function ChatMessage({ message, userInitial, isStreaming, onRetry }: Chat
             ))}
           </div>
         )}
+
+        {!isUser && !isStreaming && (() => {
+          const actions = parseActions(message.content)
+          return actions.length > 0 ? (
+            <div className="flex flex-col gap-2 mt-1 max-w-[85%]">
+              {actions.map((action, i) => (
+                <ActionCard key={`${action.type}-${i}`} type={action.type} title={action.title} detail={action.detail} />
+              ))}
+            </div>
+          ) : null
+        })()}
 
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">{message.timestamp}</span>

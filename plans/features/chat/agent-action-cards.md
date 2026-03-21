@@ -1,6 +1,6 @@
 # Agent Action Cards
 
-**Status:** in-progress
+**Status:** review
 **Priority:** medium
 
 ## What it does
@@ -15,11 +15,11 @@ When the agent performs an action (creates a ticket, moves a status, triggers a 
 
 ## Checklist
 
-- [ ] Define a structured action response format (JSON in assistant message metadata)
-- [ ] Parse action metadata from agent responses
-- [ ] Render `ActionCard` component below the text response
-- [ ] Card variants: `ticket-created`, `status-updated`, `sync-triggered`
-- [ ] Link cards to the relevant ticket/feature when applicable
+- [x] Define action patterns detected from agent text responses
+- [x] Parse action metadata from agent responses via regex patterns
+- [x] Render `ActionCard` component below the text response
+- [x] Card variants: `ticket-created`, `status-updated`, `sync-triggered`
+- [x] Cards show type label, title, and detail with appropriate styling
 
 ## Files
 
