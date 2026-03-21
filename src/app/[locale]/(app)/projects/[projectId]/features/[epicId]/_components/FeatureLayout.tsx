@@ -18,7 +18,7 @@ type FeatureLayoutProps = {
 
 export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
   const { plan: epic, isLoading, getTicketContent, lastSyncAt, syncStatus } = useLivePlan(epicId, projectId)
-  const [selectedTicketId, setSelectedTicketId] = useState("_context")
+  const [selectedTicketId, setSelectedTicketId] = useState("")
   const [chatWidth, setChatWidth] = useState(CHAT_DEFAULT_WIDTH)
   const isDragging = useRef(false)
 
@@ -56,8 +56,11 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
     )
   }
 
-  const selectedTicket = epic.tickets.find((t) => t.id === selectedTicketId)
-  const ticketData = getTicketContent(selectedTicketId)
+  const realTickets = epic.tickets.filter((t) => t.title !== "Overview" && t.id !== "_context")
+  const effectiveId = selectedTicketId || realTickets[0]?.id || ""
+  const selectedTicket = epic.tickets.find((t) => t.id === effectiveId)
+  const ticketData = getTicketContent(effectiveId)
+  const overviewData = getTicketContent("_context")
 
   return (
     <div className="flex h-full">
@@ -65,12 +68,15 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
         epicTitle={epic.title}
         branch={epic.branch}
         tickets={epic.tickets}
-        selectedId={selectedTicketId}
+        selectedId={effectiveId}
         onSelect={setSelectedTicketId}
         projectId={projectId}
         epicId={epicId}
         lastSyncAt={lastSyncAt}
         syncStatus={syncStatus}
+        overviewContent={overviewData.content}
+        overviewStatus={epic.status}
+        overviewPriority={epic.priority}
       />
       <PlanViewer
         title={selectedTicket?.title ?? epic.title}
@@ -78,7 +84,7 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
         priority={epic.priority}
         content={ticketData.content}
         checklist={ticketData.checklist}
-        ticketId={selectedTicket?.id}
+        ticketId={selectedTicket?.id !== "_context" ? selectedTicket?.id : undefined}
         blockedReason={selectedTicket?.blockedReason}
       />
       <ResizeHandle onDragStart={handleDragStart} />

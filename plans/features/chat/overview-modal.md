@@ -1,6 +1,6 @@
 # Overview as Modal (not PlanViewer)
 
-**Status:** in-progress
+**Status:** review
 **Priority:** high
 
 ## Problem
@@ -13,12 +13,12 @@ Move the Overview content into a modal (like Roadmap). The Overview button stays
 
 ## Checklist
 
-- [ ] Create `OverviewModal.tsx` component using shadcn/ui `Dialog`
-- [ ] Modal shows the feature title, status, priority, and renders the `_context.md` content with full markdown support (react-markdown)
-- [ ] Replace the `onClick={() => onSelect(contextTicket.id)}` in `TicketSidebar.tsx` with `open state` that triggers the modal
-- [ ] The PlanViewer is no longer responsible for rendering the overview — remove `contextTicket` selection logic from `FeatureLayout`
-- [ ] Modal has close button (X) and click-outside-to-close behavior
-- [ ] Style with design system tokens — consistent with `RoadmapModal`
+- [x] Create `OverviewModal.tsx` component using shadcn/ui `Dialog`
+- [x] Modal shows the feature title, status, priority, and renders the `_context.md` content with full markdown support (react-markdown)
+- [x] Replace the `onClick={() => onSelect(contextTicket.id)}` in `TicketSidebar.tsx` with `open state` that triggers the modal
+- [x] The PlanViewer is no longer responsible for rendering the overview — remove `contextTicket` selection logic from `FeatureLayout`
+- [x] Modal has close button (X) and click-outside-to-close behavior
+- [x] Style with design system tokens — consistent with `RoadmapModal`
 
 ## Files
 
