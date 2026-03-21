@@ -1,6 +1,6 @@
 # Render Clickable Links in Chat Messages
 
-**Status:** todo
+**Status:** completed
 **Priority:** medium
 
 ## What it does
@@ -9,12 +9,12 @@ Currently chat messages render as plain text. When the agent responds with URLs 
 
 ## Checklist
 
-- [ ] Parse URLs in message content (https://, http://)
-- [ ] Render as `<a>` tags with `target="_blank"` and `rel="noopener noreferrer"`
-- [ ] Style links with `text-primary underline` to distinguish from regular text
-- [ ] Handle GitHub-specific links: commit URLs, PR URLs, file URLs
-- [ ] Handle relative file paths (e.g. `src/app/...`) — optionally link to GitHub blob view
-- [ ] Preserve markdown-style links `[text](url)` if the agent uses them
+- [x] Parse URLs in message content (https://, http://)
+- [x] Render as `<a>` tags with `target="_blank"` and `rel="noopener noreferrer"`
+- [x] Style links with `text-primary underline` to distinguish from regular text
+- [x] Handle GitHub-specific links: commit URLs, PR URLs, file URLs
+- [x] Handle relative file paths (e.g. `src/app/...`) — optionally link to GitHub blob view
+- [x] Preserve markdown-style links `[text](url)` if the agent uses them
 
 ## Files
 

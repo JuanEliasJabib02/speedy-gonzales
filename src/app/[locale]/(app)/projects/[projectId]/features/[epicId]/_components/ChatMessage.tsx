@@ -1,5 +1,6 @@
 import { GitCommitHorizontal, ExternalLink, Zap } from "lucide-react"
 import { cn } from "@/src/lib/helpers/cn"
+import { type ReactNode } from "react"
 
 type CommitData = {
   hash: string
@@ -54,6 +55,82 @@ function StreamingIndicator() {
   )
 }
 
+const LINK_CLASS = "text-primary underline break-all"
+
+// Matches markdown links [text](url) and plain URLs
+const MESSAGE_LINK_RE =
+  /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<>)\]]+)/g
+
+function linkLabel(url: string): string {
+  try {
+    const u = new URL(url)
+    if (u.hostname === "github.com") {
+      const parts = u.pathname.split("/").filter(Boolean)
+      // /owner/repo/pull/123
+      if (parts[2] === "pull" && parts[3]) return `PR #${parts[3]}`
+      // /owner/repo/commit/abc123
+      if (parts[2] === "commit" && parts[3]) return parts[3].slice(0, 7)
+      // /owner/repo/blob/...filepath
+      if (parts[2] === "blob" && parts.length > 4) return parts.slice(4).join("/")
+      // /owner/repo/issues/123
+      if (parts[2] === "issues" && parts[3]) return `Issue #${parts[3]}`
+    }
+  } catch {
+    // not a valid URL — fall through
+  }
+  return url
+}
+
+function renderLinkedContent(text: string): ReactNode[] {
+  const parts: ReactNode[] = []
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  MESSAGE_LINK_RE.lastIndex = 0
+  while ((match = MESSAGE_LINK_RE.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index))
+    }
+
+    if (match[1] && match[2]) {
+      // markdown-style link [text](url)
+      parts.push(
+        <a
+          key={match.index}
+          href={match[2]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={LINK_CLASS}
+        >
+          {match[1]}
+        </a>
+      )
+    } else {
+      // plain URL
+      const url = match[3]
+      parts.push(
+        <a
+          key={match.index}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={LINK_CLASS}
+        >
+          {linkLabel(url)}
+        </a>
+      )
+    }
+
+    lastIndex = MESSAGE_LINK_RE.lastIndex
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex))
+  }
+
+  return parts
+}
+
 export function ChatMessage({ message, userInitial, isStreaming }: ChatMessageProps) {
   const isUser = message.role === "user"
   const hasContent = message.content.length > 0
@@ -86,7 +163,7 @@ export function ChatMessage({ message, userInitial, isStreaming }: ChatMessagePr
             <StreamingIndicator />
           ) : (
             <>
-              {message.content}
+              {renderLinkedContent(message.content)}
               {isStreaming && <span className="ml-0.5 inline-block animate-pulse">|</span>}
             </>
           )}
