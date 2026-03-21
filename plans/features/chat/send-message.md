@@ -1,6 +1,6 @@
 # sendMessage Mutation
 
-**Status:** todo
+**Status:** review
 
 ## What it does
 

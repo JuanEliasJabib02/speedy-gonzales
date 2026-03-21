@@ -1,6 +1,6 @@
 # Chat Messages Schema
 
-**Status:** todo
+**Status:** review
 
 ## What it does
 
