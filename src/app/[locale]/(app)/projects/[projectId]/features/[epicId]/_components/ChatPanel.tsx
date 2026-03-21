@@ -22,6 +22,7 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
     streamingContent,
     handleSend,
     handleStop,
+    handleRetry,
     handleKeyDown,
     messages,
     pendingImage,
@@ -72,6 +73,7 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
                   timestamp: new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
                 }}
                 userInitial={initial}
+                onRetry={handleRetry}
               />
             ))}
             {streamingContent !== null && (

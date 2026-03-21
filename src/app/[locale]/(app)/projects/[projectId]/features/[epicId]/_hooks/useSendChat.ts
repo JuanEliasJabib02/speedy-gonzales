@@ -56,6 +56,7 @@ export function useSendChat(projectId: string, epicId: string) {
   const messages = useQuery(api.chat.getMessages, { epicId: typedEpicId })
   const sendMessage = useMutation(api.chat.sendMessage)
   const saveAssistantMessage = useMutation(api.chat.saveAssistantMessage)
+  const deleteMessage = useMutation(api.chat.deleteMessage)
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
   const getFileUrl = useMutation(api.files.getUrl)
 
@@ -146,49 +147,7 @@ export function useSendChat(projectId: string, epicId: string) {
     try {
       // Save user message to Convex
       await sendMessage({ epicId: typedEpicId, content })
-
-      const context = buildContext()
-      const history = buildHistory()
-
-      // Start streaming
-      setStreamingContent("")
-      const controller = new AbortController()
-      abortControllerRef.current = controller
-
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          epicId,
-          message: content,
-          context,
-          history,
-        }),
-        signal: controller.signal,
-      })
-
-      if (!res.ok || !res.body) {
-        const errorText = await res.text().catch(() => "No body")
-        console.error("Chat API error:", res.status, errorText)
-        setStreamingContent(null)
-        return
-      }
-
-      // Read text stream (plain text from toTextStreamResponse)
-      const reader = res.body.getReader()
-      const decoder = new TextDecoder()
-      let accumulated = ""
-      streamingContentRef.current = ""
-
-      while (true) {
-        const { done, value: chunk } = await reader.read()
-        if (done) break
-
-        const text = decoder.decode(chunk, { stream: true })
-        accumulated += text
-        streamingContentRef.current = accumulated
-        setStreamingContent(accumulated)
-      }
+      await streamResponse(content)
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
         // User stopped — partial content is already saved by handleStop
@@ -200,7 +159,81 @@ export function useSendChat(projectId: string, epicId: string) {
       setStreamingContent(null)
       setIsSending(false)
     }
-  }, [value, isSending, sendMessage, typedEpicId, epicId, buildContext, buildHistory, removePendingImage])
+  }, [value, isSending, sendMessage, typedEpicId, streamResponse, removePendingImage])
+
+  const streamResponse = useCallback(async (content: string) => {
+    const context = buildContext()
+    const history = buildHistory()
+
+    setStreamingContent("")
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        epicId,
+        message: content,
+        context,
+        history,
+      }),
+      signal: controller.signal,
+    })
+
+    if (!res.ok || !res.body) {
+      const errorText = await res.text().catch(() => "No body")
+      console.error("Chat API error:", res.status, errorText)
+      setStreamingContent(null)
+      return
+    }
+
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder()
+    let accumulated = ""
+    streamingContentRef.current = ""
+
+    while (true) {
+      const { done, value: chunk } = await reader.read()
+      if (done) break
+
+      const text = decoder.decode(chunk, { stream: true })
+      accumulated += text
+      streamingContentRef.current = accumulated
+      setStreamingContent(accumulated)
+    }
+  }, [epicId, buildContext, buildHistory])
+
+  const handleRetry = useCallback(async (assistantMessageId: string) => {
+    if (isSending) return
+    const msgs = messages ?? []
+    const idx = msgs.findIndex((m) => m._id === assistantMessageId)
+    if (idx < 0) return
+
+    // Find the preceding user message
+    let userMsg: (typeof msgs)[number] | undefined
+    for (let i = idx - 1; i >= 0; i--) {
+      if (msgs[i].role === "user") {
+        userMsg = msgs[i]
+        break
+      }
+    }
+    if (!userMsg) return
+
+    setIsSending(true)
+    try {
+      await deleteMessage({ messageId: assistantMessageId as Id<"chatMessages"> })
+      await streamResponse(userMsg.content)
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        console.error("Failed to retry message:", error)
+      }
+    } finally {
+      abortControllerRef.current = null
+      setStreamingContent(null)
+      setIsSending(false)
+    }
+  }, [isSending, messages, deleteMessage, streamResponse])
 
   const handleStop = useCallback(async () => {
     if (abortControllerRef.current) {
@@ -234,6 +267,7 @@ export function useSendChat(projectId: string, epicId: string) {
     streamingContent,
     handleSend,
     handleStop,
+    handleRetry,
     handleKeyDown,
     messages: messages ?? [],
     pendingImage,

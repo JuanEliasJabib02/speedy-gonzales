@@ -29,6 +29,14 @@ export const sendMessage = mutation({
   },
 })
 
+export const deleteMessage = mutation({
+  args: { messageId: v.id("chatMessages") },
+  handler: async (ctx, { messageId }) => {
+    await requireAuth(ctx)
+    await ctx.db.delete(messageId)
+  },
+})
+
 // Public mutation — called from Next.js API route (server-side only)
 export const saveAssistantMessage = mutation({
   args: {

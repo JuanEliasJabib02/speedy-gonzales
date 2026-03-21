@@ -1,4 +1,4 @@
-import { ExternalLink, Zap, Copy, Check, GitCommitHorizontal } from "lucide-react"
+import { ExternalLink, Zap, Copy, Check, GitCommitHorizontal, RotateCcw } from "lucide-react"
 import { cn } from "@/src/lib/helpers/cn"
 import { useState, useCallback } from "react"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
@@ -45,6 +45,7 @@ type ChatMessageProps = {
   message: ChatMessageData
   userInitial: string
   isStreaming?: boolean
+  onRetry?: (messageId: string) => void
 }
 
 function CommitCard({ commit }: { commit: CommitData }) {
@@ -207,12 +208,12 @@ const markdownComponents: Components = {
   },
 }
 
-export function ChatMessage({ message, userInitial, isStreaming }: ChatMessageProps) {
+export function ChatMessage({ message, userInitial, isStreaming, onRetry }: ChatMessageProps) {
   const isUser = message.role === "user"
   const hasContent = message.content.length > 0
 
   return (
-    <div className={cn("flex gap-2.5", isUser ? "flex-row-reverse" : "flex-row")}>
+    <div className={cn("group flex gap-2.5", isUser ? "flex-row-reverse" : "flex-row")}>
       {isUser ? (
         <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
           {userInitial}
@@ -259,7 +260,18 @@ export function ChatMessage({ message, userInitial, isStreaming }: ChatMessagePr
           </div>
         )}
 
-        <span className="text-xs text-muted-foreground">{message.timestamp}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">{message.timestamp}</span>
+          {!isUser && !isStreaming && onRetry && (
+            <button
+              onClick={() => onRetry(message.id)}
+              className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
+              title="Retry"
+            >
+              <RotateCcw className="size-3" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )
