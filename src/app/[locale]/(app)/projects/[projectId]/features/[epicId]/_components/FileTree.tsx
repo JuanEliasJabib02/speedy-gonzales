@@ -27,7 +27,8 @@ type FileTreeProps = {
   repo: string
   branch: string
   onFileSelect: (path: string, sha: string) => void
-  selectedFile?: string
+  selectedFile?: string | null
+  onBranchChange?: (branch: string) => void
 }
 
 const EXT_ICONS: Record<string, string> = {
@@ -116,7 +117,7 @@ function TreeNodeRow({
   expanded: boolean
   onToggle: (path: string) => void
   onFileSelect: (path: string, sha: string) => void
-  selectedFile?: string
+  selectedFile?: string | null
   expandedPaths: Set<string>
 }) {
   const isFolder = node.type === "tree"
@@ -187,7 +188,8 @@ function SkeletonRows() {
   )
 }
 
-export function FileTree({ owner, repo, branch, onFileSelect, selectedFile }: FileTreeProps) {
+export function FileTree({ owner, repo, branch, onFileSelect, selectedFile: selectedFileProp, onBranchChange }: FileTreeProps) {
+  const selectedFile = selectedFileProp ?? undefined
   const [tree, setTree] = useState<TreeEntry[]>([])
   const [branches, setBranches] = useState<Branch[]>([])
   const [currentBranch, setCurrentBranch] = useState(branch)
@@ -301,7 +303,7 @@ export function FileTree({ owner, repo, branch, onFileSelect, selectedFile }: Fi
         {branches.length > 1 ? (
           <select
             value={currentBranch}
-            onChange={(e) => setCurrentBranch(e.target.value)}
+            onChange={(e) => { setCurrentBranch(e.target.value); onBranchChange?.(e.target.value) }}
             className="min-w-0 flex-1 truncate rounded border border-border bg-card px-1.5 py-0.5 font-mono text-xs text-foreground"
           >
             {branches.map((b) => (

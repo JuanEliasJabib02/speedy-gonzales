@@ -10,11 +10,22 @@ type CodeViewProps = {
   owner: string
   repo: string
   defaultBranch?: string
+  onActiveFileChange?: (file: { path: string; content: string } | null) => void
 }
 
-export function CodeView({ owner, repo, defaultBranch = "main" }: CodeViewProps) {
+export function CodeView({ owner, repo, defaultBranch = "main", onActiveFileChange }: CodeViewProps) {
   const [selectedFile, setSelectedFile] = useState<{ path: string; sha: string } | null>(null)
   const [branch, setBranch] = useState(defaultBranch)
+
+  const handleFileSelect = (path: string, sha: string) => {
+    setSelectedFile({ path, sha })
+    // content will be loaded by FileViewer; we notify with null content initially
+    onActiveFileChange?.({ path, content: "" })
+  }
+
+  const handleFileContentLoaded = (path: string, content: string) => {
+    onActiveFileChange?.({ path, content })
+  }
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -24,8 +35,8 @@ export function CodeView({ owner, repo, defaultBranch = "main" }: CodeViewProps)
           owner={owner}
           repo={repo}
           branch={branch}
-          selectedFile={selectedFile?.path ?? null}
-          onFileSelect={(path, sha) => setSelectedFile({ path, sha })}
+          selectedFile={selectedFile?.path ?? undefined}
+          onFileSelect={handleFileSelect}
           onBranchChange={setBranch}
         />
       </div>
@@ -38,6 +49,7 @@ export function CodeView({ owner, repo, defaultBranch = "main" }: CodeViewProps)
             repo={repo}
             path={selectedFile.path}
             ref={branch}
+            onContentLoaded={(_, content) => handleFileContentLoaded(selectedFile.path, content)}
           />
         ) : (
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">

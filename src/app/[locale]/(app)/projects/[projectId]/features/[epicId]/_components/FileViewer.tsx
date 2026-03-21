@@ -77,9 +77,10 @@ type FileViewerProps = {
   path: string
   ref: string
   onClose?: () => void
+  onContentLoaded?: (path: string, content: string) => void
 }
 
-export function FileViewer({ owner, repo, path, ref, onClose }: FileViewerProps) {
+export function FileViewer({ owner, repo, path, ref, onClose, onContentLoaded }: FileViewerProps) {
   const [content, setContent] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -106,7 +107,10 @@ export function FileViewer({ owner, repo, path, ref, onClose }: FileViewerProps)
         return res.json()
       })
       .then((data) => {
-        if (!cancelled) setContent(data.content)
+        if (!cancelled) {
+          setContent(data.content)
+          onContentLoaded?.(path, data.content)
+        }
       })
       .catch((err) => {
         if (!cancelled) setError(err.message)

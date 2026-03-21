@@ -10,9 +10,10 @@ import { ThemeToggle } from "@/src/lib/components/common/ThemeToggle"
 import { Button } from "@/src/lib/components/ui/button"
 import { useCurrentUser } from "@/src/lib/hooks/useCurrentUser"
 import { useSendChat } from "../_hooks/useSendChat"
-import type { ViewMode } from "./FeatureLayout"
+import type { ViewMode, ActiveFile } from "./FeatureLayout"
 
 type ChatPanelProps = {
+  onActiveFileChange?: (file: { path: string; content: string } | null) => void
   width: number
   projectId: string
   epicId: string
@@ -22,9 +23,11 @@ type ChatPanelProps = {
   repoOwner?: string
   repoName?: string
   branch?: string
+  activeFile?: ActiveFile | null
+  onDismissActiveFile?: () => void
 }
 
-export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMode, onViewModeChange, repoOwner = "", repoName = "", branch = "main" }: ChatPanelProps) {
+export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMode, onViewModeChange, repoOwner = "", repoName = "", branch = "main", activeFile, onDismissActiveFile, onActiveFileChange }: ChatPanelProps) {
   const { initial } = useCurrentUser()
   const {
     value,
@@ -45,7 +48,7 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
     handlePasteImage,
     removePendingImage,
     sendDirect,
-  } = useSendChat(projectId, epicId)
+  } = useSendChat(projectId, epicId, activeFile ?? null)
 
   useEffect(() => {
     onSendDirectReady?.(sendDirect)
@@ -268,12 +271,19 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
             onPasteImage={handlePasteImage}
             onRemoveImage={removePendingImage}
             ticketOptions={ticketOptions}
+            activeFile={activeFile ?? null}
+            onDismissActiveFile={onDismissActiveFile}
           />
         </div>
       ) : (
-        <div className="flex flex-1 view-fade-in">
-          <CodeView projectId={projectId} epicId={epicId} owner={repoOwner} repo={repoName} defaultBranch={branch} />
-        </div>
+        <CodeView
+          projectId={projectId}
+          epicId={epicId}
+          owner={repoOwner}
+          repo={repoName}
+          defaultBranch={branch}
+          onActiveFileChange={onActiveFileChange}
+        />
       )}
     </div>
   )

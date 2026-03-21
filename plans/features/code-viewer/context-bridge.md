@@ -1,6 +1,6 @@
 # Context Bridge (Viewed File → Chat)
 
-**Status:** todo
+**Status:** review
 **Priority:** medium
 
 ## What it does

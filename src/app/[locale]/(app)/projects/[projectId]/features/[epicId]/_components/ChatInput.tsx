@@ -33,6 +33,8 @@ type ChatInputProps = {
   onPasteImage: (file: File) => void
   onRemoveImage: (index: number) => void
   ticketOptions: TicketOption[]
+  activeFile?: { path: string; content: string } | null
+  onDismissActiveFile?: () => void
 }
 
 export function ChatInput({
@@ -49,6 +51,8 @@ export function ChatInput({
   onPasteImage,
   onRemoveImage,
   ticketOptions,
+  activeFile,
+  onDismissActiveFile,
 }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [mentionQuery, setMentionQuery] = useState<string | null>(null)
@@ -220,6 +224,23 @@ export function ChatInput({
 
   return (
     <div className="relative border-t border-border p-3">
+      {/* Active file pill */}
+      {activeFile && (
+        <div className="mb-2 flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 rounded-full border border-border bg-muted/60 px-2.5 py-1 text-xs text-muted-foreground max-w-full min-w-0">
+            <span className="shrink-0">📄</span>
+            <span className="truncate font-mono">{activeFile.path.split("/").pop()}</span>
+            <button
+              type="button"
+              className="ml-0.5 shrink-0 rounded-full p-0.5 hover:bg-accent hover:text-accent-foreground transition-colors"
+              onClick={onDismissActiveFile}
+              title="Dismiss file context"
+            >
+              <X className="size-3" />
+            </button>
+          </div>
+        </div>
+      )}
       {pendingImages.length > 0 && (
         <div className="mb-2 flex items-center gap-2">
           {pendingImages.map((img, index) => (

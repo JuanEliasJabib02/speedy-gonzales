@@ -308,12 +308,13 @@ export async function POST(request: Request) {
     return new Response("Unauthorized", { status: 401 })
   }
 
-  const { epicId, projectId, message, context, history } = (await request.json()) as {
+  const { epicId, projectId, message, context, history, activeFile } = (await request.json()) as {
     epicId: string
     projectId?: string
     message: string
     context?: ChatContext
     history?: HistoryMessage[]
+    activeFile?: { path: string; content: string }
   }
 
   const baseURL = process.env.OPENCLAW_BASE_URL
@@ -334,7 +335,11 @@ export async function POST(request: Request) {
   // Build messages for OpenAI-compatible API
   const allMessages: Array<{ role: string; content: string }> = []
   if (context) {
-    allMessages.push({ role: "system", content: buildSystemMessage(context, memory || undefined) })
+    let systemMessage = buildSystemMessage(context, memory || undefined)
+    if (activeFile) {
+      systemMessage += `\n\n## Currently Viewed File\n\nThe user is currently viewing: \`${activeFile.path}\`\n\n\`\`\`\n${activeFile.content}\n\`\`\``
+    }
+    allMessages.push({ role: "system", content: systemMessage })
   }
   for (const m of history ?? []) {
     allMessages.push({ role: m.role, content: m.content })

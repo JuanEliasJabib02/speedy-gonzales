@@ -5,6 +5,7 @@ import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import type { PendingImage, ChatContext, HistoryMessage } from "@/src/types/chat"
+import type { ActiveFile } from "../_components/FeatureLayout"
 
 const DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000 // 24 hours
 const MAX_IMAGES = 4
@@ -48,7 +49,7 @@ function clearDraft(epicId: string) {
   }
 }
 
-export function useSendChat(projectId: string, epicId: string) {
+export function useSendChat(projectId: string, epicId: string, activeFile: ActiveFile | null = null) {
   const [value, setValue] = useState(() => loadDraft(epicId))
   const [isSending, setIsSending] = useState(false)
   const [streamingContent, setStreamingContent] = useState<string | null>(null)
@@ -226,6 +227,7 @@ export function useSendChat(projectId: string, epicId: string) {
         message: enrichedMessage,
         context,
         history,
+        activeFile: activeFile ?? undefined,
       }),
       signal: controller.signal,
     })
@@ -254,7 +256,7 @@ export function useSendChat(projectId: string, epicId: string) {
       streamingContentRef.current = accumulated
       setStreamingContent(accumulated)
     }
-  }, [epicId, buildContext, buildHistory, enrichWithMentions])
+  }, [epicId, projectId, buildContext, buildHistory, enrichWithMentions, activeFile])
 
   const handleSend = useCallback(async () => {
     const trimmed = value.trim()

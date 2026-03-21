@@ -4,6 +4,8 @@ import { useState, useCallback, useRef, useEffect } from "react"
 import { TicketSidebar } from "./TicketSidebar"
 import { PlanViewer } from "./PlanViewer"
 import { ChatPanel } from "./ChatPanel"
+import { FileTree } from "./FileTree"
+import { FileViewer } from "./FileViewer"
 import { ResizeHandle } from "./ResizeHandle"
 import { useLivePlan } from "../_hooks/useLivePlan"
 
@@ -17,6 +19,11 @@ type FeatureLayoutProps = {
 }
 
 export type ViewMode = "chat" | "code"
+
+export type ActiveFile = {
+  path: string
+  content: string
+}
 
 export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
   const { plan: epic, isLoading, getTicketContent, lastSyncAt, syncStatus, repoOwner, repoName } = useLivePlan(epicId, projectId)
@@ -32,6 +39,18 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
   useEffect(() => {
     localStorage.setItem(storageKey, viewMode)
   }, [storageKey, viewMode])
+
+  // Code mode state
+  const [selectedFile, setSelectedFile] = useState<{ path: string; sha: string } | null>(null)
+  const [branch, setBranch] = useState(epic?.branch ?? "main")
+  // Sync branch from epic after load
+  useEffect(() => {
+    if (epic?.branch) setBranch(epic.branch)
+  }, [epic?.branch])
+
+  // Context bridge: track the active file being viewed
+  const [activeFile, setActiveFile] = useState<ActiveFile | null>(null)
+
   const isDragging = useRef(false)
   const sendDirectRef = useRef<((message: string) => void) | null>(null)
 
@@ -66,6 +85,16 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
     document.addEventListener("mouseup", handleMouseUp)
   }, [])
 
+  // Notify when a file is fully loaded into the viewer
+  const handleFileContentLoaded = useCallback((path: string, content: string) => {
+    setActiveFile({ path, content })
+  }, [])
+
+  // Dismiss active file from ChatInput pill
+  const handleDismissActiveFile = useCallback(() => {
+    setActiveFile(null)
+  }, [])
+
   if (isLoading || !epic) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -85,35 +114,82 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
 
   return (
     <div className="flex h-full">
-      <TicketSidebar
-        epicTitle={epic.title}
-        branch={epic.branch}
-        tickets={epic.tickets}
-        selectedId={effectiveId}
-        onSelect={setSelectedTicketId}
+      {/* Left panel: TicketSidebar in Chat mode, FileTree in Code mode */}
+      {viewMode === "code" ? (
+        <div className="flex w-[280px] shrink-0 flex-col border-r border-border bg-card overflow-hidden">
+          <FileTree
+            owner={repoOwner ?? ""}
+            repo={repoName ?? ""}
+            branch={branch}
+            selectedFile={selectedFile?.path ?? undefined}
+            onFileSelect={(path, sha) => setSelectedFile({ path, sha })}
+          />
+        </div>
+      ) : (
+        <TicketSidebar
+          epicTitle={epic.title}
+          branch={epic.branch}
+          tickets={epic.tickets}
+          selectedId={effectiveId}
+          onSelect={setSelectedTicketId}
+          projectId={projectId}
+          epicId={epicId}
+          lastSyncAt={lastSyncAt}
+          syncStatus={syncStatus}
+          overviewContent={overviewData.content}
+          overviewStatus={epic.status}
+          overviewPriority={epic.priority}
+          onCreateTicket={handleCreateTicket}
+        />
+      )}
+
+      {/* Center panel: PlanViewer in Chat mode, FileViewer in Code mode */}
+      {viewMode === "code" ? (
+        <div className="flex flex-1 overflow-hidden">
+          {selectedFile ? (
+            <FileViewer
+              owner={repoOwner ?? ""}
+              repo={repoName ?? ""}
+              path={selectedFile.path}
+              ref={branch}
+              onContentLoaded={handleFileContentLoaded}
+            />
+          ) : (
+            <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+              Select a file to view
+            </div>
+          )}
+        </div>
+      ) : (
+        <PlanViewer
+          title={selectedTicket?.title ?? epic.title}
+          status={selectedTicket?.status ?? epic.status}
+          priority={epic.priority}
+          content={ticketData.content}
+          checklist={ticketData.checklist}
+          ticketId={selectedTicket?.id !== "_context" ? selectedTicket?.id : undefined}
+          blockedReason={selectedTicket?.blockedReason}
+          commits={"commits" in (selectedTicket ?? {}) ? (selectedTicket as { commits: string[] }).commits : []}
+          repoOwner={repoOwner}
+          repoName={repoName}
+        />
+      )}
+
+      <ResizeHandle onDragStart={handleDragStart} />
+      <ChatPanel
+        width={chatWidth}
         projectId={projectId}
         epicId={epicId}
-        lastSyncAt={lastSyncAt}
-        syncStatus={syncStatus}
-        overviewContent={overviewData.content}
-        overviewStatus={epic.status}
-        overviewPriority={epic.priority}
-        onCreateTicket={handleCreateTicket}
+        onSendDirectReady={handleSendDirectReady}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        repoOwner={repoOwner ?? ""}
+        repoName={repoName ?? ""}
+        branch={epic?.branch ?? "main"}
+        activeFile={activeFile}
+        onDismissActiveFile={handleDismissActiveFile}
+        onActiveFileChange={(file) => file ? setActiveFile(file) : setActiveFile(null)}
       />
-      <PlanViewer
-        title={selectedTicket?.title ?? epic.title}
-        status={selectedTicket?.status ?? epic.status}
-        priority={epic.priority}
-        content={ticketData.content}
-        checklist={ticketData.checklist}
-        ticketId={selectedTicket?.id !== "_context" ? selectedTicket?.id : undefined}
-        blockedReason={selectedTicket?.blockedReason}
-        commits={selectedTicket?.commits ?? []}
-        repoOwner={repoOwner}
-        repoName={repoName}
-      />
-      <ResizeHandle onDragStart={handleDragStart} />
-      <ChatPanel width={chatWidth} projectId={projectId} epicId={epicId} onSendDirectReady={handleSendDirectReady} viewMode={viewMode} onViewModeChange={setViewMode} repoOwner={repoOwner ?? ""} repoName={repoName ?? ""} branch={epic?.branch ?? "main"} />
     </div>
   )
 }
