@@ -44,3 +44,7 @@ Allow users to paste or attach multiple images in one message (not just one).
 ## Files
 - `src/hooks/useSendChat.ts`
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/ChatInput.tsx`
+
+## Notes
+- Draft persistence tested and working in production
+- Multi-image up to 4 attachments confirmed
