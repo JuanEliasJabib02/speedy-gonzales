@@ -1,6 +1,7 @@
-import { ExternalLink, Zap, Copy, Check, GitCommitHorizontal, RotateCcw, AlertTriangle } from "lucide-react"
+import { ExternalLink, Zap, Copy, Check, GitCommitHorizontal, RotateCcw, AlertTriangle, Code2 } from "lucide-react"
 import { ActionCard, parseActions, type ParsedAction } from "./ActionCard"
 import { LinkPreviewCard, extractGitHubUrls } from "./LinkPreviewCard"
+import { CommitDiffPanel } from "./CommitDiffPanel"
 import { cn } from "@/src/lib/helpers/cn"
 import { useState, useCallback } from "react"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
@@ -52,41 +53,74 @@ type ChatMessageProps = {
   onRetry?: (messageId: string) => void
 }
 
-function CommitCard({ commit }: { commit: CommitData }) {
+function parseGitHubCommitUrl(url: string): { owner: string; repo: string; sha: string } | null {
+  try {
+    const parsed = new URL(url)
+    if (parsed.hostname !== "github.com") return null
+    const parts = parsed.pathname.split("/").filter(Boolean)
+    if (parts.length >= 4 && parts[2] === "commit") {
+      return { owner: parts[0], repo: parts[1], sha: parts[3] }
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+function CommitCard({ commit, onViewDiff }: { commit: CommitData; onViewDiff?: (owner: string, repo: string, sha: string) => void }) {
   const provider = getProviderFromUrl(commit.url)
   const isGitHub = provider === "github"
+  const ghCommit = isGitHub ? parseGitHubCommitUrl(commit.url) : null
 
   return (
-    <a
-      href={commit.url}
-      target="_blank"
-      rel="noopener noreferrer"
+    <div
       className={cn(
         "block max-w-[85%] rounded-lg border p-3 transition-colors",
         isGitHub
-          ? "border-[#30363d] bg-[#24292f] text-white hover:bg-[#2c3238]"
-          : "border-border bg-card hover:bg-accent"
+          ? "border-[#30363d] bg-[#24292f] text-white"
+          : "border-border bg-card"
       )}
     >
-      <div className="flex items-center gap-2">
-        {isGitHub ? (
-          <GitHubLogo className="size-4 text-white" />
-        ) : (
-          <GitCommitHorizontal className="size-4 text-status-completed" />
-        )}
-        <code className={cn("text-xs", isGitHub ? "text-[#8b949e]" : "text-muted-foreground")}>
-          {commit.hash}
-        </code>
-        {isGitHub && (
-          <span className="text-[10px] font-medium text-[#8b949e]">GitHub</span>
-        )}
-        <ExternalLink className={cn("ml-auto size-3", isGitHub ? "text-[#8b949e]" : "text-muted-foreground")} />
-      </div>
-      <p className="mt-1.5 text-sm">{commit.message}</p>
-      <span className={cn("mt-1 block text-xs", isGitHub ? "text-[#8b949e]" : "text-muted-foreground")}>
-        {commit.filesChanged} files changed
-      </span>
-    </a>
+      <a
+        href={commit.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={cn("block", isGitHub ? "hover:opacity-80" : "hover:opacity-80")}
+      >
+        <div className="flex items-center gap-2">
+          {isGitHub ? (
+            <GitHubLogo className="size-4 text-white" />
+          ) : (
+            <GitCommitHorizontal className="size-4 text-status-completed" />
+          )}
+          <code className={cn("text-xs", isGitHub ? "text-[#8b949e]" : "text-muted-foreground")}>
+            {commit.hash}
+          </code>
+          {isGitHub && (
+            <span className="text-[10px] font-medium text-[#8b949e]">GitHub</span>
+          )}
+          <ExternalLink className={cn("ml-auto size-3", isGitHub ? "text-[#8b949e]" : "text-muted-foreground")} />
+        </div>
+        <p className="mt-1.5 text-sm">{commit.message}</p>
+        <span className={cn("mt-1 block text-xs", isGitHub ? "text-[#8b949e]" : "text-muted-foreground")}>
+          {commit.filesChanged} files changed
+        </span>
+      </a>
+      {ghCommit && onViewDiff && (
+        <button
+          onClick={() => onViewDiff(ghCommit.owner, ghCommit.repo, ghCommit.sha)}
+          className={cn(
+            "mt-2 flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium transition-colors",
+            isGitHub
+              ? "bg-white/10 text-[#c9d1d9] hover:bg-white/15"
+              : "bg-muted text-muted-foreground hover:bg-accent"
+          )}
+        >
+          <Code2 className="size-3" />
+          View diff
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -235,6 +269,7 @@ function UserContent({ text }: { text: string }) {
 export function ChatMessage({ message, userInitial, isStreaming, onRetry }: ChatMessageProps) {
   const isUser = message.role === "user"
   const hasContent = message.content.length > 0
+  const [diffTarget, setDiffTarget] = useState<{ owner: string; repo: string; sha: string } | null>(null)
 
   return (
     <div className={cn("group flex gap-2.5", isUser ? "flex-row-reverse" : "flex-row")}>
@@ -295,9 +330,23 @@ export function ChatMessage({ message, userInitial, isStreaming, onRetry }: Chat
         {message.commits && message.commits.length > 0 && (
           <div className="flex flex-col gap-2 mt-1">
             {message.commits.map((commit) => (
-              <CommitCard key={commit.hash} commit={commit} />
+              <CommitCard
+                key={commit.hash}
+                commit={commit}
+                onViewDiff={(owner, repo, sha) => setDiffTarget({ owner, repo, sha })}
+              />
             ))}
           </div>
+        )}
+
+        {diffTarget && (
+          <CommitDiffPanel
+            open={true}
+            onOpenChange={(open) => { if (!open) setDiffTarget(null) }}
+            owner={diffTarget.owner}
+            repo={diffTarget.repo}
+            sha={diffTarget.sha}
+          />
         )}
 
         {!isUser && !isStreaming && (() => {
