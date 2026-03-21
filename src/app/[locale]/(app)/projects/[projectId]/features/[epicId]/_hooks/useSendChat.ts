@@ -130,9 +130,32 @@ export function useSendChat(projectId: string, epicId: string) {
     }))
   }, [messages])
 
+  const enrichWithMentions = useCallback(
+    (content: string): string => {
+      const mentions = content.match(/#([\w-]+)/g)
+      if (!mentions || !tickets) return content
+
+      const mentionedContent: string[] = []
+      for (const mention of mentions) {
+        const slug = mention.slice(1)
+        const ticket = (tickets ?? []).find(
+          (t) => t.path.split("/").pop()?.replace(/\.md$/, "") === slug,
+        )
+        if (ticket) {
+          mentionedContent.push(
+            `\n\n---\n**Referenced ticket: ${ticket.title}** (${ticket.status})\n${ticket.content.slice(0, 1000)}`,
+          )
+        }
+      }
+      return mentionedContent.length > 0 ? `${content}${mentionedContent.join("")}` : content
+    },
+    [tickets],
+  )
+
   const streamResponse = useCallback(async (content: string) => {
     const context = buildContext()
     const history = buildHistory()
+    const enrichedMessage = enrichWithMentions(content)
 
     setStreamingContent("")
     const controller = new AbortController()
@@ -143,7 +166,7 @@ export function useSendChat(projectId: string, epicId: string) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         epicId,
-        message: content,
+        message: enrichedMessage,
         context,
         history,
       }),
@@ -171,7 +194,7 @@ export function useSendChat(projectId: string, epicId: string) {
       streamingContentRef.current = accumulated
       setStreamingContent(accumulated)
     }
-  }, [epicId, buildContext, buildHistory])
+  }, [epicId, buildContext, buildHistory, enrichWithMentions])
 
   const handleSend = useCallback(async () => {
     const trimmed = value.trim()

@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useMemo } from "react"
 import { ChatMessage } from "./ChatMessage"
 import { ChatInput } from "./ChatInput"
 import { ContextSummaryCard } from "./ContextSummaryCard"
@@ -33,6 +33,15 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
     handlePasteImage,
     removePendingImage,
   } = useSendChat(projectId, epicId)
+
+  const ticketOptions = useMemo(
+    () =>
+      tickets.map((t) => ({
+        slug: t.path.split("/").pop()?.replace(/\.md$/, "") ?? t.title,
+        title: t.title,
+      })),
+    [tickets],
+  )
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -116,6 +125,7 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
         pendingImage={pendingImage}
         onPasteImage={handlePasteImage}
         onRemoveImage={removePendingImage}
+        ticketOptions={ticketOptions}
       />
     </div>
   )

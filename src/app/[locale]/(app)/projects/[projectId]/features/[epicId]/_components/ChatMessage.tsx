@@ -208,6 +208,26 @@ const markdownComponents: Components = {
   },
 }
 
+function UserContent({ text }: { text: string }) {
+  const parts = text.split(/(#[\w-]+)/g)
+  return (
+    <>
+      {parts.map((part, i) =>
+        /^#[\w-]+$/.test(part) ? (
+          <span
+            key={i}
+            className="inline-flex items-center rounded bg-primary-foreground/20 px-1.5 py-0.5 text-xs font-medium"
+          >
+            {part}
+          </span>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </>
+  )
+}
+
 export function ChatMessage({ message, userInitial, isStreaming, onRetry }: ChatMessageProps) {
   const isUser = message.role === "user"
   const hasContent = message.content.length > 0
@@ -241,7 +261,7 @@ export function ChatMessage({ message, userInitial, isStreaming, onRetry }: Chat
           ) : (
             <>
               {isUser ? (
-                message.content
+                <UserContent text={message.content} />
               ) : (
                 <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                   {message.content}

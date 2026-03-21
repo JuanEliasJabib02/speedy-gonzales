@@ -1,7 +1,7 @@
 "use client"
 
-import { useCallback, useRef, useEffect } from "react"
-import { Loader2, SendHorizontal, Square, X } from "lucide-react"
+import { useCallback, useRef, useEffect, useState, useMemo } from "react"
+import { Loader2, SendHorizontal, Square, X, Hash } from "lucide-react"
 import { Button } from "@/src/lib/components/ui/button"
 
 type PendingImage = {
@@ -10,6 +10,11 @@ type PendingImage = {
   storageUrl: string | null
   isUploading: boolean
   error: string | null
+}
+
+type TicketOption = {
+  slug: string
+  title: string
 }
 
 type ChatInputProps = {
@@ -24,6 +29,7 @@ type ChatInputProps = {
   pendingImage: PendingImage | null
   onPasteImage: (file: File) => void
   onRemoveImage: () => void
+  ticketOptions: TicketOption[]
 }
 
 export function ChatInput({
@@ -38,8 +44,11 @@ export function ChatInput({
   pendingImage,
   onPasteImage,
   onRemoveImage,
+  ticketOptions,
 }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null)
+  const [mentionIndex, setMentionIndex] = useState(0)
 
   const handlePaste = useCallback(
     (e: React.ClipboardEvent) => {
@@ -66,10 +75,91 @@ export function ChatInput({
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`
   }, [value])
 
+  // Detect # mention trigger
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newValue = e.target.value
+      onChange(newValue)
+
+      const cursorPos = e.target.selectionStart
+      const textBefore = newValue.slice(0, cursorPos)
+      const hashMatch = textBefore.match(/#([\w-]*)$/)
+
+      if (hashMatch) {
+        setMentionQuery(hashMatch[1])
+        setMentionIndex(0)
+      } else {
+        setMentionQuery(null)
+      }
+    },
+    [onChange],
+  )
+
+  const filteredTickets = useMemo(() => {
+    if (mentionQuery === null) return []
+    const q = mentionQuery.toLowerCase()
+    return ticketOptions.filter(
+      (t) => t.slug.toLowerCase().includes(q) || t.title.toLowerCase().includes(q),
+    ).slice(0, 8)
+  }, [mentionQuery, ticketOptions])
+
+  const insertMention = useCallback(
+    (slug: string) => {
+      const el = textareaRef.current
+      if (!el) return
+
+      const cursorPos = el.selectionStart
+      const textBefore = value.slice(0, cursorPos)
+      const textAfter = value.slice(cursorPos)
+      const hashStart = textBefore.lastIndexOf("#")
+      const newValue = `${textBefore.slice(0, hashStart)}#${slug} ${textAfter}`
+
+      onChange(newValue)
+      setMentionQuery(null)
+
+      // Move cursor after the inserted mention
+      requestAnimationFrame(() => {
+        const newPos = hashStart + slug.length + 2
+        el.setSelectionRange(newPos, newPos)
+        el.focus()
+      })
+    },
+    [value, onChange],
+  )
+
+  const handleMentionKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (mentionQuery !== null && filteredTickets.length > 0) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault()
+          setMentionIndex((i) => Math.min(i + 1, filteredTickets.length - 1))
+          return
+        }
+        if (e.key === "ArrowUp") {
+          e.preventDefault()
+          setMentionIndex((i) => Math.max(i - 1, 0))
+          return
+        }
+        if (e.key === "Enter" || e.key === "Tab") {
+          e.preventDefault()
+          insertMention(filteredTickets[mentionIndex].slug)
+          return
+        }
+        if (e.key === "Escape") {
+          e.preventDefault()
+          setMentionQuery(null)
+          return
+        }
+      }
+      onKeyDown(e)
+    },
+    [mentionQuery, filteredTickets, mentionIndex, insertMention, onKeyDown],
+  )
+
   const canSend = (value.trim() || pendingImage?.storageUrl) && !isSending
 
   return (
-    <div className="border-t border-border p-3">
+    <div className="relative border-t border-border p-3">
       {pendingImage && (
         <div className="mb-2 flex items-center gap-2">
           <div className="relative size-14 shrink-0 rounded-md overflow-hidden border border-border bg-secondary">
@@ -105,13 +195,33 @@ export function ChatInput({
           Message queued — will send after current response
         </div>
       )}
+      {mentionQuery !== null && filteredTickets.length > 0 && (
+        <div className="absolute bottom-full left-3 right-3 mb-1 max-h-48 overflow-y-auto rounded-md border border-border bg-popover p-1 shadow-md">
+          {filteredTickets.map((ticket, i) => (
+            <button
+              key={ticket.slug}
+              className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm ${
+                i === mentionIndex ? "bg-accent text-accent-foreground" : "text-popover-foreground hover:bg-accent/50"
+              }`}
+              onMouseDown={(e) => {
+                e.preventDefault()
+                insertMention(ticket.slug)
+              }}
+            >
+              <Hash className="size-3 shrink-0 text-muted-foreground" />
+              <span className="truncate font-medium">{ticket.slug}</span>
+              <span className="truncate text-xs text-muted-foreground">{ticket.title}</span>
+            </button>
+          ))}
+        </div>
+      )}
       <div className="flex items-end gap-2">
         <textarea
           ref={textareaRef}
-          placeholder="Type a message or paste an image..."
+          placeholder="Type a message or # to mention a ticket..."
           value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyDown={onKeyDown}
+          onChange={handleChange}
+          onKeyDown={handleMentionKeyDown}
           onPaste={handlePaste}
           rows={1}
           className="flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
