@@ -1,6 +1,6 @@
 # getProjects & getProject Queries
 
-**Status:** in-progress
+**Status:** todo
 
 ## What it does
 

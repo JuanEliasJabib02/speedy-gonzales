@@ -1,6 +1,6 @@
 # Checklist Progress Bar
 
-**Status:** completed
+**Status:** todo
 
 ## What it does
 

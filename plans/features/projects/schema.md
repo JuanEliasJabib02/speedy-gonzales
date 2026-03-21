@@ -1,6 +1,6 @@
 # Projects Schema & Indexes
 
-**Status:** in-progress
+**Status:** todo
 
 ## What it does
 

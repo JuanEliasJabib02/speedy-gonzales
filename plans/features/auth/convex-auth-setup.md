@@ -1,6 +1,6 @@
 # Convex Auth Setup
 
-**Status:** completed
+**Status:** todo
 
 ## What it does
 

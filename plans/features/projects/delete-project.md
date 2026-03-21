@@ -1,6 +1,6 @@
 # deleteProject Mutation
 
-**Status:** in-progress
+**Status:** todo
 
 ## What it does
 

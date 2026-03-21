@@ -1,6 +1,6 @@
 # Users Table & getCurrentUser
 
-**Status:** completed
+**Status:** todo
 
 ## What it does
 

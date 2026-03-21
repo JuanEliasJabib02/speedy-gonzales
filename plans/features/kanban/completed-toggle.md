@@ -1,6 +1,6 @@
 # Completed Toggle
 
-**Status:** completed
+**Status:** todo
 
 ## What it does
 
