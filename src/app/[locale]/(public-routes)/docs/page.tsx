@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, Brain, FolderTree, GitBranch, MessageSquare, Rocket } from "lucide-react"
+import { ArrowRight, BookOpen, Brain, Code, FolderTree, GitBranch, MessageSquare, Rocket } from "lucide-react"
 import Link from "next/link"
 
 const guides = [
@@ -15,6 +15,13 @@ const guides = [
       "How to organize your plans/ folder. Directory conventions, file format, parsed fields, and the spec the AI agent follows.",
     href: "/docs/plans",
     icon: FolderTree,
+  },
+  {
+    title: "Source of Truth",
+    description:
+      "How plans, code, and AI stay in sync. Code is always right — plans adapt, tickets are created by comparing reality vs intent.",
+    href: "/docs/source-of-truth",
+    icon: Code,
   },
 ]
 
