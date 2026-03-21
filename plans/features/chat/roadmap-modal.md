@@ -54,3 +54,4 @@ Give the user a quick visual overview of what the agent is working on per featur
 - [ ] Each ticket shows name, status, and priority badge
 - [ ] Modal closes on X or outside click
 - [ ] Works on mobile
+

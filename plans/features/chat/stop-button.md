@@ -20,3 +20,4 @@ When the agent is responding, there's no way to stop it mid-stream. Add a "Stop"
 - `src/hooks/useSendChat.ts`
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/ChatInput.tsx`
 - `src/app/api/chat/route.ts`
+

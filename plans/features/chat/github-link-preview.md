@@ -36,3 +36,4 @@ Detect URL type and render tailored content:
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/ChatMessage.tsx`
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/LinkPreviewCard.tsx` (new)
 - `src/app/api/link-preview/route.ts` (new)
+

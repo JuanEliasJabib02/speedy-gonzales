@@ -26,3 +26,4 @@ Allow the user to type `/` in the chat input to trigger a command palette with a
 
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/ChatInput.tsx`
 - `src/hooks/useSendChat.ts`
+

@@ -18,3 +18,4 @@ Builds and sends the full project context with each chat message so the agent ha
 ## Current state
 
 Currently only sends the user's message text. No project/epic context is attached yet. This will be needed for the agent to understand which feature the user is asking about.
+

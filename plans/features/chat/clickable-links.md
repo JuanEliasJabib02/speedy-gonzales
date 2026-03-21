@@ -19,3 +19,4 @@ Currently chat messages render as plain text. When the agent responds with URLs 
 ## Files
 
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/ChatMessage.tsx`
+

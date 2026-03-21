@@ -20,3 +20,4 @@ Add the plan SPEC format to the system message so the OpenClaw agent knows how t
 
 - `src/app/api/chat/route.ts`
 - `plans/SPEC.md` (reference)
+

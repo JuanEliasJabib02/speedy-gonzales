@@ -25,3 +25,4 @@ When the agent performs an action (creates a ticket, moves a status, triggers a 
 
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/ChatMessage.tsx`
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/ActionCard.tsx` (new)
+

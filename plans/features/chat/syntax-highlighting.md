@@ -18,3 +18,4 @@ Code blocks in chat messages render as plain text. Add syntax highlighting + cop
 ## Files
 
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/ChatMessage.tsx`
+

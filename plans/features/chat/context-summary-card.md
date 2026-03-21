@@ -21,3 +21,4 @@ When the user opens a feature chat that has previous messages, show a summary ca
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/ContextSummaryCard.tsx`
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/ChatPanel.tsx`
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_hooks/useSendChat.ts`
+

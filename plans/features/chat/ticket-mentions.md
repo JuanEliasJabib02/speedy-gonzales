@@ -20,3 +20,4 @@ Type `#` in the chat input to autocomplete ticket names. The mentioned ticket's 
 
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/ChatInput.tsx`
 - `src/hooks/useSendChat.ts`
+

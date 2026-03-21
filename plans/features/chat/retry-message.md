@@ -18,3 +18,4 @@ Add a retry button on assistant messages so the user can re-send the last user m
 
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/ChatMessage.tsx`
 - `src/hooks/useSendChat.ts`
+

@@ -22,3 +22,4 @@ Debounce on the frontend: wait 2s after the last keypress/send before firing the
 
 - `src/hooks/useSendChat.ts`
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/ChatInput.tsx`
+

@@ -20,3 +20,4 @@ Convex mutation that stores a user message. The frontend then calls the Next.js 
 3. API route calls OpenClaw, gets response
 4. API route calls `api.chat.saveAssistantMessage` to persist
 5. Convex reactive query updates ChatPanel automatically
+

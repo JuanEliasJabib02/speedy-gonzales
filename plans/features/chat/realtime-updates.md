@@ -14,3 +14,4 @@ Chat messages update in real-time using Convex's reactive queries. When the agen
 - [ ] Show typing indicator while agent is processing
 - [x] When agent pushes → webhook fires → plan viewer + sidebar update while chatting
 - [ ] Handle optimistic updates for user messages
+

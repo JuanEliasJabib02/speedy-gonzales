@@ -17,3 +17,4 @@ Download the current chat conversation as a `.md` file. Useful for documenting d
 ## Files
 
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/ChatPanel.tsx`
+

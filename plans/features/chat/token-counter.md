@@ -20,3 +20,4 @@ Show a live token count and estimated cost for the current conversation, like Cu
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/ChatPanel.tsx`
 - `src/app/api/chat/route.ts` (capture usage from OpenAI response)
 - `convex/schema.ts` (add `tokenCount` to chatMessages if needed)
+

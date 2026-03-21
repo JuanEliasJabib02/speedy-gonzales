@@ -24,3 +24,4 @@ Use `react-markdown` with `remarkGfm` to parse and render markdown incrementally
 ## Files
 
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/ChatMessage.tsx`
+

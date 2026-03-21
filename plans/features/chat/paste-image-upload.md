@@ -27,3 +27,4 @@ Listen for `paste` event on the chat input. If the clipboard contains an image (
 - `src/hooks/useSendChat.ts`
 - `convex/files.ts` (new — file upload mutations)
 - `convex/schema.ts` (add optional `imageUrl` to chatMessages if needed)
+

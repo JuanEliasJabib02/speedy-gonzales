@@ -22,3 +22,4 @@ Convex schema for storing chat messages. Each message belongs to an epic (featur
 | content | string | Message text |
 | metadata | any (optional) | Commit data, actions, etc. |
 | createdAt | number | Timestamp |
+

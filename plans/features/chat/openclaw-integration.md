@@ -38,3 +38,4 @@ Connect the chat to the OpenClaw agent (Charizard) via OpenAI-compatible API.
 OPENCLAW_SERVER_URL=https://<openclaw-server>/v1
 OPENCLAW_GATEWAY_TOKEN=<gateway-token>
 ```
+

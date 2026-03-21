@@ -26,3 +26,4 @@ The commit card shown in chat messages currently uses a generic `GitCommitHorizo
 ## Files
 
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/ChatMessage.tsx` (all changes inline — `getProviderFromUrl`, `GitHubLogo`, updated `CommitCard`)
+
