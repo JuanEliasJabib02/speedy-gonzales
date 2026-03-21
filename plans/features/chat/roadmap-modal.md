@@ -1,6 +1,6 @@
 # Roadmap Modal
 
-**Status:** completed
+**Status:** review
 **Priority:** high
 **Feature:** OpenClaw Chat
 

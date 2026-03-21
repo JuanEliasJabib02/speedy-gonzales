@@ -1,6 +1,6 @@
 # Chat Context Summary Card on Entry
 
-**Status:** completed
+**Status:** review
 **Priority:** medium
 
 ## What it does

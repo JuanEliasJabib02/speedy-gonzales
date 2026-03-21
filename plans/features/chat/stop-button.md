@@ -1,6 +1,6 @@
 # Stop Button (Cancel Streaming Response)
 
-**Status:** completed
+**Status:** review
 **Priority:** high
 
 ## What it does
