@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, FileText, GitBranch, Search } from "lucide-react"
+import { ArrowLeft, Eye, FileText, GitBranch, Search } from "lucide-react"
 import { useRouter } from "@/src/i18n/routing"
 import { Button } from "@/src/lib/components/ui/button"
 import { Input } from "@/src/lib/components/ui/input"
@@ -38,13 +38,16 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
 
   const activeFilter = STATUS_TABS.find((t) => t.key === activeTab)!
 
-  const filteredTickets = tickets
+  const contextTicket = tickets.find((t) => t.title === "_context")
+  const regularTickets = tickets.filter((t) => t.title !== "_context")
+
+  const filteredTickets = regularTickets
     .filter((t) => activeFilter.match(t.status))
     .filter((t) => !search || t.title.toLowerCase().includes(search.toLowerCase()))
 
   const counts = STATUS_TABS.reduce(
     (acc, tab) => {
-      acc[tab.key] = tickets.filter((t) => tab.match(t.status)).length
+      acc[tab.key] = regularTickets.filter((t) => tab.match(t.status)).length
       return acc
     },
     {} as Record<TabKey, number>,
@@ -68,6 +71,19 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
         <GitBranch className="size-3.5 text-muted-foreground shrink-0" />
         <span className="text-xs text-muted-foreground font-mono truncate">{branch}</span>
       </div>
+      {contextTicket && (
+        <div className="px-3 pb-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full h-7 text-xs gap-1.5"
+            onClick={() => onSelect(contextTicket.id)}
+          >
+            <Eye className="size-3.5" />
+            Overview
+          </Button>
+        </div>
+      )}
       <div className="px-3 pb-3">
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
