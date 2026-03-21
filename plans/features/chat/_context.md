@@ -1,4 +1,4 @@
-# OpenClaw Chat
+# OpenClaw Chatx
 
 **Status:** in-progress
 **Priority:** high
