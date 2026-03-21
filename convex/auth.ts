@@ -9,8 +9,6 @@ const emailProvider = {
   ...Email({
     sendVerificationRequest: async ({ identifier: email, token }) => {
       const apiKey = process.env.AUTH_RESEND_KEY
-      console.log("[auth] sendVerificationRequest called for:", email)
-      console.log("[auth] AUTH_RESEND_KEY present:", !!apiKey, "length:", apiKey?.length ?? 0)
 
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -26,11 +24,8 @@ const emailProvider = {
         }),
       })
 
-      const responseText = await res.text()
-      console.log("[auth] Resend response status:", res.status)
-      console.log("[auth] Resend response body:", responseText)
-
       if (!res.ok) {
+        const responseText = await res.text()
         throw new Error(`Failed to send verification email: ${responseText}`)
       }
     },

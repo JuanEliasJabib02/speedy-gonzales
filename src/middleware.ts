@@ -1,4 +1,4 @@
-import type { NextRequest } from "next/server"
+import { NextResponse, type NextRequest } from "next/server"
 import createNextIntlMiddleware from "next-intl/middleware"
 import {
   convexAuthNextjsMiddleware,
@@ -18,6 +18,11 @@ const isLoginRoute = createRouteMatcher(["/(en|es|pt)/login"])
 
 export default convexAuthNextjsMiddleware(
   async (request: NextRequest, { convexAuth }) => {
+    // Skip intl middleware for API routes — it rewrites paths and breaks auth proxy
+    if (request.nextUrl.pathname.startsWith("/api/")) {
+      return NextResponse.next()
+    }
+
     const locale = request.nextUrl.pathname.split("/")[1] || "en"
     const isAuthenticated = await convexAuth.isAuthenticated()
 
