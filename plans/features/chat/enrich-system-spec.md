@@ -1,6 +1,6 @@
 # Enrich System Message with Plan SPEC
 
-**Status:** review
+**Status:** completed
 **Priority:** high
 
 ## What it does

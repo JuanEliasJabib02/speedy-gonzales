@@ -1,6 +1,6 @@
 # Multi-Message Queue (Slack-style Input)
 
-**Status:** review
+**Status:** completed
 **Priority:** medium
 
 ## What it does
