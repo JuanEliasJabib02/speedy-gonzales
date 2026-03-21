@@ -13,6 +13,13 @@ The ideal flow is: OpenClaw has a config file that lists all projects and their 
 
 **Fallback for MVP:** Manual project creation from the UI. User types a name, description, and pastes repo URL.
 
+## UI built (mock)
+
+The create project UI is built as part of Dashboard (CreateProjectDialog), but not wired to any backend. All data is currently mock.
+
+- [x] CreateProjectDialog with name, description, repo URL fields
+- [ ] Convex schema, mutations, and queries (all todo)
+
 ## Depends on
 
 - Feature 1 (Auth) — needs authenticated user

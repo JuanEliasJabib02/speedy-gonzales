@@ -28,6 +28,7 @@ export type EpicData = {
   title: string
   status: TicketStatus
   priority: string
+  branch: string
   tickets: Ticket[]
   planContent: string
   checklist: { total: number; completed: number }
@@ -48,6 +49,7 @@ export const MOCK_EPICS: Record<string, EpicData> = {
     title: "Auth",
     status: "completed",
     priority: "critical",
+    branch: "feat/auth",
     tickets: [
       { id: "t0", title: "Overview", status: "completed" },
       { id: "t1", title: "Convex Auth setup", status: "completed" },
@@ -98,6 +100,7 @@ Users can log in with Magic Link (email OTP). After login, they're redirected to
     title: "Projects",
     status: "in-progress",
     priority: "high",
+    branch: "feat/projects",
     tickets: [
       { id: "t0", title: "Overview", status: "in-progress" },
       { id: "t1", title: "Projects schema & indexes", status: "todo" },
@@ -149,6 +152,7 @@ The user can create, view, edit, and delete projects. Each project has exactly o
     title: "Dashboard",
     status: "in-progress",
     priority: "high",
+    branch: "feat/dashboard",
     tickets: [
       { id: "t0", title: "Overview", status: "in-progress" },
       { id: "t1", title: "Project cards grid", status: "completed" },
@@ -191,6 +195,7 @@ The main page after login. Shows all the user's projects as cards. This is the e
     title: "GitHub Sync",
     status: "todo",
     priority: "critical",
+    branch: "feat/github-sync",
     tickets: [
       { id: "t0", title: "Overview", status: "todo" },
       { id: "t1", title: "GitHub OAuth flow", status: "todo" },
@@ -244,6 +249,7 @@ POST /github-webhook:
     title: "Kanban",
     status: "in-progress",
     priority: "high",
+    branch: "feat/kanban",
     tickets: [
       { id: "t0", title: "Overview", status: "in-progress" },
       { id: "t1", title: "Kanban board layout", status: "completed" },
@@ -290,6 +296,7 @@ When you click a project from the dashboard, you see a kanban board of features 
     title: "Feature View",
     status: "in-progress",
     priority: "high",
+    branch: "feat/feature-view",
     tickets: [
       { id: "t0", title: "Overview", status: "in-progress" },
       { id: "t1", title: "Three-panel layout", status: "completed" },
@@ -348,6 +355,7 @@ The core screen of the app. A three-panel layout where you:
     title: "Plan Viewer",
     status: "in-progress",
     priority: "medium",
+    branch: "feat/plan-viewer",
     tickets: [
       { id: "t0", title: "Overview", status: "in-progress" },
       { id: "t1", title: "Basic markdown rendering", status: "completed" },
@@ -386,6 +394,7 @@ Renders a PLAN.md file as formatted HTML inside the Feature View center panel. T
     title: "OpenClaw Chat",
     status: "todo",
     priority: "medium",
+    branch: "feat/chat",
     tickets: [
       { id: "t0", title: "Overview", status: "todo" },
       { id: "t1", title: "Chat messages schema", status: "todo" },

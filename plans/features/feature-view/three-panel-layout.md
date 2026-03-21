@@ -12,7 +12,7 @@ The main layout for the feature view. Three panels side-by-side filling the full
 - [x] Left panel: TicketSidebar (280px, fixed width)
 - [x] Center panel: PlanViewer (flex-1, scrollable)
 - [x] Right panel: ChatPanel (resizable width)
-- [x] Hide app sidebar when on feature view route
+- [x] Hide app sidebar when pathname includes `/features/` (checked in `(app)/layout.tsx`)
 - [x] Full height layout (h-screen via parent)
 
 ## Files

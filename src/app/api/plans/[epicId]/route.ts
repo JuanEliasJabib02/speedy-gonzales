@@ -134,6 +134,7 @@ export async function GET(
       title,
       status,
       priority,
+      branch: `feat/${folderName}`,
       checklist: totalChecklist,
       content: contextContent,
       tickets,
