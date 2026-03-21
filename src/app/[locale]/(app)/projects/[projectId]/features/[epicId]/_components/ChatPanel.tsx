@@ -19,9 +19,12 @@ type ChatPanelProps = {
   onSendDirectReady?: (fn: (message: string) => void) => void
   viewMode: ViewMode
   onViewModeChange: (mode: ViewMode) => void
+  repoOwner?: string
+  repoName?: string
+  branch?: string
 }
 
-export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMode, onViewModeChange }: ChatPanelProps) {
+export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMode, onViewModeChange, repoOwner = "", repoName = "", branch = "main" }: ChatPanelProps) {
   const { initial } = useCurrentUser()
   const {
     value,
@@ -269,7 +272,7 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
         </div>
       ) : (
         <div className="flex flex-1 view-fade-in">
-          <CodeView />
+          <CodeView projectId={projectId} epicId={epicId} owner={repoOwner} repo={repoName} defaultBranch={branch} />
         </div>
       )}
     </div>

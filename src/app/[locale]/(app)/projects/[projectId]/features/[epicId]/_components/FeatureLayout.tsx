@@ -113,7 +113,7 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
         repoName={repoName}
       />
       <ResizeHandle onDragStart={handleDragStart} />
-      <ChatPanel width={chatWidth} projectId={projectId} epicId={epicId} onSendDirectReady={handleSendDirectReady} viewMode={viewMode} onViewModeChange={setViewMode} />
+      <ChatPanel width={chatWidth} projectId={projectId} epicId={epicId} onSendDirectReady={handleSendDirectReady} viewMode={viewMode} onViewModeChange={setViewMode} repoOwner={repoOwner ?? ""} repoName={repoName ?? ""} branch={epic?.branch ?? "main"} />
     </div>
   )
 }
