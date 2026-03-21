@@ -13,8 +13,30 @@ When a ticket is in "review" status, show the related commits in the PlanViewer 
 2. User clicks the ticket → PlanViewer opens
 3. Below the plan content, a "Commits" section shows commit cards (hash, message, files changed)
 4. User clicks a commit card → CommitDiffPanel opens (already built) showing the full diff
-5. User clicks "✅ Mark as completed" in the diff panel or in PlanViewer
-6. Ticket status updates to "completed" in Convex (and agent pushes the plan file change)
+5. If a Vercel preview URL exists for the branch, show a "Preview" link button next to the commits
+6. User clicks "✅ Mark as completed" in the diff panel or in PlanViewer
+7. Ticket status updates to "completed" in Convex (and agent pushes the plan file change)
+
+## Vercel Preview URL
+
+The agent includes the branch name in the plan file when finishing a ticket:
+
+```markdown
+## Commits
+
+- `abc1234` feat(chat): syntax highlighting component
+
+## Branch
+
+feature/syntax-highlighting
+```
+
+The preview URL is derived from the branch name following Vercel's pattern:
+`https://{project-name}-{branch-slug}.vercel.app`
+
+Or stored explicitly if the agent knows the deploy URL.
+
+Show as a button: `🔗 Preview on Vercel` → opens the preview URL in a new tab.
 
 ## Implementation
 
