@@ -2,4 +2,4 @@
 
 # Speedy Gonzales
 
-A web command center for managing software projects where AI agents do the development work.
+Git-native project management powered by AI agents. Plans live as markdown in your repos. Agents read them, code them, and move tickets across your kanban — in real-time.
