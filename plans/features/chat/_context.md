@@ -40,6 +40,7 @@ This is NOT a generic AI chat. The backend is OpenClaw — your agent with full 
 - [ ] Chat context summary card on entry
 - [ ] Render clickable links in chat messages
 - [ ] Agent repo access (git push from OpenClaw)
+- [x] Add Review filter tab to ticket sidebar + inline status change UI
 
 ## Env vars (Next.js `.env.local`)
 
