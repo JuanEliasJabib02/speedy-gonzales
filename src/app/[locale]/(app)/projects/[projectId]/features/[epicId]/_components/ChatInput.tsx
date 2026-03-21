@@ -17,6 +17,8 @@ type TicketOption = {
   title: string
 }
 
+const MAX_IMAGES = 4
+
 type ChatInputProps = {
   value: string
   onChange: (value: string) => void
@@ -26,9 +28,9 @@ type ChatInputProps = {
   isSending: boolean
   isStreaming: boolean
   hasQueued: boolean
-  pendingImage: PendingImage | null
+  pendingImages: PendingImage[]
   onPasteImage: (file: File) => void
-  onRemoveImage: () => void
+  onRemoveImage: (index: number) => void
   ticketOptions: TicketOption[]
 }
 
@@ -41,7 +43,7 @@ export function ChatInput({
   isSending,
   isStreaming,
   hasQueued,
-  pendingImage,
+  pendingImages,
   onPasteImage,
   onRemoveImage,
   ticketOptions,
@@ -52,6 +54,8 @@ export function ChatInput({
 
   const handlePaste = useCallback(
     (e: React.ClipboardEvent) => {
+      if (pendingImages.length >= MAX_IMAGES) return
+
       const items = e.clipboardData?.items
       if (!items) return
 
@@ -64,7 +68,7 @@ export function ChatInput({
         }
       }
     },
-    [onPasteImage],
+    [onPasteImage, pendingImages.length],
   )
 
   // Auto-resize textarea
@@ -156,38 +160,43 @@ export function ChatInput({
     [mentionQuery, filteredTickets, mentionIndex, insertMention, onKeyDown],
   )
 
-  const canSend = (value.trim() || pendingImage?.storageUrl) && !isSending
+  const hasReadyImage = pendingImages.some((img) => img.storageUrl)
+  const canSend = (value.trim() || hasReadyImage) && !isSending
 
   return (
     <div className="relative border-t border-border p-3">
-      {pendingImage && (
+      {pendingImages.length > 0 && (
         <div className="mb-2 flex items-center gap-2">
-          <div className="relative size-14 shrink-0 rounded-md overflow-hidden border border-border bg-secondary">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={pendingImage.previewUrl}
-              alt="Pasted screenshot"
-              className="size-full object-cover"
-            />
-            {pendingImage.isUploading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                <Loader2 className="size-4 animate-spin text-white" />
-              </div>
-            )}
-            {pendingImage.error && (
-              <div className="absolute inset-0 flex items-center justify-center bg-destructive/50">
-                <span className="text-[10px] text-white font-medium">Error</span>
-              </div>
-            )}
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-6 shrink-0"
-            onClick={onRemoveImage}
-          >
-            <X className="size-3" />
-          </Button>
+          {pendingImages.map((img, index) => (
+            <div key={img.previewUrl} className="relative size-14 shrink-0 rounded-md overflow-hidden border border-border bg-secondary">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={img.previewUrl}
+                alt={`Pasted screenshot ${index + 1}`}
+                className="size-full object-cover"
+              />
+              {img.isUploading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                  <Loader2 className="size-4 animate-spin text-white" />
+                </div>
+              )}
+              {img.error && (
+                <div className="absolute inset-0 flex items-center justify-center bg-destructive/50">
+                  <span className="text-[10px] text-white font-medium">Error</span>
+                </div>
+              )}
+              <button
+                type="button"
+                className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-destructive text-white shadow-sm"
+                onClick={() => onRemoveImage(index)}
+              >
+                <X className="size-2.5" />
+              </button>
+            </div>
+          ))}
+          {pendingImages.length >= MAX_IMAGES && (
+            <span className="text-xs text-muted-foreground">Max {MAX_IMAGES} images</span>
+          )}
         </div>
       )}
       {hasQueued && (

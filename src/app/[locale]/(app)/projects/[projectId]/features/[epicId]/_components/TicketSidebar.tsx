@@ -22,6 +22,8 @@ type TicketSidebarProps = {
   onSelect: (id: string) => void
   projectId: string
   epicId: string
+  lastSyncAt?: number
+  syncStatus?: string
 }
 
 const STATUS_TABS = [
@@ -34,7 +36,10 @@ const STATUS_TABS = [
 
 type TabKey = (typeof STATUS_TABS)[number]["key"]
 
-export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId, epicId }: TicketSidebarProps) {
+export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId, epicId, lastSyncAt, syncStatus }: TicketSidebarProps) {
+  const isSyncing = syncStatus === "syncing"
+  const syncAgo = lastSyncAt ? Math.floor((Date.now() - lastSyncAt) / 1000) : null
+  const syncLabel = syncAgo === null ? null : syncAgo < 60 ? `${syncAgo}s ago` : syncAgo < 3600 ? `${Math.floor(syncAgo / 60)}m ago` : `${Math.floor(syncAgo / 3600)}h ago`
   const router = useRouter()
   const [search, setSearch] = useState("")
   const [activeTab, setActiveTab] = useState<TabKey>("all")
@@ -79,9 +84,16 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
         <FileText className="size-4 text-muted-foreground" />
         <span className="text-sm font-semibold">{epicTitle}</span>
       </div>
-      <div className="flex items-center gap-1.5 px-4 pb-3">
-        <GitBranch className="size-3.5 text-muted-foreground shrink-0" />
-        <span className="text-xs text-muted-foreground font-mono truncate">{branch}</span>
+      <div className="flex items-center justify-between px-4 pb-3">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <GitBranch className="size-3.5 text-muted-foreground shrink-0" />
+          <span className="text-xs text-muted-foreground font-mono truncate">{branch}</span>
+        </div>
+        {syncLabel && (
+          <span className={`text-xs shrink-0 ${isSyncing ? "text-status-in-progress animate-pulse" : "text-muted-foreground"}`}>
+            {isSyncing ? "syncing…" : `↻ ${syncLabel}`}
+          </span>
+        )}
       </div>
       <div className="flex gap-2 px-3 pb-3">
         {contextTicket && (

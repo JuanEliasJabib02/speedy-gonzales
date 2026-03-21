@@ -7,6 +7,8 @@ export const chatMessages = defineTable({
   content: v.string(),
   metadata: v.optional(v.any()),
   tokenCount: v.optional(v.number()),
+  isStreaming: v.optional(v.boolean()),
+  isInterrupted: v.optional(v.boolean()),
   createdAt: v.number(),
 })
   .index("by_epic", ["epicId"])

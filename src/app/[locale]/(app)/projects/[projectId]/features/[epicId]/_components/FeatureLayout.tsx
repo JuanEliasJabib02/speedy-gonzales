@@ -17,7 +17,7 @@ type FeatureLayoutProps = {
 }
 
 export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
-  const { plan: epic, isLoading, getTicketContent } = useLivePlan(epicId)
+  const { plan: epic, isLoading, getTicketContent, lastSyncAt, syncStatus } = useLivePlan(epicId, projectId)
   const [selectedTicketId, setSelectedTicketId] = useState("_context")
   const [chatWidth, setChatWidth] = useState(CHAT_DEFAULT_WIDTH)
   const isDragging = useRef(false)
@@ -69,6 +69,8 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
         onSelect={setSelectedTicketId}
         projectId={projectId}
         epicId={epicId}
+        lastSyncAt={lastSyncAt}
+        syncStatus={syncStatus}
       />
       <PlanViewer
         title={selectedTicket?.title ?? epic.title}

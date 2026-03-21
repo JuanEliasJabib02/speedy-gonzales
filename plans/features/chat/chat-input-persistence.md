@@ -1,6 +1,6 @@
 # Chat Input Persistence
 
-**Status:** in-progress
+**Status:** review
 **Priority:** medium
 
 ## What it does
@@ -17,10 +17,10 @@ When the user types in the chat input and navigates back to the project view, th
 - Clear draft on successful send
 
 ### Checklist
-- [ ] Save draft to `localStorage` on every keystroke (debounced 300ms)
-- [ ] Restore draft on `ChatInput` mount using `epicId` key
-- [ ] Clear draft from `localStorage` after message is sent successfully
-- [ ] Handle edge case: draft older than 24h should be discarded
+- [x]Save draft to `localStorage` on every keystroke (debounced 300ms)
+- [x]Restore draft on `ChatInput` mount using `epicId` key
+- [x]Clear draft from `localStorage` after message is sent successfully
+- [x]Handle edge case: draft older than 24h should be discarded
 
 ## Part 2: Multiple Image Attachments
 
@@ -34,12 +34,12 @@ Allow users to paste or attach multiple images in one message (not just one).
 - On send: all images are prepended as markdown `![screenshot-N](url)` lines
 
 ### Checklist
-- [ ] Change `pendingImage` → `pendingImages: string[]` in `useSendChat.ts`
-- [ ] Allow multiple paste events to queue images (max 4)
-- [ ] Show image thumbnails as a horizontal row above the input
-- [ ] Each thumbnail has an individual X remove button
-- [ ] On send: include all image URLs in message as separate markdown lines
-- [ ] Clear `pendingImages` array after send
+- [x]Change `pendingImage` → `pendingImages: string[]` in `useSendChat.ts`
+- [x]Allow multiple paste events to queue images (max 4)
+- [x]Show image thumbnails as a horizontal row above the input
+- [x]Each thumbnail has an individual X remove button
+- [x]On send: include all image URLs in message as separate markdown lines
+- [x]Clear `pendingImages` array after send
 
 ## Files
 - `src/hooks/useSendChat.ts`

@@ -1,4 +1,4 @@
-import { ExternalLink, Zap, Copy, Check, GitCommitHorizontal, RotateCcw } from "lucide-react"
+import { ExternalLink, Zap, Copy, Check, GitCommitHorizontal, RotateCcw, AlertTriangle } from "lucide-react"
 import { cn } from "@/src/lib/helpers/cn"
 import { useState, useCallback } from "react"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
@@ -39,6 +39,7 @@ type ChatMessageData = {
   content: string
   commits?: CommitData[]
   timestamp: string
+  isInterrupted?: boolean
 }
 
 type ChatMessageProps = {
@@ -271,6 +272,22 @@ export function ChatMessage({ message, userInitial, isStreaming, onRetry }: Chat
             </>
           )}
         </div>
+
+        {message.isInterrupted && !isStreaming && (
+          <div className="flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-500">
+            <AlertTriangle className="size-3.5 shrink-0" />
+            <span>Response was interrupted</span>
+            {onRetry && (
+              <button
+                onClick={() => onRetry(message.id)}
+                className="ml-auto flex items-center gap-1 rounded px-2 py-0.5 font-medium transition-colors hover:bg-amber-500/10"
+              >
+                <RotateCcw className="size-3" />
+                Retry
+              </button>
+            )}
+          </div>
+        )}
 
         {message.commits && message.commits.length > 0 && (
           <div className="flex flex-col gap-2 mt-1">

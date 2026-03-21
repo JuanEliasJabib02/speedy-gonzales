@@ -56,3 +56,46 @@ export const saveAssistantMessage = mutation({
     })
   },
 })
+
+// Creates an empty assistant message with isStreaming: true at stream start
+export const createStreamingMessage = mutation({
+  args: { epicId: v.id("epics") },
+  handler: async (ctx, { epicId }) => {
+    return ctx.db.insert("chatMessages", {
+      epicId,
+      role: "assistant",
+      content: "",
+      isStreaming: true,
+      isInterrupted: false,
+      createdAt: Date.now(),
+    })
+  },
+})
+
+// Patches the streaming message with final content when the stream ends
+export const finalizeStreamingMessage = mutation({
+  args: {
+    messageId: v.id("chatMessages"),
+    content: v.string(),
+    isInterrupted: v.optional(v.boolean()),
+    metadata: v.optional(v.any()),
+    tokenCount: v.optional(v.number()),
+  },
+  handler: async (ctx, { messageId, content, isInterrupted, metadata, tokenCount }) => {
+    await ctx.db.patch(messageId, {
+      content,
+      isStreaming: false,
+      isInterrupted: isInterrupted ?? false,
+      metadata,
+      tokenCount,
+    })
+  },
+})
+
+// Marks an orphaned streaming message as interrupted (called from client on mount or stop)
+export const markMessageInterrupted = mutation({
+  args: { messageId: v.id("chatMessages") },
+  handler: async (ctx, { messageId }) => {
+    await ctx.db.patch(messageId, { isStreaming: false, isInterrupted: true })
+  },
+})

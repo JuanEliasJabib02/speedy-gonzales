@@ -5,9 +5,13 @@ import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 
-export function useLivePlan(epicId: string) {
+export function useLivePlan(epicId: string, projectId?: string) {
   const epic = useQuery(api.epics.getEpic, { epicId: epicId as Id<"epics"> })
   const tickets = useQuery(api.tickets.getByEpic, { epicId: epicId as Id<"epics"> })
+  const project = useQuery(
+    api.projects.getProject,
+    projectId ? { projectId: projectId as Id<"projects"> } : "skip"
+  )
 
   const isLoading = epic === undefined || tickets === undefined
 
@@ -56,5 +60,7 @@ export function useLivePlan(epicId: string) {
     isLoading,
     isLive: epic !== null,
     getTicketContent,
+    lastSyncAt: project?.lastSyncAt,
+    syncStatus: project?.syncStatus,
   }
 }

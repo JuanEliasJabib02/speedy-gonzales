@@ -32,7 +32,7 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
     epic,
     tickets,
     optimisticMessage,
-    pendingImage,
+    pendingImages,
     handlePasteImage,
     removePendingImage,
   } = useSendChat(projectId, epicId)
@@ -161,6 +161,7 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
                   content: message.content,
                   commits: message.metadata?.commits,
                   timestamp: new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                  isInterrupted: message.isInterrupted === true,
                 }}
                 userInitial={initial}
                 onRetry={handleRetry}
@@ -216,7 +217,7 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
         isSending={isSending}
         isStreaming={streamingContent !== null}
         hasQueued={hasQueued}
-        pendingImage={pendingImage}
+        pendingImages={pendingImages}
         onPasteImage={handlePasteImage}
         onRemoveImage={removePendingImage}
         ticketOptions={ticketOptions}

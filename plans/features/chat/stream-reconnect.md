@@ -1,6 +1,6 @@
 # Stream Reconnect on Page Reload
 
-**Status:** in-progress
+**Status:** review
 **Priority:** high
 
 ## Bug Description
@@ -34,12 +34,12 @@ The SSE stream is tied to the browser's fetch lifecycle. On reload:
 
 ## Checklist
 
-- [ ] Add `isStreaming` and `isInterrupted` fields to `chatMessages` schema in `convex/schema.ts`
-- [ ] Set `isStreaming: true` when starting a stream in `/api/chat/route.ts`
-- [ ] Set `isStreaming: false` when stream completes normally
-- [ ] In `useSendChat`: on unmount (useEffect cleanup), call mutation to mark last streaming message as `isInterrupted: true`
-- [ ] In `ChatMessage.tsx`: if `isInterrupted`, show a subtle "Response interrupted — Retry?" indicator
-- [ ] "Retry" re-sends the last user message and replaces the interrupted message
+- [x] Add `isStreaming` and `isInterrupted` fields to `chatMessages` schema in `convex/schema.ts`
+- [x] Set `isStreaming: true` when starting a stream in `/api/chat/route.ts`
+- [x] Set `isStreaming: false` when stream completes normally
+- [x] In `useSendChat`: on mount, detect orphaned `isStreaming: true` messages and call `markMessageInterrupted`
+- [x] In `ChatMessage.tsx`: if `isInterrupted`, show a subtle "Response interrupted — Retry?" indicator
+- [x] "Retry" re-sends the last user message and replaces the interrupted message
 
 ## Files
 

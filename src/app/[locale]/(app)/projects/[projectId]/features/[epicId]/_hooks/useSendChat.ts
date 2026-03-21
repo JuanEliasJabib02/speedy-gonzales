@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
@@ -38,14 +38,69 @@ type HistoryMessage = {
   content: string
 }
 
+const DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000 // 24 hours
+const MAX_IMAGES = 4
+
+function getDraftKey(epicId: string) {
+  return `chat-draft-${epicId}`
+}
+
+function loadDraft(epicId: string): string {
+  try {
+    const raw = localStorage.getItem(getDraftKey(epicId))
+    if (!raw) return ""
+    const { text, ts } = JSON.parse(raw)
+    if (Date.now() - ts > DRAFT_MAX_AGE_MS) {
+      localStorage.removeItem(getDraftKey(epicId))
+      return ""
+    }
+    return text ?? ""
+  } catch {
+    return ""
+  }
+}
+
+function saveDraft(epicId: string, text: string) {
+  try {
+    if (!text) {
+      localStorage.removeItem(getDraftKey(epicId))
+      return
+    }
+    localStorage.setItem(getDraftKey(epicId), JSON.stringify({ text, ts: Date.now() }))
+  } catch {
+    // localStorage full or unavailable — ignore
+  }
+}
+
+function clearDraft(epicId: string) {
+  try {
+    localStorage.removeItem(getDraftKey(epicId))
+  } catch {
+    // ignore
+  }
+}
+
 export function useSendChat(projectId: string, epicId: string) {
-  const [value, setValue] = useState("")
+  const [value, setValue] = useState(() => loadDraft(epicId))
   const [isSending, setIsSending] = useState(false)
   const [streamingContent, setStreamingContent] = useState<string | null>(null)
-  const [pendingImage, setPendingImage] = useState<PendingImage | null>(null)
-  const pendingImageRef = useRef<PendingImage | null>(null)
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([])
+  const pendingImagesRef = useRef<PendingImage[]>([])
+  // Debounced draft persistence
+  const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    if (draftTimerRef.current) clearTimeout(draftTimerRef.current)
+    draftTimerRef.current = setTimeout(() => {
+      saveDraft(epicId, value)
+    }, 300)
+    return () => {
+      if (draftTimerRef.current) clearTimeout(draftTimerRef.current)
+    }
+  }, [value, epicId])
+
   const abortControllerRef = useRef<AbortController | null>(null)
   const streamingContentRef = useRef<string>("")
+  const streamingMessageIdRef = useRef<string | null>(null)
   const queuedMessageRef = useRef<string | null>(null)
   const [hasQueued, setHasQueued] = useState(false)
   const [optimisticMessage, setOptimisticMessage] = useState<string | null>(null)
@@ -58,16 +113,31 @@ export function useSendChat(projectId: string, epicId: string) {
   const tickets = useQuery(api.tickets.getByEpic, { epicId: typedEpicId })
   const messages = useQuery(api.chat.getMessages, { epicId: typedEpicId })
   const sendMessage = useMutation(api.chat.sendMessage)
-  const saveAssistantMessage = useMutation(api.chat.saveAssistantMessage)
   const deleteMessage = useMutation(api.chat.deleteMessage)
+  const markInterrupted = useMutation(api.chat.markMessageInterrupted)
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
   const getFileUrl = useMutation(api.files.getUrl)
 
+  // On mount: check for orphaned streaming messages left by a previous page load
+  const hasCheckedOrphansRef = useRef(false)
+  useEffect(() => {
+    if (!messages || hasCheckedOrphansRef.current) return
+    hasCheckedOrphansRef.current = true
+    const orphaned = messages.find((m) => m.isStreaming === true)
+    if (orphaned) {
+      markInterrupted({ messageId: orphaned._id })
+    }
+  }, [messages, markInterrupted])
+
   const handlePasteImage = useCallback(async (file: File) => {
+    if (pendingImagesRef.current.length >= MAX_IMAGES) return
+
     const previewUrl = URL.createObjectURL(file)
     const img: PendingImage = { file, previewUrl, storageUrl: null, isUploading: true, error: null }
-    setPendingImage(img)
-    pendingImageRef.current = img
+
+    setPendingImages((prev) => [...prev, img])
+    pendingImagesRef.current = [...pendingImagesRef.current, img]
+    const imgIndex = pendingImagesRef.current.length - 1
 
     try {
       const uploadUrl = await generateUploadUrl()
@@ -82,22 +152,31 @@ export function useSendChat(projectId: string, epicId: string) {
 
       if (!storageUrl) throw new Error("Failed to get file URL")
       const updated: PendingImage = { ...img, storageUrl, isUploading: false }
-      setPendingImage(updated)
-      pendingImageRef.current = updated
+      setPendingImages((prev) => prev.map((p, i) => (i === imgIndex ? updated : p)))
+      pendingImagesRef.current = pendingImagesRef.current.map((p, i) => (i === imgIndex ? updated : p))
     } catch {
       const errored: PendingImage = { ...img, isUploading: false, error: "Upload failed" }
-      setPendingImage(errored)
-      pendingImageRef.current = errored
+      setPendingImages((prev) => prev.map((p, i) => (i === imgIndex ? errored : p)))
+      pendingImagesRef.current = pendingImagesRef.current.map((p, i) => (i === imgIndex ? errored : p))
     }
   }, [generateUploadUrl, getFileUrl])
 
-  const removePendingImage = useCallback(() => {
-    if (pendingImage?.previewUrl) {
-      URL.revokeObjectURL(pendingImage.previewUrl)
-    }
-    setPendingImage(null)
-    pendingImageRef.current = null
-  }, [pendingImage])
+  const removePendingImage = useCallback((index: number) => {
+    setPendingImages((prev) => {
+      const img = prev[index]
+      if (img?.previewUrl) URL.revokeObjectURL(img.previewUrl)
+      return prev.filter((_, i) => i !== index)
+    })
+    pendingImagesRef.current = pendingImagesRef.current.filter((_, i) => i !== index)
+  }, [])
+
+  const clearAllPendingImages = useCallback(() => {
+    pendingImagesRef.current.forEach((img) => {
+      if (img.previewUrl) URL.revokeObjectURL(img.previewUrl)
+    })
+    setPendingImages([])
+    pendingImagesRef.current = []
+  }, [])
 
   const buildContext = useCallback((): ChatContext | null => {
     if (!project || !epic) return null
@@ -181,6 +260,9 @@ export function useSendChat(projectId: string, epicId: string) {
       return
     }
 
+    // Capture the server-created message ID for stop/interrupt handling
+    streamingMessageIdRef.current = res.headers.get("X-Message-Id")
+
     const reader = res.body.getReader()
     const decoder = new TextDecoder()
     let accumulated = ""
@@ -199,14 +281,17 @@ export function useSendChat(projectId: string, epicId: string) {
 
   const handleSend = useCallback(async () => {
     const trimmed = value.trim()
-    const currentImage = pendingImageRef.current
-    if (!trimmed && !currentImage?.storageUrl) return
+    const currentImages = pendingImagesRef.current
+    const readyImages = currentImages.filter((img) => img.storageUrl)
+    if (!trimmed && readyImages.length === 0) return
 
-    // Build content with image if present
+    // Build content with images if present
     let content = trimmed
-    if (currentImage?.storageUrl) {
-      const imgMarkdown = `![screenshot](${currentImage.storageUrl})`
-      content = content ? `${imgMarkdown}\n\n${content}` : imgMarkdown
+    if (readyImages.length > 0) {
+      const imgLines = readyImages.map(
+        (img, i) => `![screenshot-${i + 1}](${img.storageUrl})`,
+      ).join("\n")
+      content = content ? `${imgLines}\n\n${content}` : imgLines
     }
 
     // Queue if already sending/streaming
@@ -215,13 +300,15 @@ export function useSendChat(projectId: string, epicId: string) {
       queuedMessageRef.current = existing ? `${existing}\n\n${content}` : content
       setHasQueued(true)
       setValue("")
-      removePendingImage()
+      clearDraft(epicId)
+      clearAllPendingImages()
       return
     }
 
     setIsSending(true)
     setValue("")
-    removePendingImage()
+    clearDraft(epicId)
+    clearAllPendingImages()
     setOptimisticMessage(content)
 
     try {
@@ -236,6 +323,7 @@ export function useSendChat(projectId: string, epicId: string) {
       }
     } finally {
       abortControllerRef.current = null
+      streamingMessageIdRef.current = null
       setStreamingContent(null)
       setOptimisticMessage(null)
       setIsSending(false)
@@ -257,13 +345,14 @@ export function useSendChat(projectId: string, epicId: string) {
           }
         } finally {
           abortControllerRef.current = null
+          streamingMessageIdRef.current = null
           setStreamingContent(null)
           setOptimisticMessage(null)
           setIsSending(false)
         }
       }
     }
-  }, [value, isSending, sendMessage, typedEpicId, streamResponse, removePendingImage])
+  }, [value, isSending, sendMessage, typedEpicId, epicId, streamResponse, clearAllPendingImages])
 
   const handleRetry = useCallback(async (assistantMessageId: string) => {
     if (isSending) return
@@ -291,6 +380,7 @@ export function useSendChat(projectId: string, epicId: string) {
       }
     } finally {
       abortControllerRef.current = null
+      streamingMessageIdRef.current = null
       setStreamingContent(null)
       setIsSending(false)
     }
@@ -301,15 +391,17 @@ export function useSendChat(projectId: string, epicId: string) {
       abortControllerRef.current.abort()
       abortControllerRef.current = null
     }
-    const partial = streamingContentRef.current
-    if (partial) {
+    // Mark the server-created message as interrupted (server error handler also does this — idempotent)
+    const messageId = streamingMessageIdRef.current
+    if (messageId) {
       try {
-        await saveAssistantMessage({ epicId: typedEpicId, content: partial })
+        await markInterrupted({ messageId: messageId as Id<"chatMessages"> })
       } catch {
-        // Server may have already saved — ignore duplicate
+        // Server may have already finalized — ignore
       }
+      streamingMessageIdRef.current = null
     }
-  }, [saveAssistantMessage, typedEpicId])
+  }, [markInterrupted])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -331,11 +423,11 @@ export function useSendChat(projectId: string, epicId: string) {
     handleRetry,
     handleKeyDown,
     hasQueued,
-    messages: messages ?? [],
+    messages: (messages ?? []).filter((m) => m.isStreaming !== true),
     epic,
     tickets: tickets ?? [],
     optimisticMessage,
-    pendingImage,
+    pendingImages,
     handlePasteImage,
     removePendingImage,
   }

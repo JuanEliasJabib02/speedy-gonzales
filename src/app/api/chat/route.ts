@@ -200,6 +200,11 @@ export async function POST(request: Request) {
       return new Response("No response body", { status: 502 })
     }
 
+    // Create the assistant message in Convex BEFORE streaming begins
+    const streamingMessageId = await convex.mutation(api.chat.createStreamingMessage, {
+      epicId: epicId as Id<"epics">,
+    })
+
     // Stream SSE from OpenClaw → plain text to client
     const reader = res.body.getReader()
     const decoder = new TextDecoder()
@@ -242,31 +247,29 @@ export async function POST(request: Request) {
             }
           }
 
-          // Save to Convex BEFORE closing the controller
-          if (fullContent) {
-            try {
-              const metadata = await enrichCommits(fullContent, context)
-              await convex.mutation(api.chat.saveAssistantMessage, {
-                epicId: epicId as Id<"epics">,
-                content: fullContent,
-                metadata,
-                tokenCount: totalTokens,
-              })
-            } catch (saveError) {
-              console.error("[chat] Failed to save message:", saveError)
-            }
+          // Finalize the message in Convex BEFORE closing the controller
+          try {
+            const metadata = await enrichCommits(fullContent, context)
+            await convex.mutation(api.chat.finalizeStreamingMessage, {
+              messageId: streamingMessageId,
+              content: fullContent || "",
+              metadata,
+              tokenCount: totalTokens,
+            })
+          } catch (saveError) {
+            console.error("[chat] Failed to finalize message:", saveError)
           }
 
           controller.close()
           console.log("[chat] Stream done, length:", fullContent.length)
         } catch (error) {
           console.error("[chat] Stream error:", error)
-          // Only save if we have content and controller isn't already closed
+          // Mark the message as interrupted with whatever partial content we have
           try {
-            const msg = error instanceof Error ? error.message : "Stream error"
-            await convex.mutation(api.chat.saveAssistantMessage, {
-              epicId: epicId as Id<"epics">,
-              content: fullContent || `Stream error: ${msg}`,
+            await convex.mutation(api.chat.finalizeStreamingMessage, {
+              messageId: streamingMessageId,
+              content: fullContent || (error instanceof Error ? `Stream error: ${error.message}` : "Stream error"),
+              isInterrupted: true,
             })
           } catch {
             // ignore save errors during error handling
@@ -285,6 +288,7 @@ export async function POST(request: Request) {
         "Content-Type": "text/plain; charset=utf-8",
         "Cache-Control": "no-cache",
         Connection: "keep-alive",
+        "X-Message-Id": streamingMessageId,
       },
     })
   } catch (error) {
