@@ -1,30 +1,28 @@
 ![speedy gonzales](https://github.com/user-attachments/assets/eb8651eb-614c-4e83-9c3b-fd48c4bbeef4)
 
-# Speedy Gonzales 🏎️
+# SpeedIDE 🏎️
 
-> **The IDE without an editor** — plan features, command AI agents to code, and track everything in real-time.
+Hi, I'm **Juan Elías** 🫏🇨🇴 — Colombian dev.
+
+I built this for myself. I got tired of jumping between Jira, GitHub, Slack, and markdown files just to move a ticket forward. Too much context-switching, too little actual building.
+
+SpeedIDE is my personal workflow: AI writes the code, I write in plain language, and everything lives in one place. The goal is simple — ship faster and get my life back.
+
+Not a startup. Not a pitch. Just a tool that works the way I think.
 
 ---
 
-Hi, I'm **Juan Elías** 🫏🇨🇴 — a Colombian dev, and this is my vision of how to develop super fast.
+Meet the team:
 
-My belief: we're reaching a point where you can build software almost without touching a code editor. AI agents write the code — you write in human language. That's what we already do today, and Speedy Gonzales is my attempt to make that workflow feel native and intentional.
+**🔥 Charizard** — my main AI agent. Orchestrator, strategist, memory keeper.
 
-I got tired of context-switching between Slack (to talk to my agents), GitHub (to check what they pushed), Jira/Notion (to track what's planned), and scattered Markdown files nobody reads in a nice way. There was no single place to **see the big picture, read the plans, and command your agents** — all at once, in real time. So I built it.
-
-I didn't build this alone. Meet the team:
-
-**🔥 Charizard** — my main AI agent. Orchestrator, strategist, memory keeper. He sees the big picture, manages context, and tells Perro Salchicha what to do.
-
-**🌭 Perro Salchicha** — the autonomous dev agent. Give him a ticket and he codes it, commits it, and pushes it. He doesn't ask questions. He ships.
-
-Built with AI agents. For AI agents.
+**🌭 Perro Salchicha** — the autonomous dev agent. Give him a ticket and he codes it, commits it, and pushes it.
 
 ---
 
 ## What it does
 
-Speedy Gonzales connects your GitHub repos, parses your `plans/features/` Markdown files, and gives you:
+SpeedIDE connects your GitHub repos, parses your `plans/features/` Markdown files, and gives you:
 
 - **Dashboard** — all your projects with real-time progress bars
 - **Kanban** — features organized by status, synced to your repo
@@ -70,21 +68,19 @@ plans/
     │   └── streaming-ux.md
 ```
 
-Speedy reads these files via GitHub API, parses the frontmatter (`**Status:**`, `**Priority:**`, checklists), and stores everything in Convex. When your agent pushes a change to a plan file, the webhook fires and your UI updates in seconds.
+SpeedIDE reads these files via GitHub API, parses the frontmatter (`**Status:**`, `**Priority:**`, checklists), and stores everything in Convex. When your agent pushes a change to a plan file, the webhook fires and your UI updates in seconds.
 
 ---
 
 ## Self-hosted setup
 
-Speedy is designed so **you bring your own keys**. No vendor lock-in, no subscription.
+You bring your own keys. No vendor lock-in, no subscription.
 
 What you need:
 - A [Convex](https://convex.dev) project (free tier works)
 - A GitHub Personal Access Token with `repo` scope
 - A [Resend](https://resend.com) API key for magic link emails
 - An [OpenClaw](https://openclaw.ai) instance (for the AI agent chat)
-
-See the [Setup Guide →](https://your-speedy-url/docs/setup)
 
 ---
 
@@ -100,7 +96,6 @@ pnpm install
 
 # Set env vars (copy from .env.example)
 cp .env.example .env.local
-# Fill in NEXT_PUBLIC_CONVEX_URL, OPENCLAW_BASE_URL, etc.
 
 # Start Convex + Next.js
 pnpm dev
@@ -109,8 +104,6 @@ pnpm dev
 ---
 
 ## Plans format
-
-Each plan file follows this format:
 
 ```markdown
 # Ticket Title
@@ -129,16 +122,6 @@ Short description.
 ```
 
 Status values: `todo` | `in-progress` | `review` | `completed` | `blocked`
-
-Full spec: [`plans/SPEC.md`](./plans/SPEC.md)
-
----
-
-## Contributing
-
-Open source, MIT license. PRs welcome.
-
-If Speedy saves you time, consider [buying me a coffee ☕](https://github.com/JuanEliasJabib02) — or just give the repo a ⭐. It means a lot.
 
 ---
 
