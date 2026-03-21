@@ -112,6 +112,7 @@ export const syncRepoInternal = internalAction({
         for (const ticketFile of sortedTickets) {
           const existingTicket = existingTicketsByPath.get(ticketFile.path)
           if (existingTicket && existingTicket.contentHash === ticketFile.sha) {
+            console.log("[sync] CACHE HIT:", ticketFile.path, "| status in DB:", existingTicket.status)
             epicData.tickets.push({
               path: ticketFile.path,
               sha: ticketFile.sha,
@@ -127,11 +128,13 @@ export const syncRepoInternal = internalAction({
             })
           } else {
             const content = await provider.fetchFileContent(config, ticketFile.path)
+            const parsed = parsePlan(content)
+            console.log("[sync] PARSED:", ticketFile.path, "| status:", parsed.status)
             epicData.tickets.push({
               path: ticketFile.path,
               sha: ticketFile.sha,
               content,
-              parsed: parsePlan(content),
+              parsed,
             })
           }
           ticketOrder++

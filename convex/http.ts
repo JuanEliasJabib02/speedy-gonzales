@@ -55,11 +55,17 @@ http.route({
 
     // Check if changes are under plansPath
     const changedPaths = getAllChangedPaths(payload)
+    console.log("[webhook] repo:", owner + "/" + name, "| changedPaths:", changedPaths)
+    console.log("[webhook] project.plansPath:", project.plansPath)
+
     const hasRelevantChanges = changedPaths.some((p) => p.startsWith(project.plansPath))
 
     if (!hasRelevantChanges) {
+      console.log("[webhook] No relevant changes — skipping sync")
       return new Response("No relevant changes", { status: 200 })
     }
+
+    console.log("[webhook] Relevant changes found — scheduling sync for project:", project._id)
 
     // Schedule sync
     await ctx.scheduler.runAfter(0, internal.githubSync.syncRepoInternal, {
