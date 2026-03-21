@@ -1,6 +1,6 @@
 # Path Traversal Fix (SEC-03)
 
-**Status:** todo
+**Status:** review
 **Priority:** critical
 
 ## What it does
@@ -21,8 +21,8 @@ function getMemoryPath(projectId: string): string {
 
 ## Checklist
 
-- [ ] Sanitize projectId in getMemoryPath()
-- [ ] Add length validation (min 3 chars after sanitization)
+- [x] Sanitize projectId in getMemoryPath()
+- [x] Add length validation (min 3 chars after sanitization)
 - [ ] Test with malicious projectId values
 
 ## Files

@@ -12,7 +12,10 @@ function getConvex() {
 }
 
 function getMemoryPath(projectId: string): string {
-  return resolve(homedir(), ".openclaw", "workspace", "memory", `speedy-${projectId}.md`)
+  // Sanitize: only allow alphanumeric, hyphens and underscores
+  const safe = projectId.replace(/[^a-zA-Z0-9_-]/g, "")
+  if (!safe || safe.length < 3) throw new Error("Invalid projectId for memory path")
+  return resolve(homedir(), ".openclaw", "workspace", "memory", `speedy-${safe}.md`)
 }
 
 async function loadMemoryFile(projectId: string): Promise<string> {
