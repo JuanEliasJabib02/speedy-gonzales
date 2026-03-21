@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { AlertTriangle, ArrowLeft, CheckCircle2, Github, RefreshCw } from "lucide-react"
+import { AlertTriangle, ArrowLeft, CheckCircle2, ExternalLink, Github, RefreshCw } from "lucide-react"
 import { useAction } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
@@ -106,30 +106,46 @@ export function ProjectHeader({
       <Dialog open={showSyncDialog} onOpenChange={setShowSyncDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="size-5 text-yellow-500" />
-              Sync from GitHub
+            <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-destructive/10">
+              <AlertTriangle className="size-6 text-destructive" />
+            </div>
+            <DialogTitle className="text-center">
+              Manual Sync — Danger Zone
             </DialogTitle>
-            <DialogDescription>
-              This will overwrite your current data in Speedy with whatever is on GitHub.
+            <DialogDescription className="text-center">
+              This will <strong className="text-destructive">overwrite all plan data</strong> in Speedy
+              with whatever is currently on GitHub.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">
-            <p>
-              If you edited plan files locally but <strong className="text-foreground">haven&apos;t pushed yet</strong>,
-              those changes will be lost — the sync reads from GitHub, not your local files.
+          <div className="space-y-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
+            <p className="font-medium text-destructive">
+              Unpushed changes will be lost forever.
             </p>
-            <p>
-              Make sure you ran <code className="rounded bg-muted px-1.5 py-0.5">git push</code> before continuing.
+            <p className="text-muted-foreground">
+              The sync engine reads from GitHub, not your local files.
+              If you edited any <code className="rounded bg-muted px-1.5 py-0.5">plans/</code> files
+              and haven&apos;t pushed yet, that work will be overwritten.
             </p>
+            <p className="font-medium text-foreground">
+              Run <code className="rounded bg-muted px-1.5 py-0.5">git push</code> before continuing.
+            </p>
+            <a
+              href="/docs/sync#faq"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-4 hover:underline"
+            >
+              Learn more in the docs
+              <ExternalLink className="size-3" />
+            </a>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setShowSyncDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSync}>
-              <Github className="size-4" />
-              Sync now
+            <Button variant="destructive" onClick={handleSync}>
+              <AlertTriangle className="size-4" />
+              I pushed — Sync now
             </Button>
           </DialogFooter>
         </DialogContent>

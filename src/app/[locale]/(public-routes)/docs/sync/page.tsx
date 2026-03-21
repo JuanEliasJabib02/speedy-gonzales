@@ -61,6 +61,22 @@ export default function SyncDocsPage() {
           useful as a fallback if a webhook was missed, or after initial setup
           when you want to pull in existing plans immediately.
         </p>
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+          <p className="mb-2 font-medium text-destructive">
+            Warning &mdash; Manual sync can overwrite your data
+          </p>
+          <p className="text-sm text-muted-foreground">
+            The sync engine reads from <strong className="text-foreground">GitHub</strong>, not
+            your local files. If you edited plan files locally but haven&apos;t pushed,
+            clicking &quot;Sync now&quot; will overwrite Convex with the <strong className="text-foreground">older
+            version</strong> from GitHub. Your unpushed changes will be lost.
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Always run <code className="rounded bg-muted px-1.5 py-0.5">git push</code> before
+            using manual sync. The automatic webhook sync doesn&apos;t have this problem
+            because it only fires after a push.
+          </p>
+        </div>
       </section>
 
       {/* Plan structure */}
@@ -134,6 +150,71 @@ export default function SyncDocsPage() {
             Next.js API routes involved in the sync flow.
           </li>
         </ul>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className="space-y-6">
+        <h2 className="text-xl font-semibold">FAQ</h2>
+
+        <div className="space-y-2">
+          <h3 className="font-medium">Does the sync touch my code?</h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            No. The sync only reads <code className="rounded bg-muted px-1.5 py-0.5">plans/features/</code> markdown
+            files from GitHub and writes structured data to Convex (the database). It never
+            modifies files on your machine, never touches <code className="rounded bg-muted px-1.5 py-0.5">src/</code>,
+            and never runs <code className="rounded bg-muted px-1.5 py-0.5">git pull</code>.
+            Your local code is always safe.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="font-medium">Can the auto-sync mess up my local work?</h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            No. The automatic sync (webhook) only fires <strong>after you push</strong>.
+            At that point, GitHub already has your latest version, so the sync writes
+            the correct data to Convex. Auto-sync is always safe.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="font-medium">When is manual sync dangerous?</h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Only when you edited plan files locally but <strong>haven&apos;t pushed yet</strong>.
+            The sync reads from GitHub (which still has the old version) and overwrites
+            Convex with stale data. Your unpushed changes are lost because Convex now
+            has the older version. The fix is simple: always{" "}
+            <code className="rounded bg-muted px-1.5 py-0.5">git push</code> before
+            clicking &quot;Sync now&quot;.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="font-medium">What if I click &quot;Sync now&quot; twice?</h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Nothing bad happens. The sync engine has a race condition guard &mdash; if a
+            sync is already running, the second one is silently skipped. The button
+            also disables while syncing to prevent accidental double-clicks.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="font-medium">What triggers an auto-sync?</h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            A <code className="rounded bg-muted px-1.5 py-0.5">git push</code> to your
+            repository that includes changes inside the <code className="rounded bg-muted px-1.5 py-0.5">plans/</code> directory.
+            Pushing code-only changes (no plan files) does <strong>not</strong> trigger a sync.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="font-medium">How fast is the auto-sync?</h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Typically 2&ndash;5 seconds after pushing. GitHub sends the webhook immediately,
+            the sync engine fetches and parses the changed files, and Convex reactive
+            queries update the UI in real time. You can see the exact time in the sync
+            timer next to the &quot;Sync now&quot; button.
+          </p>
+        </div>
       </section>
     </div>
   )
