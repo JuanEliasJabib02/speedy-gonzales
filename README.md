@@ -2,4 +2,4 @@
 
 # Speedy Gonzales
 
-Speedy Gonzales is an AI development platform where you plan features in markdown, chat with AI agents that write and commit code, and track everything on a real-time kanban. Plans live in your git repos as the source of truth. You architect, agents build.
+The IDE without an editor — plan features, command AI agents to code, and track everything in real-time 🏎️
