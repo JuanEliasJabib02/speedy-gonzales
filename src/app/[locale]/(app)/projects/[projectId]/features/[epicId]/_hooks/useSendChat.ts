@@ -130,6 +130,49 @@ export function useSendChat(projectId: string, epicId: string) {
     }))
   }, [messages])
 
+  const streamResponse = useCallback(async (content: string) => {
+    const context = buildContext()
+    const history = buildHistory()
+
+    setStreamingContent("")
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        epicId,
+        message: content,
+        context,
+        history,
+      }),
+      signal: controller.signal,
+    })
+
+    if (!res.ok || !res.body) {
+      const errorText = await res.text().catch(() => "No body")
+      console.error("Chat API error:", res.status, errorText)
+      setStreamingContent(null)
+      return
+    }
+
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder()
+    let accumulated = ""
+    streamingContentRef.current = ""
+
+    while (true) {
+      const { done, value: chunk } = await reader.read()
+      if (done) break
+
+      const text = decoder.decode(chunk, { stream: true })
+      accumulated += text
+      streamingContentRef.current = accumulated
+      setStreamingContent(accumulated)
+    }
+  }, [epicId, buildContext, buildHistory])
+
   const handleSend = useCallback(async () => {
     const trimmed = value.trim()
     const currentImage = pendingImageRef.current
@@ -191,49 +234,6 @@ export function useSendChat(projectId: string, epicId: string) {
       }
     }
   }, [value, isSending, sendMessage, typedEpicId, streamResponse, removePendingImage])
-
-  const streamResponse = useCallback(async (content: string) => {
-    const context = buildContext()
-    const history = buildHistory()
-
-    setStreamingContent("")
-    const controller = new AbortController()
-    abortControllerRef.current = controller
-
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        epicId,
-        message: content,
-        context,
-        history,
-      }),
-      signal: controller.signal,
-    })
-
-    if (!res.ok || !res.body) {
-      const errorText = await res.text().catch(() => "No body")
-      console.error("Chat API error:", res.status, errorText)
-      setStreamingContent(null)
-      return
-    }
-
-    const reader = res.body.getReader()
-    const decoder = new TextDecoder()
-    let accumulated = ""
-    streamingContentRef.current = ""
-
-    while (true) {
-      const { done, value: chunk } = await reader.read()
-      if (done) break
-
-      const text = decoder.decode(chunk, { stream: true })
-      accumulated += text
-      streamingContentRef.current = accumulated
-      setStreamingContent(accumulated)
-    }
-  }, [epicId, buildContext, buildHistory])
 
   const handleRetry = useCallback(async (assistantMessageId: string) => {
     if (isSending) return
