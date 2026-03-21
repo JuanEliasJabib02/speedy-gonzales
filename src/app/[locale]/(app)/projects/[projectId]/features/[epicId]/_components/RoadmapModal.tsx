@@ -52,24 +52,36 @@ type Ticket = {
   priority: string
   checklistTotal: number
   checklistCompleted: number
+  blockedReason?: string
 }
 
 function TicketRow({ ticket }: { ticket: Ticket }) {
   const status = STATUS_BADGE[ticket.status] ?? STATUS_BADGE.todo
   const hasChecklist = ticket.checklistTotal > 0
+  const isBlocked = ticket.status === "blocked"
 
   return (
-    <div className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-accent/50 transition-colors">
-      <div className={cn("size-2 shrink-0 rounded-full", `bg-status-${ticket.status}`)} />
-      <span className="flex-1 text-sm truncate">{ticket.title}</span>
-      {hasChecklist && (
-        <span className="text-xs text-muted-foreground shrink-0">
-          {ticket.checklistCompleted}/{ticket.checklistTotal}
+    <div className={cn(
+      "flex flex-col gap-1 rounded-md px-3 py-2 hover:bg-accent/50 transition-colors",
+      isBlocked && "bg-status-blocked/5"
+    )}>
+      <div className="flex items-center gap-3">
+        <div className={cn("size-2 shrink-0 rounded-full", `bg-status-${ticket.status}`)} />
+        <span className={cn("flex-1 text-sm truncate", isBlocked && "text-status-blocked font-medium")}>
+          {isBlocked && "⛔ "}{ticket.title}
         </span>
+        {hasChecklist && (
+          <span className="text-xs text-muted-foreground shrink-0">
+            {ticket.checklistCompleted}/{ticket.checklistTotal}
+          </span>
+        )}
+        <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-xs font-medium", status.className)}>
+          {status.label}
+        </span>
+      </div>
+      {isBlocked && ticket.blockedReason && (
+        <p className="text-xs text-status-blocked/80 ml-5 truncate">{ticket.blockedReason}</p>
       )}
-      <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-xs font-medium", status.className)}>
-        {status.label}
-      </span>
     </div>
   )
 }

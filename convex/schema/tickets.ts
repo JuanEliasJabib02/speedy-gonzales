@@ -8,7 +8,8 @@ export const tickets = defineTable({
   path: v.string(), // e.g. "plans/features/auth/magic-link-signin.md"
   content: v.string(),
   contentHash: v.string(),
-  status: v.string(), // "todo" | "in-progress" | "review" | "completed"
+  status: v.string(), // "todo" | "in-progress" | "review" | "completed" | "blocked"
+  blockedReason: v.optional(v.string()),
   priority: v.string(), // "low" | "medium" | "high" | "critical"
   checklistTotal: v.number(),
   checklistCompleted: v.number(),

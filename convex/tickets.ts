@@ -18,10 +18,17 @@ export const updateStatus = mutation({
   args: {
     ticketId: v.id("tickets"),
     status: v.string(),
+    blockedReason: v.optional(v.string()),
   },
-  handler: async (ctx, { ticketId, status }) => {
+  handler: async (ctx, { ticketId, status, blockedReason }) => {
     await requireAuth(ctx)
-    await ctx.db.patch(ticketId, { status })
+    const patch: Record<string, unknown> = { status }
+    if (status === "blocked") {
+      patch.blockedReason = blockedReason ?? undefined
+    } else {
+      patch.blockedReason = undefined
+    }
+    await ctx.db.patch(ticketId, patch)
   },
 })
 

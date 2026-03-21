@@ -1,6 +1,6 @@
 # Blocked Status — UI & Workflow
 
-**Status:** in-progress
+**Status:** review
 **Priority:** critical
 
 ## What it does
@@ -28,14 +28,13 @@ Make the "blocked" status a first-class citizen in the UI. Currently blocked tic
 
 ## Checklist
 
-- [ ] Add `blockedReason: v.optional(v.string())` to `chatMessages` schema in `convex/schema.ts` — wait, actually to `tickets` schema
-- [ ] Add `blockedReason` to tickets Convex schema
-- [ ] In `TicketItem.tsx` and `PlanViewer.tsx` status dropdown: when selecting "blocked", show an optional reason input
-- [ ] Update status sort order: blocked → review → in-progress → todo → completed
-- [ ] Style blocked badge: red with ⛔ icon
-- [ ] Add "Unblock →" quick action button on blocked tickets in PlanViewer
-- [ ] Update `RoadmapModal.tsx` to highlight blocked tickets with reason
-- [ ] Update `updateStatus` mutation to accept optional `blockedReason`
+- [x] Add `blockedReason: v.optional(v.string())` to tickets Convex schema
+- [x] In `TicketItem.tsx` and `PlanViewer.tsx` status dropdown: when selecting "blocked", show an optional reason input
+- [x] Update status sort order: blocked → review → in-progress → todo → completed
+- [x] Style blocked badge: red with ⛔ icon
+- [x] Add "Unblock →" quick action button on blocked tickets in PlanViewer
+- [x] Update `RoadmapModal.tsx` to highlight blocked tickets with reason
+- [x] Update `updateStatus` mutation to accept optional `blockedReason`
 
 ## Files
 

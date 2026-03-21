@@ -79,6 +79,7 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
         content={ticketData.content}
         checklist={ticketData.checklist}
         ticketId={selectedTicket?.id}
+        blockedReason={selectedTicket?.blockedReason}
       />
       <ResizeHandle onDragStart={handleDragStart} />
       <ChatPanel width={chatWidth} projectId={projectId} epicId={epicId} />

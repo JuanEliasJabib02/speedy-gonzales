@@ -22,11 +22,12 @@ export function useLivePlan(epicId: string, projectId?: string) {
         priority: epic.priority,
         branch: `feat/${epic.path.split("/").pop()}`,
         tickets: [
-          { id: "_context", title: "Overview", status: epic.status as "todo" | "in-progress" | "review" | "completed" },
+          { id: "_context", title: "Overview", status: epic.status as "todo" | "in-progress" | "review" | "completed", blockedReason: undefined },
           ...(tickets ?? []).map((t) => ({
             id: t._id as string,
             title: t.title,
-            status: t.status as "todo" | "in-progress" | "review" | "completed",
+            status: t.status as "todo" | "in-progress" | "review" | "completed" | "blocked",
+            blockedReason: t.blockedReason,
           })),
         ],
         planContent: epic.content,

@@ -12,6 +12,7 @@ type Ticket = {
   id: string
   title: string
   status: string
+  blockedReason?: string
 }
 
 type TicketSidebarProps = {
@@ -28,6 +29,7 @@ type TicketSidebarProps = {
 
 const STATUS_TABS = [
   { key: "all", label: "All", match: () => true },
+  { key: "blocked", label: "Blocked", match: (s: string) => s === "blocked" },
   { key: "todo", label: "Todo", match: (s: string) => s === "todo" },
   { key: "in-progress", label: "In Progress", match: (s: string) => s === "in-progress" },
   { key: "review", label: "Review", match: (s: string) => s === "review" },
@@ -50,10 +52,10 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
   const regularTickets = tickets.filter((t) => t.title !== "_context")
 
   const STATUS_ORDER: Record<string, number> = {
-    "review": 0,
-    "in-progress": 1,
-    "todo": 2,
-    "blocked": 3,
+    "blocked": 0,
+    "review": 1,
+    "in-progress": 2,
+    "todo": 3,
     "completed": 4,
   }
 
