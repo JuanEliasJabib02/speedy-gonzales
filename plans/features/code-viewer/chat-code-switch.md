@@ -1,6 +1,6 @@
 # Chat ↔ Code Switch
 
-**Status:** todo
+**Status:** review
 **Priority:** medium
 
 ## What it does
@@ -9,12 +9,12 @@ Add a toggle in the right panel header to switch between Chat view and Code view
 
 ## Checklist
 
-- [ ] Add toggle buttons "Chat" | "Code" in the ChatPanel/right-panel header
-- [ ] Switch state lives in the FeatureView parent (or URL param for shareability)
-- [ ] When "Code" → show FileTree (left) + FileViewer (right)
-- [ ] When "Chat" → show TicketSidebar (left) + ChatPanel (right) as normal
-- [ ] Animate the transition (fade or slide)
-- [ ] Remember last mode in localStorage
+- [x] Add toggle buttons "Chat" | "Code" in the ChatPanel/right-panel header
+- [x] Switch state lives in the FeatureView parent (or URL param for shareability)
+- [x] When "Code" → show CodeView placeholder (coming soon)
+- [x] When "Chat" → show TicketSidebar (left) + ChatPanel (right) as normal
+- [x] Animate the transition (fade or slide)
+- [x] Remember last mode in localStorage
 
 ## Files
 

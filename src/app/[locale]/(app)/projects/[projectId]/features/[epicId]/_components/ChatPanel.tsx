@@ -5,19 +5,23 @@ import { Download } from "lucide-react"
 import { ChatMessage } from "./ChatMessage"
 import { ChatInput } from "./ChatInput"
 import { ContextSummaryCard } from "./ContextSummaryCard"
+import { CodeView } from "./CodeView"
 import { ThemeToggle } from "@/src/lib/components/common/ThemeToggle"
 import { Button } from "@/src/lib/components/ui/button"
 import { useCurrentUser } from "@/src/lib/hooks/useCurrentUser"
 import { useSendChat } from "../_hooks/useSendChat"
+import type { ViewMode } from "./FeatureLayout"
 
 type ChatPanelProps = {
   width: number
   projectId: string
   epicId: string
   onSendDirectReady?: (fn: (message: string) => void) => void
+  viewMode: ViewMode
+  onViewModeChange: (mode: ViewMode) => void
 }
 
-export function ChatPanel({ width, projectId, epicId, onSendDirectReady }: ChatPanelProps) {
+export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMode, onViewModeChange }: ChatPanelProps) {
   const { initial } = useCurrentUser()
   const {
     value,
@@ -120,13 +124,36 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady }: ChatP
       style={{ width }}
     >
       <div className="flex items-center gap-2 border-b border-border p-4">
-        <h3 className="text-sm font-medium">Chat</h3>
-        <div className="flex items-center gap-1.5">
-          <div className="size-2 rounded-full bg-status-completed" />
-          <span className="text-xs text-muted-foreground">connected</span>
+        <div className="flex items-center rounded-md border border-border bg-muted/50 p-0.5">
+          <button
+            onClick={() => onViewModeChange("chat")}
+            className={`rounded px-2.5 py-1 text-xs font-medium transition-all ${
+              viewMode === "chat"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Chat
+          </button>
+          <button
+            onClick={() => onViewModeChange("code")}
+            className={`rounded px-2.5 py-1 text-xs font-medium transition-all ${
+              viewMode === "code"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Code
+          </button>
         </div>
+        {viewMode === "chat" && (
+          <div className="flex items-center gap-1.5">
+            <div className="size-2 rounded-full bg-status-completed" />
+            <span className="text-xs text-muted-foreground">connected</span>
+          </div>
+        )}
         <div className="ml-auto flex items-center gap-3">
-          {totalTokens > 0 && (
+          {viewMode === "chat" && totalTokens > 0 && (
             <div className="flex items-center gap-1.5">
               <div className={`size-2 rounded-full ${tokenColorClass}`} />
               <span className="text-xs text-muted-foreground">
@@ -134,107 +161,117 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady }: ChatP
               </span>
             </div>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8"
-            onClick={handleExport}
-            disabled={messages.length === 0}
-            title="Export conversation"
-          >
-            <Download className="size-4" />
-          </Button>
+          {viewMode === "chat" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={handleExport}
+              disabled={messages.length === 0}
+              title="Export conversation"
+            >
+              <Download className="size-4" />
+            </Button>
+          )}
           <ThemeToggle />
         </div>
       </div>
-      <div ref={scrollRef} className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 scrollbar-thin">
-        {messages.length === 0 && streamingContent === null && optimisticMessage === null ? (
-          <div className="flex flex-1 items-center justify-center">
-            <span className="text-xs text-muted-foreground">No messages yet. Start the conversation.</span>
+      {viewMode === "chat" ? (
+        <div className="flex flex-1 flex-col overflow-hidden view-fade-in">
+          <div ref={scrollRef} className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 scrollbar-thin">
+            {messages.length === 0 && streamingContent === null && optimisticMessage === null ? (
+              <div className="flex flex-1 items-center justify-center">
+                <span className="text-xs text-muted-foreground">No messages yet. Start the conversation.</span>
+              </div>
+            ) : (
+              <>
+                {messages.length > 0 && epic && (
+                  <ContextSummaryCard
+                    epicTitle={epic.title}
+                    epicStatus={epic.status}
+                    pendingTickets={tickets.filter((t) => t.status !== "completed").length}
+                    totalTickets={tickets.length}
+                  />
+                )}
+                {messages.map((message) => (
+                  <ChatMessage
+                    key={message._id}
+                    message={{
+                      id: message._id,
+                      role: message.role === "assistant" ? "agent" : "user",
+                      type: "text",
+                      content: message.content,
+                      commits: message.metadata?.commits,
+                      actions: message.metadata?.actions,
+                      timestamp: new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                      isInterrupted: message.isInterrupted === true,
+                    }}
+                    userInitial={initial}
+                    onRetry={handleRetry}
+                  />
+                ))}
+                {optimisticMessage !== null && (
+                  <ChatMessage
+                    message={{
+                      id: "optimistic",
+                      role: "user",
+                      type: "text",
+                      content: optimisticMessage,
+                      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                    }}
+                    userInitial={initial}
+                  />
+                )}
+                {isSending && streamingContent === null && (
+                  <ChatMessage
+                    message={{
+                      id: "typing",
+                      role: "agent",
+                      type: "text",
+                      content: "",
+                      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                    }}
+                    userInitial={initial}
+                    isStreaming
+                  />
+                )}
+                {streamingContent !== null && (
+                  <ChatMessage
+                    message={{
+                      id: "streaming",
+                      role: "agent",
+                      type: "text",
+                      content: streamingContent,
+                      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                    }}
+                    userInitial={initial}
+                    isStreaming
+                  />
+                )}
+              </>
+            )}
           </div>
-        ) : (
-          <>
-            {messages.length > 0 && epic && (
-              <ContextSummaryCard
-                epicTitle={epic.title}
-                epicStatus={epic.status}
-                pendingTickets={tickets.filter((t) => t.status !== "completed").length}
-                totalTickets={tickets.length}
-              />
-            )}
-            {messages.map((message) => (
-              <ChatMessage
-                key={message._id}
-                message={{
-                  id: message._id,
-                  role: message.role === "assistant" ? "agent" : "user",
-                  type: "text",
-                  content: message.content,
-                  commits: message.metadata?.commits,
-                  actions: message.metadata?.actions,
-                  timestamp: new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                  isInterrupted: message.isInterrupted === true,
-                }}
-                userInitial={initial}
-                onRetry={handleRetry}
-              />
-            ))}
-            {optimisticMessage !== null && (
-              <ChatMessage
-                message={{
-                  id: "optimistic",
-                  role: "user",
-                  type: "text",
-                  content: optimisticMessage,
-                  timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                }}
-                userInitial={initial}
-              />
-            )}
-            {isSending && streamingContent === null && (
-              <ChatMessage
-                message={{
-                  id: "typing",
-                  role: "agent",
-                  type: "text",
-                  content: "",
-                  timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                }}
-                userInitial={initial}
-                isStreaming
-              />
-            )}
-            {streamingContent !== null && (
-              <ChatMessage
-                message={{
-                  id: "streaming",
-                  role: "agent",
-                  type: "text",
-                  content: streamingContent,
-                  timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                }}
-                userInitial={initial}
-                isStreaming
-              />
-            )}
-          </>
-        )}
-      </div>
-      <ChatInput
-        value={value}
-        onChange={setValue}
-        onSend={handleSend}
-        onStop={handleStop}
-        onKeyDown={handleKeyDown}
-        isSending={isSending}
-        isStreaming={isStreaming}
-        hasQueued={hasQueued}
-        queueLength={queueLength}
-        pendingImages={pendingImages}
-        onPasteImage={handlePasteImage}
-        onRemoveImage={removePendingImage}
-        ticketOptions={ticketOptions}
-      />
+          <ChatInput
+            value={value}
+            onChange={setValue}
+            onSend={handleSend}
+            onStop={handleStop}
+            onKeyDown={handleKeyDown}
+            isSending={isSending}
+            isStreaming={isStreaming}
+            hasQueued={hasQueued}
+            queueLength={queueLength}
+            pendingImages={pendingImages}
+            onPasteImage={handlePasteImage}
+            onRemoveImage={removePendingImage}
+            ticketOptions={ticketOptions}
+          />
+        </div>
+      ) : (
+        <div className="flex flex-1 view-fade-in">
+          <CodeView />
+        </div>
+      )}
     </div>
   )
 }
