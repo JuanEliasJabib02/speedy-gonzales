@@ -1,6 +1,6 @@
 # Slash Commands
 
-**Status:** in-progress
+**Status:** review
 **Priority:** medium
 
 ## What it does
@@ -16,11 +16,11 @@ Allow the user to type `/` in the chat input to trigger a command palette with a
 
 ## Checklist
 
-- [ ] Detect `/` at the start of input → show command dropdown
-- [ ] Filter commands as user types
-- [ ] On select: fill input with command template or execute directly
-- [ ] Implement `/create-ticket`, `/sync`, `/tickets` first
-- [ ] Add keyboard navigation (arrow keys + Enter) to the dropdown
+- [x] Detect `/` at the start of input → show command dropdown
+- [x] Filter commands as user types
+- [x] On select: fill input with command template or execute directly
+- [x] Implement `/create-ticket`, `/sync`, `/tickets`, `/update-status`
+- [x] Add keyboard navigation (arrow keys + Enter) to the dropdown
 
 ## Files
 
