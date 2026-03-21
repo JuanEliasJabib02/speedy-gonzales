@@ -1,20 +1,15 @@
 {
   "branding": {
-    "tagline": "Gestión y cumplimiento legal para anfitriones"
+    "tagline": "Tu centro de comando para equipos AI"
   },
   "form": {
     "title": "Inicia sesión",
     "subtitle": "Ingresa tu correo para recibir un código de acceso"
   },
   "magicLink": {
-    "emailLabel": "Correo electrónico",
     "emailPlaceholder": "tu@correo.com",
     "submitButton": "Enviar código de acceso",
     "sending": "Enviando..."
-  },
-  "googleAuth": {
-    "button": "Continuar con Google",
-    "connecting": "Conectando..."
   },
   "footer": {
     "termsPrefix": "Al continuar, aceptas los",

@@ -1,20 +1,15 @@
 {
   "branding": {
-    "tagline": "Property management and legal compliance for hosts"
+    "tagline": "Your AI dev team command center"
   },
   "form": {
     "title": "Sign in",
     "subtitle": "Enter your email to receive an access code"
   },
   "magicLink": {
-    "emailLabel": "Email address",
     "emailPlaceholder": "you@email.com",
     "submitButton": "Send access code",
     "sending": "Sending..."
-  },
-  "googleAuth": {
-    "button": "Continue with Google",
-    "connecting": "Connecting..."
   },
   "footer": {
     "termsPrefix": "By continuing, you accept the",

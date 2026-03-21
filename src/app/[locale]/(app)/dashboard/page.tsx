@@ -1,22 +1,31 @@
 "use client"
 
-import { useAuthActions } from "@convex-dev/auth/react"
-import { useCurrentUser } from "@/src/lib/hooks/useCurrentUser"
-import { Button } from "@/src/lib/components/ui/button"
+import { useState } from "react"
+import { DashboardHeader } from "./_components/DashboardHeader"
+import { ProjectCard } from "./_components/ProjectCard"
+import { CreateProjectDialog } from "./_components/CreateProjectDialog"
+import { EmptyState } from "./_components/EmptyState"
+import { MOCK_PROJECTS } from "./_constants/mock-data"
 
 export default function DashboardPage() {
-  const { signOut } = useAuthActions()
-  const { email, displayName, isLoading } = useCurrentUser()
-
-  if (isLoading) return null
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const projects = MOCK_PROJECTS
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4">
-      <h1 className="text-2xl font-semibold">Welcome{displayName ? `, ${displayName}` : ""}</h1>
-      <p className="text-muted-foreground">{email}</p>
-      <Button variant="outline" onClick={() => signOut()}>
-        Sign out
-      </Button>
+    <div className="p-6">
+      <DashboardHeader onCreateProject={() => setDialogOpen(true)} />
+
+      {projects.length === 0 ? (
+        <EmptyState onCreateProject={() => setDialogOpen(true)} />
+      ) : (
+        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {projects.map((project) => (
+            <ProjectCard key={project.id} project={project} />
+          ))}
+        </div>
+      )}
+
+      <CreateProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   )
 }

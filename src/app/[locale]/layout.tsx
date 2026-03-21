@@ -3,12 +3,13 @@ import { Suspense } from "react"
 import { Poppins } from "next/font/google"
 import { NextIntlClientProvider } from "next-intl"
 import { getMessages } from "next-intl/server"
+import { ThemeProvider } from "next-themes"
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server"
 import { ConvexClientProvider } from "@/src/lib/components/common/ConvexClientProvider"
 import { createMetadata } from "@/src/lib/helpers/createMetadata"
 
 const poppins = Poppins({
-  weight: ["400", "500", "600", "700", "900"],
+  weight: ["400", "500", "600"],
   style: ["normal"],
   subsets: ["latin"],
   display: "swap",
@@ -30,13 +31,20 @@ async function LocaleLayout({
 
   return (
     <ConvexAuthNextjsServerProvider>
-      <html lang={locale}>
+      <html lang={locale} suppressHydrationWarning>
         <body className={poppins.className}>
-          <ConvexClientProvider>
-            <NextIntlClientProvider messages={messages}>
-              <main>{children}</main>
-            </NextIntlClientProvider>
-          </ConvexClientProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem={false}
+            themes={["dark", "light"]}
+          >
+            <ConvexClientProvider>
+              <NextIntlClientProvider messages={messages}>
+                <main>{children}</main>
+              </NextIntlClientProvider>
+            </ConvexClientProvider>
+          </ThemeProvider>
         </body>
       </html>
     </ConvexAuthNextjsServerProvider>

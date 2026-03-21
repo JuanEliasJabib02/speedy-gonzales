@@ -9,7 +9,6 @@ export function useLoginForm() {
   const { signIn } = useAuthActions()
   const [email, setEmail] = useState("")
   const [isSending, setIsSending] = useState(false)
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [otpOpen, setOtpOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -43,26 +42,13 @@ export function useLoginForm() {
     [email, signIn, t],
   )
 
-  const handleGoogleAuth = useCallback(async () => {
-    setIsGoogleLoading(true)
-    setError(null)
-    try {
-      await signIn("google")
-    } catch {
-      setError(t("googleFailed"))
-      setIsGoogleLoading(false)
-    }
-  }, [signIn, t])
-
   return {
     email,
     isSending,
-    isGoogleLoading,
     otpOpen,
     error,
     handleEmailChange,
     handleOtpOpenChange,
     handleSubmit,
-    handleGoogleAuth,
   }
 }

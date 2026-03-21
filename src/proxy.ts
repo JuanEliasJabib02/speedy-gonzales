@@ -11,6 +11,7 @@ const intlMiddleware = createNextIntlMiddleware(routing)
 
 const isPrivateRoute = createRouteMatcher([
   "/(en|es|pt)/dashboard(.*)",
+  "/(en|es|pt)/projects(.*)",
 ])
 
 const isLoginRoute = createRouteMatcher(["/(en|es|pt)/login"])
@@ -36,6 +37,6 @@ export const config = {
   matcher: [
     "/",
     "/(es|en|pt)/:path*",
-    "/((?!_next|_vercel|.*\\..*).*)",
+    "/((?!_next|_vercel|api|.*\\..*).*)",
   ],
 }
