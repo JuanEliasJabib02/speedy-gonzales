@@ -17,6 +17,11 @@ export const syncProject = action({
 export const syncRepoInternal = internalAction({
   args: { projectId: v.id("projects") },
   handler: async (ctx, { projectId }) => {
+    // Guard: skip if already syncing to prevent race conditions
+    const project = await ctx.runQuery(internal.projects.getProjectInternal, { projectId })
+    if (!project) throw new Error("Project not found")
+    if (project.syncStatus === "syncing") return
+
     // Set syncing status
     await ctx.runMutation(internal.githubSync.updateSyncStatus, {
       projectId,
@@ -24,10 +29,6 @@ export const syncRepoInternal = internalAction({
     })
 
     try {
-      // Get project config
-      const project = await ctx.runQuery(internal.projects.getProjectInternal, { projectId })
-      if (!project) throw new Error("Project not found")
-
       const accessToken = process.env.GITHUB_PAT
       if (!accessToken) throw new Error("GITHUB_PAT env var not set")
 
@@ -232,7 +233,12 @@ export const upsertPlans = internalMutation({
       let epicId: Id<"epics">
 
       if (existing) {
-        if (existing.contentHash !== epicData.contentHash || existing.isDeleted) {
+        const contentChanged = existing.contentHash !== epicData.contentHash
+        const countChanged = existing.ticketCount !== epicData.ticketCount
+        const orderChanged = existing.sortOrder !== epicData.sortOrder
+        const wasDeleted = existing.isDeleted
+
+        if (contentChanged || countChanged || orderChanged || wasDeleted) {
           await ctx.db.patch(existing._id, {
             title: epicData.title,
             content: epicData.content,
@@ -274,7 +280,12 @@ export const upsertPlans = internalMutation({
           .first()
 
         if (existingTicket) {
-          if (existingTicket.contentHash !== ticketData.contentHash || existingTicket.isDeleted) {
+          const contentChanged = existingTicket.contentHash !== ticketData.contentHash
+          const movedEpic = existingTicket.epicId !== epicId
+          const orderChanged = existingTicket.sortOrder !== ticketData.sortOrder
+          const wasDeleted = existingTicket.isDeleted
+
+          if (contentChanged || movedEpic || orderChanged || wasDeleted) {
             await ctx.db.patch(existingTicket._id, {
               epicId,
               title: ticketData.title,

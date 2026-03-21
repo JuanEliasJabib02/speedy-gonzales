@@ -1,0 +1,64 @@
+import { ArrowRight, GitBranch, MessageSquare } from "lucide-react"
+import Link from "next/link"
+
+const sections = [
+  {
+    title: "GitHub Sync",
+    description:
+      "Automatic and manual sync between your GitHub repos and Speedy Gonzales. Push plans, get real-time updates.",
+    href: "/docs/sync",
+    icon: GitBranch,
+  },
+  {
+    title: "OpenClaw Chat",
+    description:
+      "Per-feature AI chat powered by OpenClaw's Charizard agent. Context-aware conversations with memory.",
+    href: "/docs/chat",
+    icon: MessageSquare,
+  },
+]
+
+export default function DocsPage() {
+  return (
+    <div className="space-y-12">
+      {/* Hero */}
+      <section className="space-y-4">
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Speedy Gonzales
+        </h1>
+        <p className="text-lg text-muted-foreground">The AI Agents IDE</p>
+        <p className="leading-relaxed text-muted-foreground">
+          Speedy Gonzales connects your GitHub repositories with AI-powered
+          project management. Write plans in markdown, sync them automatically,
+          and use intelligent agents to help you build faster. Designed for
+          developers and teams who think in code.
+        </p>
+      </section>
+
+      {/* Section cards */}
+      <section className="grid gap-4 sm:grid-cols-2">
+        {sections.map((section) => (
+          <Link
+            key={section.href}
+            href={section.href}
+            className="group flex flex-col gap-3 rounded-lg border border-border bg-card p-6 transition-colors hover:border-primary/50 hover:bg-accent"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex size-9 items-center justify-center rounded-md bg-primary/10">
+                <section.icon className="size-4 text-primary" />
+              </div>
+              <h2 className="font-semibold">{section.title}</h2>
+            </div>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {section.description}
+            </p>
+            <div className="mt-auto flex items-center gap-1 text-sm text-primary">
+              <span>Learn more</span>
+              <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+            </div>
+          </Link>
+        ))}
+      </section>
+    </div>
+  )
+}

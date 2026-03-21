@@ -1,6 +1,6 @@
 "use client"
 
-import { FolderKanban, Settings, Zap } from "lucide-react"
+import { BookOpen, FolderKanban, Settings, Zap } from "lucide-react"
 import { usePathname } from "@/src/i18n/routing"
 import { SidebarNavItem } from "./SidebarNavItem"
 import { UserMenu } from "./UserMenu"
@@ -25,6 +25,12 @@ export function AppSidebar() {
           label="Projects"
           href="/dashboard"
           isActive={pathname.includes("/dashboard")}
+        />
+        <SidebarNavItem
+          icon={BookOpen}
+          label="Docs"
+          href="/docs"
+          isActive={pathname.includes("/docs")}
         />
         <SidebarNavItem
           icon={Settings}
