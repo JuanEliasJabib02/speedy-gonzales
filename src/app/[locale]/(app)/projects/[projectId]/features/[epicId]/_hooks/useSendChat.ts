@@ -247,6 +247,7 @@ export function useSendChat(projectId: string, epicId: string) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         epicId,
+        projectId,
         message: enrichedMessage,
         context,
         history,

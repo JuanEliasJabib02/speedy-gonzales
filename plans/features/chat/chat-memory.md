@@ -1,6 +1,6 @@
 # Chat Memory (Cross-Session Context)
 
-**Status:** todo
+**Status:** review
 **Priority:** medium
 
 ## What it does
@@ -37,9 +37,9 @@ OpenClaw already has a `MEMORY.md` system. When Charizard chats via Speedy, it c
 - [ ] UI: show "Memory" indicator in chat header when summary exists
 
 ### Option B (OpenClaw MEMORY.md)
-- [ ] Create per-project memory file: `~/.openclaw/workspace/memory/speedy-{projectId}.md`
-- [ ] Update system prompt to tell Charizard to read/update this file
-- [ ] No Convex changes needed
+- [x] Create per-project memory file: `~/.openclaw/workspace/memory/speedy-{projectId}.md`
+- [x] Update system prompt to tell Charizard to read/update this file
+- [x] No Convex changes needed
 
 ## Recommendation
 
