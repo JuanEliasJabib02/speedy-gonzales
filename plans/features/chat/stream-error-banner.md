@@ -1,6 +1,6 @@
 # Stream Error Banner
 
-**Status:** todo
+**Status:** review
 **Priority:** medium
 
 ## What it does
@@ -20,11 +20,11 @@ If streaming fails mid-way, the partial message just stops. No indication it's i
 
 ## Checklist
 
-- [ ] Add `isInterrupted` field to chatMessages schema in Convex
-- [ ] Set `isInterrupted: true` in saveAssistantMessage when stream errors
-- [ ] Add `InterruptedBanner` component in ChatMessage.tsx
-- [ ] Show banner only when `message.isInterrupted === true`
-- [ ] Wire retry button to `onRetry` prop (already exists in ChatMessage)
+- [x] Add `isInterrupted` field to chatMessages schema in Convex
+- [x] Set `isInterrupted: true` in saveAssistantMessage when stream errors
+- [x] Add `InterruptedBanner` component in ChatMessage.tsx
+- [x] Show banner only when `message.isInterrupted === true`
+- [x] Wire retry button to `onRetry` prop (already exists in ChatMessage)
 
 ## Files
 
