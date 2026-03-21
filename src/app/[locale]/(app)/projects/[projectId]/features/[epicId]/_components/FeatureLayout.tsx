@@ -21,6 +21,15 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
   const [selectedTicketId, setSelectedTicketId] = useState("")
   const [chatWidth, setChatWidth] = useState(CHAT_DEFAULT_WIDTH)
   const isDragging = useRef(false)
+  const sendDirectRef = useRef<((message: string) => void) | null>(null)
+
+  const handleSendDirectReady = useCallback((fn: (message: string) => void) => {
+    sendDirectRef.current = fn
+  }, [])
+
+  const handleCreateTicket = useCallback((message: string) => {
+    sendDirectRef.current?.(message)
+  }, [])
 
   const handleDragStart = useCallback(() => {
     isDragging.current = true
@@ -77,6 +86,7 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
         overviewContent={overviewData.content}
         overviewStatus={epic.status}
         overviewPriority={epic.priority}
+        onCreateTicket={handleCreateTicket}
       />
       <PlanViewer
         title={selectedTicket?.title ?? epic.title}
@@ -88,7 +98,7 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
         blockedReason={selectedTicket?.blockedReason}
       />
       <ResizeHandle onDragStart={handleDragStart} />
-      <ChatPanel width={chatWidth} projectId={projectId} epicId={epicId} />
+      <ChatPanel width={chatWidth} projectId={projectId} epicId={epicId} onSendDirectReady={handleSendDirectReady} />
     </div>
   )
 }

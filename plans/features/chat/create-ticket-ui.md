@@ -1,6 +1,6 @@
 # Create Ticket from UI
 
-**Status:** in-progress
+**Status:** review
 **Priority:** high
 
 ## What it does
@@ -35,12 +35,12 @@ Charizard handles the file creation + push. The webhook triggers auto-sync. The 
 
 ## Checklist
 
-- [ ] Add `+` button to `TicketSidebar` header area
-- [ ] Create `NewTicketModal.tsx` with shadcn/ui Dialog
-- [ ] Form: title (required), priority (select), description (optional textarea)
-- [ ] On submit: call `/api/chat` with a structured prompt to Charizard
-- [ ] Show a loading/pending state while agent creates the ticket
-- [ ] After creation: the webhook fires and the ticket appears in the list automatically
+- [x] Add `+` button to `TicketSidebar` header area
+- [x] Create `NewTicketModal.tsx` with shadcn/ui Dialog
+- [x] Form: title (required), priority (select), description (optional textarea)
+- [x] On submit: sends structured prompt to chat via `sendDirect`
+- [x] Show a loading/pending state while agent creates the ticket
+- [x] After creation: the webhook fires and the ticket appears in the list automatically
 
 ## Files
 

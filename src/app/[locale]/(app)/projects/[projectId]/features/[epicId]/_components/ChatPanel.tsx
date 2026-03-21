@@ -14,9 +14,10 @@ type ChatPanelProps = {
   width: number
   projectId: string
   epicId: string
+  onSendDirectReady?: (fn: (message: string) => void) => void
 }
 
-export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
+export function ChatPanel({ width, projectId, epicId, onSendDirectReady }: ChatPanelProps) {
   const { initial } = useCurrentUser()
   const {
     value,
@@ -35,7 +36,12 @@ export function ChatPanel({ width, projectId, epicId }: ChatPanelProps) {
     pendingImages,
     handlePasteImage,
     removePendingImage,
+    sendDirect,
   } = useSendChat(projectId, epicId)
+
+  useEffect(() => {
+    onSendDirectReady?.(sendDirect)
+  }, [sendDirect, onSendDirectReady])
 
   const ticketOptions = useMemo(
     () =>

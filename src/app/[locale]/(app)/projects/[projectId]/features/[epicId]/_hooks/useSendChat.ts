@@ -413,6 +413,33 @@ export function useSendChat(projectId: string, epicId: string) {
     [handleSend],
   )
 
+  const sendDirect = useCallback(async (content: string) => {
+    if (!content.trim()) return
+    if (isSending) {
+      const existing = queuedMessageRef.current
+      queuedMessageRef.current = existing ? `${existing}\n\n${content}` : content
+      setHasQueued(true)
+      return
+    }
+    setIsSending(true)
+    setOptimisticMessage(content)
+    try {
+      await sendMessage({ epicId: typedEpicId, content })
+      setOptimisticMessage(null)
+      await streamResponse(content)
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        console.error("Failed to send message:", error)
+      }
+    } finally {
+      abortControllerRef.current = null
+      streamingMessageIdRef.current = null
+      setStreamingContent(null)
+      setOptimisticMessage(null)
+      setIsSending(false)
+    }
+  }, [isSending, sendMessage, typedEpicId, streamResponse])
+
   return {
     value,
     setValue,
@@ -430,5 +457,6 @@ export function useSendChat(projectId: string, epicId: string) {
     pendingImages,
     handlePasteImage,
     removePendingImage,
+    sendDirect,
   }
 }
