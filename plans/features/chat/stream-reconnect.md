@@ -1,6 +1,6 @@
 # Stream Reconnect on Page Reload
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** high
 
 ## Bug Description
