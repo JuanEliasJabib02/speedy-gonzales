@@ -180,6 +180,7 @@ export async function POST(request: Request) {
         messages: allMessages,
         user: "juan",
         stream: true,
+        stream_options: { include_usage: true },
       }),
     })
 
@@ -204,6 +205,7 @@ export async function POST(request: Request) {
     const decoder = new TextDecoder()
     const encoder = new TextEncoder()
     let fullContent = ""
+    let totalTokens: number | undefined
 
     const stream = new ReadableStream({
       async start(controller) {
@@ -230,6 +232,10 @@ export async function POST(request: Request) {
                   // Send plain text chunks to client
                   controller.enqueue(encoder.encode(content))
                 }
+                // Capture usage from the final chunk (OpenAI streaming with include_usage)
+                if (parsed.usage?.total_tokens) {
+                  totalTokens = parsed.usage.total_tokens
+                }
               } catch {
                 // skip malformed
               }
@@ -244,6 +250,7 @@ export async function POST(request: Request) {
                 epicId: epicId as Id<"epics">,
                 content: fullContent,
                 metadata,
+                tokenCount: totalTokens,
               })
             } catch (saveError) {
               console.error("[chat] Failed to save message:", saveError)

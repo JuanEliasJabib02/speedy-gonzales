@@ -43,13 +43,15 @@ export const saveAssistantMessage = mutation({
     epicId: v.id("epics"),
     content: v.string(),
     metadata: v.optional(v.any()),
+    tokenCount: v.optional(v.number()),
   },
-  handler: async (ctx, { epicId, content, metadata }) => {
+  handler: async (ctx, { epicId, content, metadata, tokenCount }) => {
     return ctx.db.insert("chatMessages", {
       epicId,
       role: "assistant",
       content,
       metadata,
+      tokenCount,
       createdAt: Date.now(),
     })
   },
