@@ -45,13 +45,16 @@ export function TicketItem({ ticket, isActive, onClick }: TicketItemProps) {
       onClick={onClick}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onClick() }}
       className={cn(
-        "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors cursor-pointer",
+        "flex w-full items-center gap-1 rounded-md px-1 py-0.5 text-left text-sm transition-colors cursor-pointer",
         isActive ? "bg-accent text-accent-foreground" : "text-foreground hover:bg-accent"
       )}
     >
       <DropdownMenu>
         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-          <button type="button" className="shrink-0 flex items-center justify-center size-[44px] -m-[14px] rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1">
+          <button
+            type="button"
+            className="shrink-0 flex items-center justify-center w-[44px] h-[44px] rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 hover:bg-muted/50 transition-colors"
+          >
             <div className={cn("size-2.5 rounded-full", STATUS_COLORS[ticket.status] ?? "bg-status-todo")} />
           </button>
         </DropdownMenuTrigger>
