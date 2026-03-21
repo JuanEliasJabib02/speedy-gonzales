@@ -103,12 +103,16 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady }: ChatP
     URL.revokeObjectURL(url)
   }, [messages, epic])
 
-  // Auto-scroll on new messages or streaming updates
+  // Auto-scroll only when user is near the bottom
+  const isStreaming = streamingContent !== null
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    const el = scrollRef.current
+    if (!el) return
+    const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100
+    if (isNearBottom || isStreaming) {
+      el.scrollTop = el.scrollHeight
     }
-  }, [messages.length, streamingContent, optimisticMessage])
+  }, [messages.length, streamingContent, optimisticMessage, isStreaming])
 
   return (
     <div
@@ -163,7 +167,7 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady }: ChatP
                 key={message._id}
                 message={{
                   id: message._id,
-                  role: message.role as "user" | "agent",
+                  role: message.role === "assistant" ? "agent" : "user",
                   type: "text",
                   content: message.content,
                   commits: message.metadata?.commits,
@@ -223,7 +227,7 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady }: ChatP
         onStop={handleStop}
         onKeyDown={handleKeyDown}
         isSending={isSending}
-        isStreaming={streamingContent !== null}
+        isStreaming={isStreaming}
         hasQueued={hasQueued}
         queueLength={queueLength}
         pendingImages={pendingImages}

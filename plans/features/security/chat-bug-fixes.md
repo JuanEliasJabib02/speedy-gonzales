@@ -1,6 +1,6 @@
 # Chat Bug Fixes (BUG-01, BUG-02, BUG-08, LEAK-01, PERF-03, PERF-05)
 
-**Status:** todo
+**Status:** review
 **Priority:** high
 
 ## Bugs to fix
@@ -47,12 +47,12 @@ Add AbortController with 60s timeout on the upstream fetch.
 
 ## Checklist
 
-- [ ] BUG-01: fix orphan cleanup to use .filter() not .find()
-- [ ] BUG-02: normalize role at mapping layer in ChatPanel.tsx
-- [ ] BUG-08: remove hardcoded user: "juan"
-- [ ] LEAK-01: add useEffect cleanup for blob URLs
-- [ ] PERF-03: smart auto-scroll (only when near bottom)
-- [ ] PERF-05: add 60s timeout on upstream AI fetch
+- [x]BUG-01: fix orphan cleanup to use .filter() not .find()
+- [x]BUG-02: normalize role at mapping layer in ChatPanel.tsx
+- [x]BUG-08: remove hardcoded user: "juan"
+- [x]LEAK-01: add useEffect cleanup for blob URLs
+- [x]PERF-03: smart auto-scroll (only when near bottom)
+- [x]PERF-05: add 60s timeout on upstream AI fetch
 
 ## Files
 
