@@ -90,7 +90,7 @@
   /* Status colors — the only chromatic UI elements */
   --status-todo: 0 0% 45%;
   --status-in-progress: 220 80% 60%;
-  --status-review: 270 60% 60%;
+  --status-review: 45 90% 50%;
   --status-blocked: 0 70% 55%;
   --status-completed: 145 60% 42%;
 }
@@ -131,7 +131,7 @@
 
   --status-todo: 0 0% 55%;
   --status-in-progress: 220 80% 50%;
-  --status-review: 270 60% 50%;
+  --status-review: 45 90% 45%;
   --status-blocked: 0 70% 50%;
   --status-completed: 145 60% 38%;
 }
