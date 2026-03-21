@@ -166,11 +166,52 @@ npx convex env set OPENCLAW_MODEL "openclaw:main"`}
           </ul>
         </div>
 
+        <div className="space-y-3">
+          <h3 className="font-medium">Connection methods</h3>
+          <p className="text-sm text-muted-foreground">
+            The default method is <strong className="text-foreground">Cloudflare Tunnel</strong> &mdash;
+            the agent runs on a VPS and Cloudflare exposes it via a public HTTPS URL.
+            This is the simplest setup and what we use for development.
+          </p>
+          <div className="overflow-hidden rounded-lg border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-muted/50">
+                  <th className="px-4 py-2.5 text-left font-medium">Method</th>
+                  <th className="px-4 py-2.5 text-left font-medium">When to use</th>
+                  <th className="px-4 py-2.5 text-left font-medium">URL format</th>
+                </tr>
+              </thead>
+              <tbody className="text-muted-foreground">
+                <tr className="border-t border-border">
+                  <td className="px-4 py-2.5 font-medium text-foreground">Cloudflare Tunnel</td>
+                  <td className="px-4 py-2.5">Development (default)</td>
+                  <td className="px-4 py-2.5"><code className="rounded bg-muted px-1.5 py-0.5">https://&lt;random&gt;.trycloudflare.com/v1</code></td>
+                </tr>
+                <tr className="border-t border-border">
+                  <td className="px-4 py-2.5 font-medium text-foreground">Tailscale</td>
+                  <td className="px-4 py-2.5">Production (permanent, private network)</td>
+                  <td className="px-4 py-2.5"><code className="rounded bg-muted px-1.5 py-0.5">http://&lt;machine&gt;:18789/v1</code></td>
+                </tr>
+                <tr className="border-t border-border">
+                  <td className="px-4 py-2.5 font-medium text-foreground">Same network</td>
+                  <td className="px-4 py-2.5">Both on same LAN/VPN</td>
+                  <td className="px-4 py-2.5"><code className="rounded bg-muted px-1.5 py-0.5">http://&lt;local-ip&gt;:18789/v1</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            All methods use the same env vars &mdash; just change <code className="rounded bg-muted px-1.5 py-0.5">OPENCLAW_BASE_URL</code> and restart.
+          </p>
+        </div>
+
         <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
           <p className="text-sm text-muted-foreground">
-            <strong className="text-foreground">Note:</strong> The Cloudflare Tunnel URL is temporary
-            and changes on restart. In production, this will be replaced with a permanent
-            Tailscale connection. The env vars are designed to be swappable &mdash; just update the URL.
+            <strong className="text-foreground">Roadmap:</strong> We will migrate to
+            <strong className="text-foreground"> Tailscale</strong> for a permanent, secure connection.
+            The Cloudflare Tunnel URL is temporary and changes on restart. Since connection
+            details are env vars, the migration is just updating <code className="rounded bg-muted px-1.5 py-0.5">OPENCLAW_BASE_URL</code> &mdash; no code changes needed.
           </p>
         </div>
       </section>
