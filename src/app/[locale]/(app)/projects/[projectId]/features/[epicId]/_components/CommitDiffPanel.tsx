@@ -9,7 +9,7 @@ import {
   DialogDescription,
 } from "@/src/lib/components/ui/dialog"
 import { cn } from "@/src/lib/helpers/cn"
-import { FileCode2, Plus, Minus, ChevronDown, ChevronRight } from "lucide-react"
+import { FileCode2, Plus, Minus, ChevronDown, ChevronRight, CheckCircle2, Loader2 } from "lucide-react"
 
 type DiffFile = {
   filename: string
@@ -37,6 +37,8 @@ type CommitDiffPanelProps = {
   owner: string
   repo: string
   sha: string
+  ticketId?: string
+  onMarkComplete?: () => void | Promise<void>
 }
 
 const MAX_LINES_PER_FILE = 500
@@ -162,10 +164,13 @@ export function CommitDiffPanel({
   owner,
   repo,
   sha,
+  ticketId,
+  onMarkComplete,
 }: CommitDiffPanelProps) {
   const [data, setData] = useState<CommitDiffData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [marking, setMarking] = useState(false)
 
   const fetchDiff = useCallback(async () => {
     setLoading(true)
@@ -256,6 +261,26 @@ export function CommitDiffPanel({
           {data && data.files.length === 0 && (
             <div className="text-sm text-muted-foreground italic">
               No file changes in this commit.
+            </div>
+          )}
+
+          {ticketId && onMarkComplete && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <button
+                onClick={async () => {
+                  setMarking(true)
+                  try {
+                    await onMarkComplete()
+                  } finally {
+                    setMarking(false)
+                  }
+                }}
+                disabled={marking}
+                className="flex items-center gap-2 rounded-md bg-status-completed hover:bg-status-completed/80 text-white px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                {marking ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
+                Mark as completed
+              </button>
             </div>
           )}
         </div>

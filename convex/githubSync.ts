@@ -4,7 +4,7 @@ import { internal } from "./_generated/api"
 import type { Id } from "./_generated/dataModel"
 import { getGitProvider } from "./model/providers"
 import { groupFilesIntoEpics } from "./model/groupFiles"
-import { parsePlan } from "./model/parsePlan"
+import { parsePlan, parseCommits } from "./model/parsePlan"
 import type { GitProviderConfig, GitProviderType } from "./model/gitProvider"
 
 export const syncProject = action({
@@ -67,6 +67,7 @@ export const syncRepoInternal = internalAction({
           sha: string
           content: string
           parsed: ReturnType<typeof parsePlan>
+          commits: string[]
         }>
       }
 
@@ -125,16 +126,19 @@ export const syncRepoInternal = internalAction({
                 checklistTotal: existingTicket.checklistTotal,
                 checklistCompleted: existingTicket.checklistCompleted,
               },
+              commits: existingTicket.commits ?? [],
             })
           } else {
             const content = await provider.fetchFileContent(config, ticketFile.path)
             const parsed = parsePlan(content)
+            const commits = parseCommits(parsed.body)
             console.log("[sync] PARSED:", ticketFile.path, "| status:", parsed.status)
             epicData.tickets.push({
               path: ticketFile.path,
               sha: ticketFile.sha,
               content,
               parsed,
+              commits,
             })
           }
           ticketOrder++
@@ -167,6 +171,7 @@ export const syncRepoInternal = internalAction({
             priority: t.parsed.priority,
             checklistTotal: t.parsed.checklistTotal,
             checklistCompleted: t.parsed.checklistCompleted,
+            commits: t.commits,
             sortOrder: j,
           })),
         })),
@@ -214,6 +219,7 @@ export const upsertPlans = internalMutation({
             priority: v.string(),
             checklistTotal: v.number(),
             checklistCompleted: v.number(),
+            commits: v.array(v.string()),
             sortOrder: v.number(),
           }),
         ),
@@ -287,8 +293,9 @@ export const upsertPlans = internalMutation({
           const movedEpic = existingTicket.epicId !== epicId
           const orderChanged = existingTicket.sortOrder !== ticketData.sortOrder
           const wasDeleted = existingTicket.isDeleted
+          const commitsChanged = JSON.stringify(existingTicket.commits ?? []) !== JSON.stringify(ticketData.commits)
 
-          if (contentChanged || movedEpic || orderChanged || wasDeleted) {
+          if (contentChanged || movedEpic || orderChanged || wasDeleted || commitsChanged) {
             await ctx.db.patch(existingTicket._id, {
               epicId,
               title: ticketData.title,
@@ -298,6 +305,7 @@ export const upsertPlans = internalMutation({
               priority: ticketData.priority,
               checklistTotal: ticketData.checklistTotal,
               checklistCompleted: ticketData.checklistCompleted,
+              commits: ticketData.commits.length > 0 ? ticketData.commits : undefined,
               sortOrder: ticketData.sortOrder,
               isDeleted: false,
             })
@@ -314,6 +322,7 @@ export const upsertPlans = internalMutation({
             priority: ticketData.priority,
             checklistTotal: ticketData.checklistTotal,
             checklistCompleted: ticketData.checklistCompleted,
+            commits: ticketData.commits.length > 0 ? ticketData.commits : undefined,
             sortOrder: ticketData.sortOrder,
             isDeleted: false,
           })

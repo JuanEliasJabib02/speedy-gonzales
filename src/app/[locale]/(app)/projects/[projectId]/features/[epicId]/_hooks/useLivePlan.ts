@@ -28,6 +28,7 @@ export function useLivePlan(epicId: string, projectId?: string) {
             title: t.title,
             status: t.status as "todo" | "in-progress" | "review" | "completed" | "blocked",
             blockedReason: t.blockedReason,
+            commits: t.commits ?? [],
           })),
         ],
         planContent: epic.content,
@@ -63,5 +64,7 @@ export function useLivePlan(epicId: string, projectId?: string) {
     getTicketContent,
     lastSyncAt: project?.lastSyncAt,
     syncStatus: project?.syncStatus,
+    repoOwner: project?.repoOwner,
+    repoName: project?.repoName,
   }
 }

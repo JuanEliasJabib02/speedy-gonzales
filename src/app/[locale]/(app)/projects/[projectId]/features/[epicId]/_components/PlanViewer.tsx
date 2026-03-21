@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
@@ -16,18 +16,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/src/lib/components/ui/popover"
-import { ChevronDown, Copy, Check } from "lucide-react"
+import { ChevronDown, Copy, Check, GitCommitHorizontal, Plus, Minus, Code2, CheckCircle2, Loader2 } from "lucide-react"
 import { ChecklistProgress } from "./ChecklistProgress"
+import { CommitDiffPanel } from "./CommitDiffPanel"
 import { Button } from "@/src/lib/components/ui/button"
 import { Input } from "@/src/lib/components/ui/input"
 import ReactMarkdown, { type Components } from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
-import { useCallback, useState as useStateCopy } from "react"
 
 function CodeBlock({ language, code }: { language: string; code: string }) {
-  const [copied, setCopied] = useStateCopy(false)
+  const [copied, setCopied] = useState(false)
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(code)
     setCopied(true)
@@ -145,6 +145,120 @@ const PRIORITY_PILL: Record<string, string> = {
   critical: "bg-status-blocked/15 text-status-blocked",
 }
 
+type CommitDetail = {
+  sha: string
+  message: string
+  filesChanged: number
+  additions: number
+  deletions: number
+  loading: boolean
+  error?: string
+}
+
+function CommitsSection({
+  commits,
+  repoOwner,
+  repoName,
+  onViewDiff,
+}: {
+  commits: string[]
+  repoOwner: string
+  repoName: string
+  onViewDiff: (sha: string) => void
+}) {
+  const [details, setDetails] = useState<Record<string, CommitDetail>>({})
+
+  useEffect(() => {
+    for (const sha of commits) {
+      if (details[sha]) continue
+      setDetails((prev) => ({
+        ...prev,
+        [sha]: { sha, message: "", filesChanged: 0, additions: 0, deletions: 0, loading: true },
+      }))
+      fetch(`/api/commit-diff?owner=${encodeURIComponent(repoOwner)}&repo=${encodeURIComponent(repoName)}&sha=${encodeURIComponent(sha)}`)
+        .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
+        .then((data) => {
+          setDetails((prev) => ({
+            ...prev,
+            [sha]: {
+              sha,
+              message: data.message?.split("\n")[0] ?? "",
+              filesChanged: data.files?.length ?? 0,
+              additions: data.stats?.additions ?? 0,
+              deletions: data.stats?.deletions ?? 0,
+              loading: false,
+            },
+          }))
+        })
+        .catch((err) => {
+          setDetails((prev) => ({
+            ...prev,
+            [sha]: { sha, message: "", filesChanged: 0, additions: 0, deletions: 0, loading: false, error: err.message },
+          }))
+        })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [commits.join(","), repoOwner, repoName])
+
+  return (
+    <div className="mt-6">
+      <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground mb-3">
+        <GitCommitHorizontal className="size-4" />
+        Commits ({commits.length})
+      </h3>
+      <div className="flex flex-col gap-2">
+        {commits.map((sha) => {
+          const d = details[sha]
+          return (
+            <div
+              key={sha}
+              className="rounded-lg border border-[#30363d] bg-[#24292f] p-3 text-white"
+            >
+              <div className="flex items-center gap-2">
+                <GitCommitHorizontal className="size-4 text-status-completed shrink-0" />
+                <code className="text-xs text-[#8b949e]">{sha.slice(0, 7)}</code>
+              </div>
+              {d?.loading ? (
+                <div className="mt-1.5 flex items-center gap-1.5 text-xs text-[#8b949e]">
+                  <Loader2 className="size-3 animate-spin" /> Loading...
+                </div>
+              ) : d?.error ? (
+                <p className="mt-1.5 text-xs text-red-400">Failed to load: {d.error}</p>
+              ) : d ? (
+                <>
+                  <p className="mt-1.5 text-sm">{d.message}</p>
+                  <div className="mt-1 flex items-center gap-3 text-xs text-[#8b949e]">
+                    <span>{d.filesChanged} file{d.filesChanged !== 1 ? "s" : ""} changed</span>
+                    {d.additions > 0 && (
+                      <span className="flex items-center gap-0.5 text-emerald-400">
+                        <Plus className="size-3" />
+                        {d.additions}
+                      </span>
+                    )}
+                    {d.deletions > 0 && (
+                      <span className="flex items-center gap-0.5 text-red-400">
+                        <Minus className="size-3" />
+                        {d.deletions}
+                      </span>
+                    )}
+                  </div>
+                </>
+              ) : null}
+              <button
+                onClick={() => onViewDiff(sha)}
+                className="mt-2 flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium bg-white/10 text-[#c9d1d9] hover:bg-white/15 transition-colors"
+              >
+                <Code2 className="size-3" />
+                View diff
+              </button>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 type PlanViewerProps = {
   title: string
   status: string
@@ -153,12 +267,17 @@ type PlanViewerProps = {
   checklist: { total: number; completed: number }
   ticketId?: string
   blockedReason?: string
+  commits?: string[]
+  repoOwner?: string
+  repoName?: string
 }
 
-export function PlanViewer({ title, status, priority, content, checklist, ticketId, blockedReason }: PlanViewerProps) {
+export function PlanViewer({ title, status, priority, content, checklist, ticketId, blockedReason, commits, repoOwner, repoName }: PlanViewerProps) {
   const updateStatus = useMutation(api.tickets.updateStatus)
   const [showBlockedInput, setShowBlockedInput] = useState(false)
   const [reasonText, setReasonText] = useState("")
+  const [marking, setMarking] = useState(false)
+  const [diffTarget, setDiffTarget] = useState<string | null>(null)
 
   const handleStatusChange = (newStatus: string) => {
     if (!ticketId) return
@@ -186,7 +305,19 @@ export function PlanViewer({ title, status, priority, content, checklist, ticket
     updateStatus({ ticketId: ticketId as Id<"tickets">, status: "in-progress" })
   }
 
+  const handleMarkCompleted = useCallback(async () => {
+    if (!ticketId || marking) return
+    setMarking(true)
+    try {
+      await updateStatus({ ticketId: ticketId as Id<"tickets">, status: "completed" })
+    } finally {
+      setMarking(false)
+    }
+  }, [ticketId, marking, updateStatus])
+
   const isBlocked = status === "blocked"
+  const isReview = status === "review"
+  const showCommits = (isReview || status === "completed") && commits && commits.length > 0 && repoOwner && repoName
 
   return (
     <div className="flex flex-1 flex-col overflow-y-auto p-6 scrollbar-thin">
@@ -205,7 +336,7 @@ export function PlanViewer({ title, status, priority, content, checklist, ticket
                   )}
                 >
                   <div className={cn("size-1.5 rounded-full", STATUS_DOT[status] ?? "bg-status-todo")} />
-                  {isBlocked ? "⛔ blocked" : status}
+                  {isBlocked ? "blocked" : status}
                   <ChevronDown className="size-3 opacity-60" />
                 </button>
               </DropdownMenuTrigger>
@@ -262,14 +393,26 @@ export function PlanViewer({ title, status, priority, content, checklist, ticket
             className="h-6 text-xs gap-1 border-status-blocked/30 text-status-blocked hover:bg-status-blocked/10"
             onClick={handleUnblock}
           >
-            Unblock →
+            Unblock
+          </Button>
+        )}
+
+        {isReview && ticketId && (
+          <Button
+            size="sm"
+            onClick={handleMarkCompleted}
+            disabled={marking}
+            className="h-7 text-xs gap-1.5 bg-status-completed hover:bg-status-completed/80 text-white"
+          >
+            {marking ? <Loader2 className="size-3 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
+            Mark as completed
           </Button>
         )}
       </div>
 
       {isBlocked && blockedReason && (
         <div className="mb-4 rounded-md border border-status-blocked/30 bg-status-blocked/5 px-3 py-2">
-          <p className="text-xs font-medium text-status-blocked">⛔ Blocked: {blockedReason}</p>
+          <p className="text-xs font-medium text-status-blocked">Blocked: {blockedReason}</p>
         </div>
       )}
 
@@ -284,6 +427,30 @@ export function PlanViewer({ title, status, priority, content, checklist, ticket
           {content}
         </ReactMarkdown>
       </div>
+
+      {showCommits && (
+        <>
+          <div className="my-4 border-t border-border" />
+          <CommitsSection
+            commits={commits}
+            repoOwner={repoOwner}
+            repoName={repoName}
+            onViewDiff={(sha) => setDiffTarget(sha)}
+          />
+        </>
+      )}
+
+      {diffTarget && repoOwner && repoName && (
+        <CommitDiffPanel
+          open={true}
+          onOpenChange={(open) => { if (!open) setDiffTarget(null) }}
+          owner={repoOwner}
+          repo={repoName}
+          sha={diffTarget}
+          ticketId={ticketId}
+          onMarkComplete={isReview && ticketId ? handleMarkCompleted : undefined}
+        />
+      )}
     </div>
   )
 }
