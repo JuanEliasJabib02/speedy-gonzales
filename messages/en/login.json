@@ -1,0 +1,40 @@
+{
+  "branding": {
+    "tagline": "Property management and legal compliance for hosts"
+  },
+  "form": {
+    "title": "Sign in",
+    "subtitle": "Enter your email to receive an access code"
+  },
+  "magicLink": {
+    "emailLabel": "Email address",
+    "emailPlaceholder": "you@email.com",
+    "submitButton": "Send access code",
+    "sending": "Sending..."
+  },
+  "googleAuth": {
+    "button": "Continue with Google",
+    "connecting": "Connecting..."
+  },
+  "footer": {
+    "termsPrefix": "By continuing, you accept the",
+    "terms": "Terms of Service",
+    "privacyConnector": "and the",
+    "privacy": "Privacy Policy"
+  },
+  "otp": {
+    "title": "Check your email",
+    "description": "We sent a 6-digit code to",
+    "verifying": "Verifying code...",
+    "resendPrompt": "Didn't receive it?",
+    "resendButton": "Resend code",
+    "back": "Back"
+  },
+  "errors": {
+    "notWhitelisted": "Oops, you don't have access to the private beta.",
+    "sendFailed": "We couldn't send the code. Please try again.",
+    "googleFailed": "We couldn't connect to Google. Please try again.",
+    "invalidCode": "Incorrect or expired code. Please try again.",
+    "resendFailed": "We couldn't resend the code. Please try again."
+  }
+}

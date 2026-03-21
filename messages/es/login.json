@@ -1,0 +1,40 @@
+{
+  "branding": {
+    "tagline": "Gestión y cumplimiento legal para anfitriones"
+  },
+  "form": {
+    "title": "Inicia sesión",
+    "subtitle": "Ingresa tu correo para recibir un código de acceso"
+  },
+  "magicLink": {
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "tu@correo.com",
+    "submitButton": "Enviar código de acceso",
+    "sending": "Enviando..."
+  },
+  "googleAuth": {
+    "button": "Continuar con Google",
+    "connecting": "Conectando..."
+  },
+  "footer": {
+    "termsPrefix": "Al continuar, aceptas los",
+    "terms": "Términos de Servicio",
+    "privacyConnector": "y la",
+    "privacy": "Política de Privacidad"
+  },
+  "otp": {
+    "title": "Revisa tu correo",
+    "description": "Enviamos un código de 6 dígitos a",
+    "verifying": "Verificando código...",
+    "resendPrompt": "¿No lo recibiste?",
+    "resendButton": "Reenviar código",
+    "back": "Volver"
+  },
+  "errors": {
+    "notWhitelisted": "Ups, no tienes acceso a la beta privada.",
+    "sendFailed": "No pudimos enviar el código. Intenta de nuevo.",
+    "googleFailed": "No pudimos conectar con Google. Intenta de nuevo.",
+    "invalidCode": "Código incorrecto o expirado. Intenta de nuevo.",
+    "resendFailed": "No pudimos reenviar el código. Intenta de nuevo."
+  }
+}
