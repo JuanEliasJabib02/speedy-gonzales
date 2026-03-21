@@ -1,7 +1,7 @@
 # Paste Image Upload (Ctrl+V Screenshots)
 
 **Status:** todo
-**Priority:** medium
+**Priority:** high
 
 ## What it does
 
