@@ -1,6 +1,6 @@
 # Export Conversation
 
-**Status:** todo
+**Status:** review
 **Priority:** low
 
 ## What it does
@@ -9,10 +9,10 @@ Download the current chat conversation as a `.md` file. Useful for documenting d
 
 ## Checklist
 
-- [ ] Add "Export" button in the chat header
-- [ ] Format: markdown with timestamps, user/agent labels, and message content
-- [ ] Include feature name and date in the filename (e.g. `chat-feature-view-2026-03-21.md`)
-- [ ] Trigger browser download (no server needed — pure client-side)
+- [x] Add "Export" button in the chat header
+- [x] Format: markdown with timestamps, user/agent labels, and message content
+- [x] Include feature name and date in the filename (e.g. `chat-feature-view-2026-03-21.md`)
+- [x] Trigger browser download (no server needed — pure client-side)
 
 ## Files
 
