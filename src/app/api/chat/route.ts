@@ -1,3 +1,6 @@
+import { readFile } from "node:fs/promises"
+import { resolve } from "node:path"
+import { homedir } from "node:os"
 import { ConvexHttpClient } from "convex/browser"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
@@ -6,6 +9,19 @@ import { parseCommitRefs } from "@/src/lib/helpers/parseCommitRefs"
 // Lazy init — avoids build-time evaluation when env var is not set
 function getConvex() {
   return new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+}
+
+function getMemoryPath(projectId: string): string {
+  return resolve(homedir(), ".openclaw", "workspace", "memory", `speedy-${projectId}.md`)
+}
+
+async function loadMemoryFile(projectId: string): Promise<string> {
+  try {
+    const content = await readFile(getMemoryPath(projectId), "utf-8")
+    return content.trim()
+  } catch {
+    return ""
+  }
 }
 
 type ChatContext = {
@@ -33,7 +49,7 @@ type HistoryMessage = {
   content: string
 }
 
-function buildSystemMessage(context: ChatContext): string {
+function buildSystemMessage(context: ChatContext, memory?: string): string {
   const ticketList = context.tickets
     .map((t) => `  - [${t.status}] ${t.title}`)
     .join("\n")
@@ -158,6 +174,23 @@ When you perform actions like creating tickets, updating statuses, or triggering
 Allowed action types: \`ticket-created\`, \`status-updated\`, \`sync-triggered\`.
 Always include the \`<actions>\` block when you perform any of these actions. Do NOT include it if no actions were performed.
 
+## Project Memory
+
+You have a persistent memory file at \`~/.openclaw/workspace/memory/speedy-${context.project.name}.md\`.
+You MUST update this file when:
+- Important decisions are made (architecture, tech choices, rejected alternatives)
+- User preferences or conventions are established
+- Relevant technical context emerges (gotchas, env setup, deployment notes)
+
+Format: bullet points with date prefix, e.g. \`- (2026-03-21) Decided to use Tailwind over styled-components\`
+
+To update memory, write to the file using your shell-exec tool:
+\`\`\`bash
+cat >> ~/.openclaw/workspace/memory/speedy-${context.project.name}.md << 'MEMORY'
+- (YYYY-MM-DD) Your note here
+MEMORY
+\`\`\`
+${memory ? `\n### Memory from previous sessions\n${memory}\n` : ""}
 ## Instructions
 - When modifying plans or code, push changes to the branch.
 - Be concise and helpful. Reference specific tickets and files when relevant.
@@ -286,8 +319,9 @@ async function enrichCommits(fullContent: string, context: ChatContext | undefin
 
 export async function POST(request: Request) {
   const convex = getConvex()
-  const { epicId, message, context, history } = (await request.json()) as {
+  const { epicId, projectId, message, context, history } = (await request.json()) as {
     epicId: string
+    projectId?: string
     message: string
     context?: ChatContext
     history?: HistoryMessage[]
@@ -305,10 +339,13 @@ export async function POST(request: Request) {
     return new Response("Chat not configured", { status: 503 })
   }
 
+  // Load cross-session memory if projectId is available
+  const memory = projectId ? await loadMemoryFile(projectId) : ""
+
   // Build messages for OpenAI-compatible API
   const allMessages: Array<{ role: string; content: string }> = []
   if (context) {
-    allMessages.push({ role: "system", content: buildSystemMessage(context) })
+    allMessages.push({ role: "system", content: buildSystemMessage(context, memory || undefined) })
   }
   for (const m of history ?? []) {
     allMessages.push({ role: m.role, content: m.content })
