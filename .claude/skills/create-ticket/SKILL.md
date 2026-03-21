@@ -16,8 +16,10 @@ When this skill is triggered, create a new ticket inside an existing feature (ep
    - What the ticket does
    - Initial checklist steps
    - Status and priority (default: `todo` / `medium`)
-4. Create `plans/features/<epic-slug>/<ticket-slug>.md`
-5. Update the epic's `_context.md` — add the new ticket to the `## Still needs` checklist
+4. **Compare with code** — check if the feature already exists in the codebase. If it does, mark it `completed` or only list missing parts. The code is the source of truth.
+5. Create `plans/features/<epic-slug>/<ticket-slug>.md`
+6. Update the epic's `_context.md` — add the new ticket to the `## Still needs` checklist
+7. **Commit and push immediately** — `git add` + `git commit` + `git push` so the ticket appears in the kanban UI via auto-sync
 
 ## File template
 
@@ -57,3 +59,6 @@ Clear description of this specific task.
 - **Only plan files** — this skill creates `.md` files only, never code
 - Write in English
 - Keep the `## Files` section if relevant source files are known, omit it otherwise
+- **Always commit and push** — tickets must be visible in the kanban immediately
+- **When the user says "create a task"** — create a ticket here, NOT in `.claude/tasks/`
+- **Code is truth** — always check the codebase before creating. Don't create tickets for things already built
