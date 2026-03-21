@@ -13,9 +13,9 @@ const guides = [
 
 const features = [
   {
-    title: "GitHub Sync",
+    title: "GitHub Auto-Sync",
     description:
-      "Automatic and manual sync between your GitHub repos and Speedy Gonzales. Push plans, get real-time updates.",
+      "Push your plans to GitHub and Speedy updates in real time. Webhook-powered, zero config after setup.",
     href: "/docs/sync",
     icon: GitBranch,
   },

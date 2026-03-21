@@ -12,7 +12,7 @@ export default function SyncDocsPage() {
           <ArrowLeft className="size-3" />
           Back to Docs
         </Link>
-        <h1 className="text-3xl font-semibold tracking-tight">GitHub Sync</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">GitHub Auto-Sync</h1>
         <p className="mt-2 text-muted-foreground">
           Keep your plans in sync between GitHub and Speedy Gonzales.
         </p>
