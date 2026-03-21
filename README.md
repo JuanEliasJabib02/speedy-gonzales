@@ -4,7 +4,7 @@
 
 Hi, I'm **Juan Elías** 🫏🇨🇴 — Colombian dev.
 
-I built this for myself. The idea behind it: I practically never need to write code anymore. AI agents do that. My job is to think, plan, and command — and SpeedIDE is the web command center where that happens. One place to plan, command your agents, and see everything in real time. No more tab switching. Just ship.
+I built this for myself. The idea behind it: I practically never need to write code anymore. AI agents do that. My job is to think, plan, and command — and SpeedIDE is the web command center where that happens. One place to plan, command your agents, review commits and PRs, and see everything in real time. No GitHub, no Jira, no Slack open on the side. Just this.
 
 ---
 
