@@ -1,7 +1,14 @@
-import { ArrowRight, BookOpen, Brain, CheckCircle, Circle, Clock, Code, FolderTree, GitBranch, MessageSquare, Rocket, Zap } from "lucide-react"
+import { ArrowRight, BookOpen, Brain, CheckCircle, Circle, Clock, Code, FolderTree, GitBranch, Heart, MessageSquare, Rocket, Zap } from "lucide-react"
 import Link from "next/link"
 
 const guides = [
+  {
+    title: "The Speedy Philosophy",
+    description:
+      "Why Speedy Gonzales exists. The vision of Juan Elias Jabib — developing at the speed of thought, with AI as a first-class teammate.",
+    href: "/docs/philosophy",
+    icon: Heart,
+  },
   {
     title: "Setup Guide",
     description:
