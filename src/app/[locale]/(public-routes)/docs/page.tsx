@@ -1,7 +1,14 @@
-import { ArrowRight, GitBranch, MessageSquare } from "lucide-react"
+import { ArrowRight, FolderTree, GitBranch, MessageSquare } from "lucide-react"
 import Link from "next/link"
 
 const sections = [
+  {
+    title: "Plan Structure",
+    description:
+      "How to organize your plans/ folder. Directory conventions, file format, parsed fields, and the spec the AI agent follows.",
+    href: "/docs/plans",
+    icon: FolderTree,
+  },
   {
     title: "GitHub Sync",
     description:
@@ -35,8 +42,10 @@ export default function DocsPage() {
         </p>
       </section>
 
-      {/* Section cards */}
-      <section className="grid gap-4 sm:grid-cols-2">
+      {/* Features */}
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Features</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
         {sections.map((section) => (
           <Link
             key={section.href}
@@ -58,6 +67,7 @@ export default function DocsPage() {
             </div>
           </Link>
         ))}
+        </div>
       </section>
     </div>
   )
