@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npm-run-all --parallel dev:next dev:convex",
+    "dev": "npm-run-all --parallel dev:next dev:convex dev:watch",
     "dev:next": "next dev",
     "dev:convex": "convex dev",
+    "dev:watch": "node scripts/watch-plans.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "biome check .",
