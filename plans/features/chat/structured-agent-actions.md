@@ -1,6 +1,6 @@
 # Structured Agent Actions (JSON metadata)
 
-**Status:** todo
+**Status:** review
 **Priority:** medium
 
 ## What it does
@@ -28,12 +28,12 @@ The API route strips the `<actions>...</actions>` block from the streamed conten
 
 ## Checklist
 
-- [ ] Define `<actions>...</actions>` XML block format in the system prompt
-- [ ] In `src/app/api/chat/route.ts`: strip `<actions>` block from streamed content before sending to client
-- [ ] Parse the JSON and save as `metadata.actions` in saveAssistantMessage
-- [ ] Update ActionCard to read from `message.metadata.actions` instead of parsing text
-- [ ] Keep text parser as fallback for old messages
-- [ ] Update system prompt in route.ts to instruct agent to use this format
+- [x] Define `<actions>...</actions>` XML block format in the system prompt
+- [x] In `src/app/api/chat/route.ts`: strip `<actions>` block from streamed content before sending to client
+- [x] Parse the JSON and save as `metadata.actions` in finalizeStreamingMessage
+- [x] Update ActionCard to read from `message.metadata.actions` instead of parsing text
+- [x] Keep text parser as fallback for old messages
+- [x] Update system prompt in route.ts to instruct agent to use this format
 
 ## Files
 

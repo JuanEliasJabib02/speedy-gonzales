@@ -167,6 +167,7 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady }: ChatP
                   type: "text",
                   content: message.content,
                   commits: message.metadata?.commits,
+                  actions: message.metadata?.actions,
                   timestamp: new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
                   isInterrupted: message.isInterrupted === true,
                 }}

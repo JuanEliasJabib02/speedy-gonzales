@@ -1,5 +1,5 @@
 import { ExternalLink, Zap, Copy, Check, GitCommitHorizontal, RotateCcw, AlertTriangle } from "lucide-react"
-import { ActionCard, parseActions } from "./ActionCard"
+import { ActionCard, parseActions, type ParsedAction } from "./ActionCard"
 import { LinkPreviewCard, extractGitHubUrls } from "./LinkPreviewCard"
 import { cn } from "@/src/lib/helpers/cn"
 import { useState, useCallback } from "react"
@@ -40,6 +40,7 @@ type ChatMessageData = {
   type: "text" | "commit"
   content: string
   commits?: CommitData[]
+  actions?: ParsedAction[]
   timestamp: string
   isInterrupted?: boolean
 }
@@ -300,7 +301,8 @@ export function ChatMessage({ message, userInitial, isStreaming, onRetry }: Chat
         )}
 
         {!isUser && !isStreaming && (() => {
-          const actions = parseActions(message.content)
+          // Prefer structured actions from metadata; fall back to regex for old messages
+          const actions = message.actions?.length ? message.actions : parseActions(message.content)
           return actions.length > 0 ? (
             <div className="flex flex-col gap-2 mt-1 max-w-[85%]">
               {actions.map((action, i) => (
