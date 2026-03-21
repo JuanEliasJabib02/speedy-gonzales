@@ -37,7 +37,7 @@ export const deleteMessage = mutation({
   },
 })
 
-// Public mutation — called from Next.js API route (server-side only)
+// Called from Next.js API route (server-side, authenticated via user token)
 export const saveAssistantMessage = mutation({
   args: {
     epicId: v.id("epics"),
@@ -46,6 +46,7 @@ export const saveAssistantMessage = mutation({
     tokenCount: v.optional(v.number()),
   },
   handler: async (ctx, { epicId, content, metadata, tokenCount }) => {
+    await requireAuth(ctx)
     return ctx.db.insert("chatMessages", {
       epicId,
       role: "assistant",
@@ -61,6 +62,7 @@ export const saveAssistantMessage = mutation({
 export const createStreamingMessage = mutation({
   args: { epicId: v.id("epics") },
   handler: async (ctx, { epicId }) => {
+    await requireAuth(ctx)
     return ctx.db.insert("chatMessages", {
       epicId,
       role: "assistant",
@@ -82,6 +84,7 @@ export const finalizeStreamingMessage = mutation({
     tokenCount: v.optional(v.number()),
   },
   handler: async (ctx, { messageId, content, isInterrupted, metadata, tokenCount }) => {
+    await requireAuth(ctx)
     await ctx.db.patch(messageId, {
       content,
       isStreaming: false,
@@ -96,6 +99,7 @@ export const finalizeStreamingMessage = mutation({
 export const markMessageInterrupted = mutation({
   args: { messageId: v.id("chatMessages") },
   handler: async (ctx, { messageId }) => {
+    await requireAuth(ctx)
     await ctx.db.patch(messageId, { isStreaming: false, isInterrupted: true })
   },
 })

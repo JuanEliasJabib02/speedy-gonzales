@@ -1,6 +1,6 @@
 # Convex Mutations Auth (SEC-01)
 
-**Status:** todo
+**Status:** review
 **Priority:** critical
 
 ## What it does
@@ -24,11 +24,11 @@ For Next.js API route calls (server-side, no user session), use a Convex service
 
 ## Checklist
 
-- [ ] Add `requireAuth(ctx)` to `saveAssistantMessage`
-- [ ] Add `requireAuth(ctx)` to `createStreamingMessage`
-- [ ] Add `requireAuth(ctx)` to `finalizeStreamingMessage`
-- [ ] Add `requireAuth(ctx)` to `markMessageInterrupted`
-- [ ] Add `CONVEX_SERVICE_AUTH_TOKEN` env var support in route.ts
+- [x] Add `requireAuth(ctx)` to `saveAssistantMessage`
+- [x] Add `requireAuth(ctx)` to `createStreamingMessage`
+- [x] Add `requireAuth(ctx)` to `finalizeStreamingMessage`
+- [x] Add `requireAuth(ctx)` to `markMessageInterrupted`
+- [x] Authenticate ConvexHttpClient with user's session token in route.ts
 - [ ] Test that chat still works after auth is added
 
 ## Files
