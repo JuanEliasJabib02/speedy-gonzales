@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, Brain, Code, FolderTree, GitBranch, MessageSquare, Rocket } from "lucide-react"
+import { ArrowRight, BookOpen, Brain, CheckCircle, Circle, Clock, Code, FolderTree, GitBranch, MessageSquare, Rocket } from "lucide-react"
 import Link from "next/link"
 
 const guides = [
@@ -84,6 +84,99 @@ function CardGrid({ items }: { items: SectionCard[] }) {
   )
 }
 
+const roadmapItems = [
+  {
+    status: "done" as const,
+    label: "GitHub Auto-Sync",
+    description: "Push plans to GitHub → Speedy updates in real time via webhook.",
+  },
+  {
+    status: "done" as const,
+    label: "Per-feature AI Chat",
+    description: "OpenClaw chat with context injection (project, tickets, plan).",
+  },
+  {
+    status: "done" as const,
+    label: "Syntax Highlighting",
+    description: "Code blocks in chat with copy button and language detection.",
+  },
+  {
+    status: "done" as const,
+    label: "Streaming UX",
+    description: "ChatGPT-style incremental rendering with typing indicator.",
+  },
+  {
+    status: "in-progress" as const,
+    label: "Production Login (Magic Link)",
+    description: "Convex Auth + Resend email OTP — working locally, fixing Vercel deploy.",
+  },
+  {
+    status: "in-progress" as const,
+    label: "Markdown Rendering",
+    description: "react-markdown + remark-gfm for bold, italic, lists, headers in chat.",
+  },
+  {
+    status: "next" as const,
+    label: "Image Upload in Chat",
+    description: "Paste or upload screenshots directly into the chat (Ctrl+V support).",
+    priority: "high",
+  },
+  {
+    status: "next" as const,
+    label: "Roadmap Modal",
+    description: "Visual roadmap button per feature — shows all tickets by priority in a modal.",
+    priority: "high",
+  },
+  {
+    status: "next" as const,
+    label: "Stop Button",
+    description: "Cancel a streaming agent response mid-generation.",
+    priority: "medium",
+  },
+  {
+    status: "next" as const,
+    label: "GitHub Link Preview",
+    description: "Inline GitHub card previews when sharing commit/PR/issue links in chat.",
+    priority: "medium",
+  },
+  {
+    status: "next" as const,
+    label: "Ticket Mentions (#)",
+    description: "Type # in chat to autocomplete and reference tickets inline.",
+    priority: "medium",
+  },
+  {
+    status: "next" as const,
+    label: "Retry Last Message",
+    description: "Re-send your last message with one click if the response was bad.",
+    priority: "low",
+  },
+  {
+    status: "next" as const,
+    label: "Export Conversation",
+    description: "Download a chat thread as markdown.",
+    priority: "low",
+  },
+  {
+    status: "next" as const,
+    label: "Slash Commands",
+    description: "/create-ticket, /update-status, /sync — agent actions from the chat input.",
+    priority: "low",
+  },
+]
+
+const statusConfig = {
+  done: { label: "Done", icon: CheckCircle, color: "text-green-500" },
+  "in-progress": { label: "In Progress", icon: Clock, color: "text-yellow-500" },
+  next: { label: "Up Next", icon: Circle, color: "text-muted-foreground" },
+}
+
+const priorityConfig = {
+  high: "bg-red-500/10 text-red-600 border-red-500/20",
+  medium: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+  low: "bg-muted text-muted-foreground border-border",
+}
+
 export default function DocsPage() {
   return (
     <div className="space-y-12">
@@ -114,6 +207,43 @@ export default function DocsPage() {
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Features</h2>
         <CardGrid items={features} />
+      </section>
+
+      {/* Roadmap */}
+      <section className="space-y-6">
+        <div>
+          <h2 className="text-xl font-semibold">Roadmap</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            What&apos;s shipped, what&apos;s in progress, and what&apos;s coming next.
+          </p>
+        </div>
+        <div className="space-y-2">
+          {roadmapItems.map((item) => {
+            const { icon: Icon, color, label: statusLabel } = statusConfig[item.status]
+            return (
+              <div
+                key={item.label}
+                className="flex items-start gap-3 rounded-lg border border-border bg-card p-4"
+              >
+                <Icon className={`mt-0.5 size-4 shrink-0 ${color}`} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium">{item.label}</span>
+                    <span className={`text-xs ${color}`}>{statusLabel}</span>
+                    {"priority" in item && item.priority && (
+                      <span
+                        className={`rounded border px-1.5 py-0.5 text-xs font-medium ${priorityConfig[item.priority as keyof typeof priorityConfig]}`}
+                      >
+                        {item.priority}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{item.description}</p>
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </section>
     </div>
   )
