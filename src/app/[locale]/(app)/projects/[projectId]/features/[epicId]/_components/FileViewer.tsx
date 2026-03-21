@@ -52,6 +52,8 @@ const BINARY_EXTENSIONS = new Set([
   "exe", "dll", "so", "dylib",
 ])
 
+const SKELETON_WIDTHS = [75, 60, 85, 55, 70, 90, 65, 80, 50, 80, 65, 75]
+
 function getLanguageFromPath(path: string): string {
   const filename = path.split("/").pop() ?? ""
   const lower = filename.toLowerCase()
@@ -189,7 +191,7 @@ export function FileViewer({ owner, repo, path, ref, onClose }: FileViewerProps)
               <div
                 key={i}
                 className="h-4 animate-pulse rounded bg-white/5"
-                style={{ width: `${30 + Math.random() * 60}%` }}
+                style={{ width: `${SKELETON_WIDTHS[i % SKELETON_WIDTHS.length]}%` }}
               />
             ))}
           </div>

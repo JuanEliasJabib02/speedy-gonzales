@@ -171,6 +171,8 @@ function TreeNodeRow({
   )
 }
 
+const SKELETON_WIDTHS = [75, 60, 85, 55, 70, 90, 65, 80, 50, 80, 65, 75]
+
 function SkeletonRows() {
   return (
     <div className="flex flex-col gap-1.5 p-3">
@@ -178,7 +180,7 @@ function SkeletonRows() {
         <div
           key={i}
           className="h-5 rounded bg-muted/50 animate-pulse"
-          style={{ width: `${60 + Math.random() * 30}%`, marginLeft: `${(i % 3) * 12}px` }}
+          style={{ width: `${SKELETON_WIDTHS[i % SKELETON_WIDTHS.length]}%`, marginLeft: `${(i % 3) * 12}px` }}
         />
       ))}
     </div>
