@@ -55,6 +55,7 @@ export default function ProjectPage() {
         onToggleCompleted={() => setShowCompleted((v) => !v)}
         completedCount={completedCount}
         syncStatus={project.syncStatus}
+        lastSyncAt={project.lastSyncAt}
       />
       <KanbanBoard features={features} showCompleted={showCompleted} projectId={projectId} />
     </div>

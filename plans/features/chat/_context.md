@@ -1,6 +1,6 @@
 # OpenClaw Chat
 
-**Status:** in-progress
+**Status:** todo
 **Priority:** medium
 
 ## Overview

@@ -1,6 +1,6 @@
 # GitHub Sync
 
-**Status:** in-progress
+**Status:** todo
 **Priority:** critical
 
 ## Overview
