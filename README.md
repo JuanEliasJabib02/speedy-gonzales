@@ -4,11 +4,7 @@
 
 Hi, I'm **Juan Elías** 🫏🇨🇴 — Colombian dev.
 
-I built this for myself. I got tired of jumping between Jira, GitHub, Slack, and markdown files just to move a ticket forward. Too much context-switching, too little actual building.
-
-SpeedIDE is my personal workflow: AI writes the code, I write in plain language, and everything lives in one place. The goal is simple — ship faster and get my life back.
-
-Not a startup. Not a pitch. Just a tool that works the way I think.
+I built this for myself. The idea is simple: develop as fast as humanly possible using AI agents. SpeedIDE is a web command center — one place to plan, command your agents, and see everything happening in real time. No more jumping between tabs. Just ship.
 
 ---
 
