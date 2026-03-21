@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { TicketSidebar } from "./TicketSidebar"
 import { PlanViewer } from "./PlanViewer"
 import { ChatPanel } from "./ChatPanel"
@@ -16,10 +16,22 @@ type FeatureLayoutProps = {
   epicId: string
 }
 
+export type ViewMode = "chat" | "code"
+
 export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
   const { plan: epic, isLoading, getTicketContent, lastSyncAt, syncStatus, repoOwner, repoName } = useLivePlan(epicId, projectId)
   const [selectedTicketId, setSelectedTicketId] = useState("")
   const [chatWidth, setChatWidth] = useState(CHAT_DEFAULT_WIDTH)
+
+  const storageKey = `speedy-view-mode-${epicId}`
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (typeof window === "undefined") return "chat"
+    return (localStorage.getItem(storageKey) as ViewMode) ?? "chat"
+  })
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, viewMode)
+  }, [storageKey, viewMode])
   const isDragging = useRef(false)
   const sendDirectRef = useRef<((message: string) => void) | null>(null)
 
@@ -101,7 +113,7 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
         repoName={repoName}
       />
       <ResizeHandle onDragStart={handleDragStart} />
-      <ChatPanel width={chatWidth} projectId={projectId} epicId={epicId} onSendDirectReady={handleSendDirectReady} />
+      <ChatPanel width={chatWidth} projectId={projectId} epicId={epicId} onSendDirectReady={handleSendDirectReady} viewMode={viewMode} onViewModeChange={setViewMode} />
     </div>
   )
 }
