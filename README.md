@@ -6,9 +6,11 @@
 
 ---
 
-Hi, I'm **Juan Elías** 🫏 — a Colombian dev, and this is my vision of how to develop super fast.
+Hi, I'm **Juan Elías** 🫏🇨🇴 — a Colombian dev, and this is my vision of how to develop super fast.
 
-I got tired of jumping between Slack, GitHub, Jira, and a dozen Markdown files just to keep track of what my AI agents were doing. So I built Speedy Gonzales: a single command center where I plan features, talk to my agents, and watch everything update in real time.
+My belief: we're reaching a point where you can build software almost without touching a code editor. AI agents write the code — you write in human language. That's what we already do today, and Speedy Gonzales is my attempt to make that workflow feel native and intentional.
+
+I got tired of context-switching between Slack (to talk to my agents), GitHub (to check what they pushed), Jira/Notion (to track what's planned), and scattered Markdown files nobody reads in a nice way. There was no single place to **see the big picture, read the plans, and command your agents** — all at once, in real time. So I built it.
 
 I didn't build this alone. Meet the team:
 
