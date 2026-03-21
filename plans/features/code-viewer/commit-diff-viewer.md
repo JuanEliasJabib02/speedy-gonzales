@@ -1,6 +1,6 @@
 # Commit Diff Viewer
 
-**Status:** todo
+**Status:** review
 **Priority:** high
 
 ## What it does
@@ -16,17 +16,17 @@ When the agent mentions a commit in the chat (via a commit card), the user can c
 
 ## Checklist
 
-- [ ] Add "View diff" button to `CommitCard` in `ChatMessage.tsx`
-- [ ] Create `CommitDiffPanel.tsx` — slide-over/drawer component
-- [ ] Create `/api/commit-diff/route.ts` — server-side proxy to GitHub API (avoids CORS + keeps PAT server-side)
+- [x] Add "View diff" button to `CommitCard` in `ChatMessage.tsx`
+- [x] Create `CommitDiffPanel.tsx` — slide-over/drawer component
+- [x] Create `/api/commit-diff/route.ts` — server-side proxy to GitHub API (avoids CORS + keeps PAT server-side)
   - `GET /api/commit-diff?owner=X&repo=Y&sha=Z`
   - Uses `GITHUB_PAT` env var
   - Returns parsed diff data
-- [ ] Parse the GitHub diff response into files + hunks
-- [ ] Render with `react-diff-viewer-continued` or custom syntax-highlighted diff
-- [ ] File tree on the left (list of changed files), diff on the right
-- [ ] Handle large diffs gracefully (truncate at 500 lines with "Show more")
-- [ ] Loading skeleton while fetching
+- [x] Parse the GitHub diff response into files + hunks
+- [x] Render with custom syntax-highlighted diff (Tailwind colors, no extra deps)
+- [x] File list with collapsible diffs per file
+- [x] Handle large diffs gracefully (truncate at 500 lines per file)
+- [x] Loading skeleton while fetching
 
 ## API
 
