@@ -88,10 +88,105 @@ Plan files live under \`plans/features/\` in the repo.
 - Checklists (\`- [x]\` and \`- [ ]\`) are counted for progress tracking
 - Only 2 levels deep: \`features/<epic>/<file>.md\`
 
+## Structured Actions
+
+When you perform actions like creating tickets, updating statuses, or triggering syncs, include a structured JSON block at the END of your response using this exact format:
+
+\`\`\`
+<actions>
+[
+  { "type": "ticket-created", "title": "feat/dark-mode", "detail": "todo" },
+  { "type": "status-updated", "title": "wire-convex", "detail": "in-progress" },
+  { "type": "sync-triggered", "title": "speedy-gonzales" }
+]
+</actions>
+\`\`\`
+
+Allowed action types: \`ticket-created\`, \`status-updated\`, \`sync-triggered\`.
+Always include the \`<actions>\` block when you perform any of these actions. Do NOT include it if no actions were performed.
+
 ## Instructions
 - When modifying plans or code, push changes to the branch.
 - Be concise and helpful. Reference specific tickets and files when relevant.
 - If the user asks you to change a plan, create, or modify tickets — do it by editing the markdown files and pushing.`
+}
+
+// --- Structured actions: stream filter + extraction ---
+
+type StructuredAction = {
+  type: "ticket-created" | "status-updated" | "sync-triggered"
+  title: string
+  detail?: string
+}
+
+/** Creates a stateful filter that strips `<actions>...</actions>` from streamed chunks. */
+function createActionsFilter() {
+  let tagBuffer = ""
+  let actionsContent = ""
+  let insideActions = false
+
+  return {
+    /** Returns only the visible portion of the chunk (actions block stripped). */
+    filter(chunk: string): string {
+      let visible = ""
+
+      for (const ch of chunk) {
+        if (insideActions) {
+          actionsContent += ch
+          if (actionsContent.endsWith("</actions>")) {
+            insideActions = false
+          }
+        } else if (tagBuffer.length > 0 || ch === "<") {
+          tagBuffer += ch
+          if ("<actions>".startsWith(tagBuffer)) {
+            if (tagBuffer === "<actions>") {
+              insideActions = true
+              actionsContent = ""
+              tagBuffer = ""
+            }
+          } else {
+            visible += tagBuffer
+            tagBuffer = ""
+          }
+        } else {
+          visible += ch
+        }
+      }
+
+      return visible
+    },
+    /** Flush any remaining buffered characters (e.g. partial `<act` at end of stream). */
+    flush(): string {
+      const remaining = tagBuffer
+      tagBuffer = ""
+      return remaining
+    },
+    /** Returns the raw content captured between `<actions>` tags. */
+    getRawActions(): string {
+      return actionsContent
+    },
+  }
+}
+
+/** Extracts and parses structured actions from the raw content between `<actions>` tags. */
+function parseStructuredActions(raw: string): StructuredAction[] | undefined {
+  if (!raw) return undefined
+  // Strip the closing tag if present
+  const json = raw.replace(/<\/actions>$/, "").trim()
+  if (!json) return undefined
+  try {
+    const parsed = JSON.parse(json)
+    if (!Array.isArray(parsed)) return undefined
+    return parsed as StructuredAction[]
+  } catch {
+    console.error("[chat] Failed to parse structured actions:", json.slice(0, 200))
+    return undefined
+  }
+}
+
+/** Strips `<actions>...</actions>` block from a complete string (used for saved content). */
+function stripActionsBlock(content: string): string {
+  return content.replace(/<actions>[\s\S]*?<\/actions>/g, "").trim()
 }
 
 async function enrichCommits(fullContent: string, context: ChatContext | undefined) {
@@ -211,6 +306,7 @@ export async function POST(request: Request) {
     const encoder = new TextEncoder()
     let fullContent = ""
     let totalTokens: number | undefined
+    const actionsFilter = createActionsFilter()
 
     const stream = new ReadableStream({
       async start(controller) {
@@ -234,8 +330,11 @@ export async function POST(request: Request) {
                 const content = parsed.choices?.[0]?.delta?.content
                 if (content) {
                   fullContent += content
-                  // Send plain text chunks to client
-                  controller.enqueue(encoder.encode(content))
+                  // Filter out <actions> block before sending to client
+                  const visible = actionsFilter.filter(content)
+                  if (visible) {
+                    controller.enqueue(encoder.encode(visible))
+                  }
                 }
                 // Capture usage from the final chunk (OpenAI streaming with include_usage)
                 if (parsed.usage?.total_tokens) {
@@ -247,13 +346,27 @@ export async function POST(request: Request) {
             }
           }
 
+          // Flush any remaining buffered tag characters
+          const flushed = actionsFilter.flush()
+          if (flushed) {
+            controller.enqueue(encoder.encode(flushed))
+          }
+
+          // Parse structured actions from the filtered block
+          const actions = parseStructuredActions(actionsFilter.getRawActions())
+
           // Finalize the message in Convex BEFORE closing the controller
+          // Save content WITHOUT the <actions> block
+          const cleanContent = stripActionsBlock(fullContent)
           try {
-            const metadata = await enrichCommits(fullContent, context)
+            const metadata: Record<string, unknown> = {
+              ...(await enrichCommits(fullContent, context)),
+              ...(actions ? { actions } : {}),
+            }
             await convex.mutation(api.chat.finalizeStreamingMessage, {
               messageId: streamingMessageId,
-              content: fullContent || "",
-              metadata,
+              content: cleanContent || "",
+              metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
               tokenCount: totalTokens,
             })
           } catch (saveError) {
