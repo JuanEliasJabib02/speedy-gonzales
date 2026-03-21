@@ -3,7 +3,10 @@ import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import { parseCommitRefs } from "@/src/lib/helpers/parseCommitRefs"
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+// Lazy init — avoids build-time evaluation when env var is not set
+function getConvex() {
+  return new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+}
 
 type ChatContext = {
   project: {
@@ -102,6 +105,7 @@ async function enrichCommits(fullContent: string, context: ChatContext | undefin
 }
 
 export async function POST(request: Request) {
+  const convex = getConvex()
   const { epicId, message, context, history } = (await request.json()) as {
     epicId: string
     message: string
