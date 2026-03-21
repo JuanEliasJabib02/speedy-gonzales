@@ -17,7 +17,7 @@ type FeatureLayoutProps = {
 }
 
 export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
-  const { plan: epic, isLoading, getTicketContent, lastSyncAt, syncStatus } = useLivePlan(epicId, projectId)
+  const { plan: epic, isLoading, getTicketContent, lastSyncAt, syncStatus, repoOwner, repoName } = useLivePlan(epicId, projectId)
   const [selectedTicketId, setSelectedTicketId] = useState("")
   const [chatWidth, setChatWidth] = useState(CHAT_DEFAULT_WIDTH)
   const isDragging = useRef(false)
@@ -96,6 +96,9 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
         checklist={ticketData.checklist}
         ticketId={selectedTicket?.id !== "_context" ? selectedTicket?.id : undefined}
         blockedReason={selectedTicket?.blockedReason}
+        commits={selectedTicket?.commits ?? []}
+        repoOwner={repoOwner}
+        repoName={repoName}
       />
       <ResizeHandle onDragStart={handleDragStart} />
       <ChatPanel width={chatWidth} projectId={projectId} epicId={epicId} onSendDirectReady={handleSendDirectReady} />

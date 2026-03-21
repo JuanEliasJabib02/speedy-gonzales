@@ -56,6 +56,18 @@ export function stripHeader(content: string): string {
   return lines.slice(startIndex).join("\n").trim()
 }
 
+export function parseCommits(body: string): string[] {
+  const match = body.match(/## Commits\s*\n([\s\S]*?)(?=\n## |\n*$)/)
+  if (!match) return []
+  const section = match[1]
+  const hashes: string[] = []
+  for (const line of section.split("\n")) {
+    const hashMatch = line.match(/^-\s+`([a-f0-9]{7,40})`/)
+    if (hashMatch) hashes.push(hashMatch[1])
+  }
+  return hashes
+}
+
 export function parsePlan(content: string): ParsedPlan {
   const title = parseTitle(content)
   const status = parseField(content, "Status") || "todo"

@@ -13,6 +13,7 @@ export const tickets = defineTable({
   priority: v.string(), // "low" | "medium" | "high" | "critical"
   checklistTotal: v.number(),
   checklistCompleted: v.number(),
+  commits: v.optional(v.array(v.string())),
   sortOrder: v.number(),
   isDeleted: v.boolean(),
 })

@@ -1,6 +1,6 @@
 # Ticket Commit History + Review Flow
 
-**Status:** todo
+**Status:** review
 **Priority:** high
 
 ## What it does
@@ -71,13 +71,13 @@ In `PlanViewer.tsx`:
 
 ## Checklist
 
-- [ ] Add `parseCommits(body: string)` to `convex/model/parsePlan.ts` — extract commit hashes from `## Commits` section
-- [ ] Update sync engine to store parsed commits in ticket record (`convex/schema.ts` + upsert logic)
-- [ ] Add `CommitsSection` component in PlanViewer.tsx — renders commit cards for tickets in review/completed
-- [ ] Fetch commit details from `/api/commit-diff` for each commit hash
-- [ ] Add "Mark as completed" button in PlanViewer header (only when status = "review")
-- [ ] Wire "Mark as completed" to Convex mutation + GitHub plan file update
-- [ ] Pass `onMarkComplete` prop to CommitDiffPanel when opened from PlanViewer
+- [x] Add `parseCommits(body: string)` to `convex/model/parsePlan.ts` — extract commit hashes from `## Commits` section
+- [x] Update sync engine to store parsed commits in ticket record (`convex/schema.ts` + upsert logic)
+- [x] Add `CommitsSection` component in PlanViewer.tsx — renders commit cards for tickets in review/completed
+- [x] Fetch commit details from `/api/commit-diff` for each commit hash
+- [x] Add "Mark as completed" button in PlanViewer header (only when status = "review")
+- [x] Wire "Mark as completed" to Convex mutation + GitHub plan file update
+- [x] Pass `onMarkComplete` prop to CommitDiffPanel when opened from PlanViewer
 
 ## Files
 
