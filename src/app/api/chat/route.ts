@@ -205,26 +205,39 @@ export async function POST(request: Request) {
             }
           }
 
+          // Save to Convex BEFORE closing the controller
+          if (fullContent) {
+            try {
+              const metadata = await enrichCommits(fullContent, context)
+              await convex.mutation(api.chat.saveAssistantMessage, {
+                epicId: epicId as Id<"epics">,
+                content: fullContent,
+                metadata,
+              })
+            } catch (saveError) {
+              console.error("[chat] Failed to save message:", saveError)
+            }
+          }
+
           controller.close()
           console.log("[chat] Stream done, length:", fullContent.length)
-
-          // Save to Convex
-          if (fullContent) {
-            const metadata = await enrichCommits(fullContent, context)
-            await convex.mutation(api.chat.saveAssistantMessage, {
-              epicId: epicId as Id<"epics">,
-              content: fullContent,
-              metadata,
-            })
-          }
         } catch (error) {
           console.error("[chat] Stream error:", error)
-          controller.error(error)
-          const msg = error instanceof Error ? error.message : "Stream error"
-          await convex.mutation(api.chat.saveAssistantMessage, {
-            epicId: epicId as Id<"epics">,
-            content: `Stream error: ${msg}`,
-          })
+          // Only save if we have content and controller isn't already closed
+          try {
+            const msg = error instanceof Error ? error.message : "Stream error"
+            await convex.mutation(api.chat.saveAssistantMessage, {
+              epicId: epicId as Id<"epics">,
+              content: fullContent || `Stream error: ${msg}`,
+            })
+          } catch {
+            // ignore save errors during error handling
+          }
+          try {
+            controller.error(error)
+          } catch {
+            // controller may already be closed
+          }
         }
       },
     })
