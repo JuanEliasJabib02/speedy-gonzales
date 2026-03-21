@@ -1,7 +1,7 @@
-import { ArrowRight, FolderTree, GitBranch, MessageSquare } from "lucide-react"
+import { ArrowRight, BookOpen, FolderTree, GitBranch, MessageSquare } from "lucide-react"
 import Link from "next/link"
 
-const sections = [
+const guides = [
   {
     title: "Plan Structure",
     description:
@@ -9,6 +9,9 @@ const sections = [
     href: "/docs/plans",
     icon: FolderTree,
   },
+]
+
+const features = [
   {
     title: "GitHub Sync",
     description:
@@ -24,6 +27,41 @@ const sections = [
     icon: MessageSquare,
   },
 ]
+
+type SectionCard = {
+  title: string
+  description: string
+  href: string
+  icon: React.ComponentType<{ className?: string }>
+}
+
+function CardGrid({ items }: { items: SectionCard[] }) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {items.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className="group flex flex-col gap-3 rounded-lg border border-border bg-card p-6 transition-colors hover:border-primary/50 hover:bg-accent"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-md bg-primary/10">
+              <item.icon className="size-4 text-primary" />
+            </div>
+            <h3 className="font-semibold">{item.title}</h3>
+          </div>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {item.description}
+          </p>
+          <div className="mt-auto flex items-center gap-1 text-sm text-primary">
+            <span>Learn more</span>
+            <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+          </div>
+        </Link>
+      ))}
+    </div>
+  )
+}
 
 export default function DocsPage() {
   return (
@@ -42,32 +80,19 @@ export default function DocsPage() {
         </p>
       </section>
 
+      {/* Getting started */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2">
+          <BookOpen className="size-5 text-muted-foreground" />
+          <h2 className="text-xl font-semibold">Getting started</h2>
+        </div>
+        <CardGrid items={guides} />
+      </section>
+
       {/* Features */}
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Features</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-        {sections.map((section) => (
-          <Link
-            key={section.href}
-            href={section.href}
-            className="group flex flex-col gap-3 rounded-lg border border-border bg-card p-6 transition-colors hover:border-primary/50 hover:bg-accent"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-md bg-primary/10">
-                <section.icon className="size-4 text-primary" />
-              </div>
-              <h2 className="font-semibold">{section.title}</h2>
-            </div>
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              {section.description}
-            </p>
-            <div className="mt-auto flex items-center gap-1 text-sm text-primary">
-              <span>Learn more</span>
-              <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
-            </div>
-          </Link>
-        ))}
-        </div>
+        <CardGrid items={features} />
       </section>
     </div>
   )
