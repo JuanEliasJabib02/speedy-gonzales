@@ -6,7 +6,7 @@
 
 ---
 
-Hi, I'm **Juan Elías** — and this project is my vision of what software development at the speed of light looks like.
+Hi, I'm **Juan Elías** 🫏 — a Colombian dev, and this is my vision of how to develop super fast.
 
 I got tired of jumping between Slack, GitHub, Jira, and a dozen Markdown files just to keep track of what my AI agents were doing. So I built Speedy Gonzales: a single command center where I plan features, talk to my agents, and watch everything update in real time.
 
