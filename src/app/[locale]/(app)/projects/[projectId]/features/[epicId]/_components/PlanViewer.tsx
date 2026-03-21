@@ -16,60 +16,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/src/lib/components/ui/popover"
-import { ChevronDown, Copy, Check, GitCommitHorizontal, Plus, Minus, Code2, CheckCircle2, Loader2 } from "lucide-react"
+import { ChevronDown, GitCommitHorizontal, Plus, Minus, Code2, CheckCircle2, Loader2 } from "lucide-react"
 import { ChecklistProgress } from "./ChecklistProgress"
 import { CommitDiffPanel } from "./CommitDiffPanel"
 import { Button } from "@/src/lib/components/ui/button"
 import { Input } from "@/src/lib/components/ui/input"
-import ReactMarkdown, { type Components } from "react-markdown"
-import remarkGfm from "remark-gfm"
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
-
-function CodeBlock({ language, code }: { language: string; code: string }) {
-  const [copied, setCopied] = useState(false)
-  const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }, [code])
-
-  return (
-    <div className="relative my-3 rounded-lg border border-border overflow-hidden">
-      <div className="flex items-center justify-between bg-muted/50 px-3 py-1">
-        <span className="text-xs text-muted-foreground font-mono">{language}</span>
-        <button type="button" onClick={handleCopy} className="text-muted-foreground hover:text-foreground transition-colors">
-          {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-        </button>
-      </div>
-      <SyntaxHighlighter language={language} style={vscDarkPlus} customStyle={{ margin: 0, borderRadius: 0, fontSize: "0.8125rem" }}>
-        {code}
-      </SyntaxHighlighter>
-    </div>
-  )
-}
+import type { Components } from "react-markdown"
+import { MarkdownContent } from "@/src/lib/components/common/MarkdownContent"
 
 const planMarkdownComponents: Components = {
-  code({ className, children, ...props }) {
-    const match = /language-(\w+)/.exec(className || "")
-    const codeString = String(children).replace(/\n$/, "")
-    if (match) return <CodeBlock language={match[1]} code={codeString} />
-    return (
-      <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
-        {children}
-      </code>
-    )
-  },
-  pre({ children }) {
-    return <>{children}</>
-  },
-  a({ href, children }) {
-    return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline break-all">
-        {children}
-      </a>
-    )
-  },
   h2({ children }) {
     return <h2 className="mt-6 mb-2 text-lg font-semibold text-foreground">{children}</h2>
   },
@@ -422,11 +377,7 @@ export function PlanViewer({ title, status, priority, content, checklist, ticket
 
       <div className="my-4 border-t border-border" />
 
-      <div className="max-w-none">
-        <ReactMarkdown remarkPlugins={[remarkGfm]} components={planMarkdownComponents}>
-          {content}
-        </ReactMarkdown>
-      </div>
+      <MarkdownContent content={content} components={planMarkdownComponents} className="max-w-none" />
 
       {showCommits && (
         <>

@@ -3,14 +3,7 @@
 import { useCallback, useRef, useEffect, useState, useMemo } from "react"
 import { Loader2, SendHorizontal, Square, X, Hash, Slash } from "lucide-react"
 import { Button } from "@/src/lib/components/ui/button"
-
-type PendingImage = {
-  file: File
-  previewUrl: string
-  storageUrl: string | null
-  isUploading: boolean
-  error: string | null
-}
+import type { PendingImage } from "@/src/types/chat"
 
 type TicketOption = {
   slug: string

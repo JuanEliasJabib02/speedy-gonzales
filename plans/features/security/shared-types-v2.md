@@ -1,6 +1,6 @@
 # Shared Types Consolidation (DUP-01/02/03 v2)
 
-**Status:** todo
+**Status:** review
 **Priority:** low
 
 ## What it does
@@ -14,7 +14,7 @@ Also: markdown components nearly identical in ChatMessage.tsx and PlanViewer.tsx
 
 ## Checklist
 
-- [ ] Create `src/types/chat.ts` with ChatContext, HistoryMessage, PendingImage
-- [ ] Update imports in route.ts, useSendChat.ts, ChatInput.tsx
-- [ ] Extract shared markdown components to `src/lib/components/common/MarkdownContent.tsx`
-- [ ] Update ChatMessage.tsx and PlanViewer.tsx to use shared component
+- [x] Create `src/types/chat.ts` with ChatContext, HistoryMessage, PendingImage
+- [x] Update imports in route.ts, useSendChat.ts, ChatInput.tsx
+- [x] Extract shared markdown components to `src/lib/components/common/MarkdownContent.tsx`
+- [x] Update ChatMessage.tsx and PlanViewer.tsx to use shared component
