@@ -1,6 +1,6 @@
 # CommitsSection Post-Unmount Fix (BUG-02 v2)
 
-**Status:** todo
+**Status:** review
 **Priority:** medium
 
 ## What it does
@@ -30,5 +30,5 @@ useEffect(() => {
 
 ## Checklist
 
-- [ ] Add cancelled flag to CommitsSection useEffect in PlanViewer.tsx
-- [ ] Add cancelled flag to fetchBranches in FileTree.tsx
+- [x] Add cancelled flag to CommitsSection useEffect in PlanViewer.tsx
+- [x] Add cancelled flag to fetchBranches in FileTree.tsx
