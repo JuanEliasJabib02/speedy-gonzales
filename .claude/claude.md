@@ -68,6 +68,11 @@ src/lib/
 - When making implementation decisions about a feature, always ask the user "Should I update the plans?" once the decisions are confirmed.
 - Keep `plans/features/` in sync with what's actually being built.
 
+## Ticket status — update in the SAME commit as the code
+- When you finish a ticket, update the ticket `.md` status (`**Status:** review`, checklist `[x]`) **in the same commit** as the implementation code.
+- NEVER push code without updating the ticket status. One commit = code + status change.
+- This is non-negotiable — if the status isn't updated, the kanban stays stale and the loop re-dispatches the same ticket.
+
 ## State scope — where does it live?
 
 - 1–2 components in the same tree → props from parent
