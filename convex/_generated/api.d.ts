@@ -9,7 +9,6 @@
  */
 
 import type * as auth from "../auth.js";
-import type * as chat from "../chat.js";
 import type * as epics from "../epics.js";
 import type * as errors from "../errors.js";
 import type * as files from "../files.js";
@@ -23,7 +22,6 @@ import type * as model_parseRepoUrl from "../model/parseRepoUrl.js";
 import type * as model_providers_github from "../model/providers/github.js";
 import type * as model_providers_index from "../model/providers/index.js";
 import type * as projects from "../projects.js";
-import type * as schema_chatMessages from "../schema/chatMessages.js";
 import type * as schema_epics from "../schema/epics.js";
 import type * as schema_projects from "../schema/projects.js";
 import type * as schema_tickets from "../schema/tickets.js";
@@ -39,7 +37,6 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
-  chat: typeof chat;
   epics: typeof epics;
   errors: typeof errors;
   files: typeof files;
@@ -53,7 +50,6 @@ declare const fullApi: ApiFromModules<{
   "model/providers/github": typeof model_providers_github;
   "model/providers/index": typeof model_providers_index;
   projects: typeof projects;
-  "schema/chatMessages": typeof schema_chatMessages;
   "schema/epics": typeof schema_epics;
   "schema/projects": typeof schema_projects;
   "schema/tickets": typeof schema_tickets;

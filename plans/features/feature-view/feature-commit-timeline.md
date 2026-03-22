@@ -1,6 +1,6 @@
 # Feature Commit Timeline
 
-**Status:** review
+**Status:** completed
 **Priority:** high
 
 ## What it does

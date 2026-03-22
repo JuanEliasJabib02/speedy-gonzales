@@ -1,6 +1,6 @@
 # Hide Chat Panel
 
-**Status:** review
+**Status:** completed
 **Priority:** high
 
 ## What it does

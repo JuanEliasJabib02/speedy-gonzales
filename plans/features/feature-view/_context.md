@@ -1,6 +1,6 @@
 # Feature View
 
-**Status:** review
+**Status:** completed
 **Priority:** high
 
 ## Overview

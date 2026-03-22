@@ -1,6 +1,6 @@
 # Remove Chat System
 
-**Status:** review
+**Status:** completed
 **Priority:** high
 
 ## What it does
