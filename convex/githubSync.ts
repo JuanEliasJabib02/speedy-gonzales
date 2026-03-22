@@ -31,7 +31,11 @@ export const syncRepoInternal = internalAction({
     // Guard: skip if already syncing to prevent race conditions
     const project = await ctx.runQuery(internal.projects.getProjectInternal, { projectId })
     if (!project) throw new Error("Project not found")
-    if (project.syncStatus === "syncing") return
+    console.log(`[sync] Starting sync for ${project.repoOwner}/${project.repoName}, current status: ${project.syncStatus}`)
+    if (project.syncStatus === "syncing") {
+      console.log("[sync] Skipped — already syncing")
+      return
+    }
 
     // Set syncing status
     await ctx.runMutation(internal.githubSync.updateSyncStatus, {
@@ -42,6 +46,7 @@ export const syncRepoInternal = internalAction({
     try {
       const accessToken = process.env.GITHUB_PAT
       if (!accessToken) throw new Error("GITHUB_PAT env var not set")
+      console.log(`[sync] Fetching tree from GitHub (branch: ${project.branch}, plansPath: ${project.plansPath})`)
 
       const config: GitProviderConfig = {
         provider: project.gitProvider as GitProviderType,
@@ -56,9 +61,11 @@ export const syncRepoInternal = internalAction({
       // Fetch file tree
       const allFiles = await provider.fetchTree(config)
       const plansFiles = allFiles.filter((f) => f.path.startsWith(project.plansPath))
+      console.log(`[sync] Found ${allFiles.length} total files, ${plansFiles.length} in plansPath`)
 
       // Group into epics
       const epicGroups = groupFilesIntoEpics(plansFiles, project.plansPath)
+      console.log(`[sync] Grouped into ${epicGroups.size} epics: ${[...epicGroups.keys()].join(", ")}`)
 
       // Get existing epics and tickets for hash comparison
       const existingEpics = await ctx.runQuery(internal.epics.getByProjectInternal, { projectId })
