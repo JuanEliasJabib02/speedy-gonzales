@@ -163,14 +163,12 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
             Code
           </button>
         </div>
-        {viewMode === "chat" && (
-          <div className="flex items-center gap-1.5">
-            <div className="size-2 rounded-full bg-status-completed" />
-            <span className="text-xs text-muted-foreground">connected</span>
-          </div>
-        )}
+        <div className="flex items-center gap-1.5">
+          <div className="size-2 rounded-full bg-status-completed" />
+          <span className="text-xs text-muted-foreground">connected</span>
+        </div>
         <div className="ml-auto flex items-center gap-3">
-          {viewMode === "chat" && totalTokens > 0 && (
+          {totalTokens > 0 && (
             <div className="flex items-center gap-1.5">
               <div className={`size-2 rounded-full ${tokenColorClass}`} />
               <span className="text-xs text-muted-foreground">
@@ -178,133 +176,120 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
               </span>
             </div>
           )}
-          {viewMode === "chat" && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8"
-              onClick={handleExport}
-              disabled={messages.length === 0}
-              title="Export conversation"
-            >
-              <Download className="size-4" />
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            onClick={handleExport}
+            disabled={messages.length === 0}
+            title="Export conversation"
+          >
+            <Download className="size-4" />
+          </Button>
           <ThemeToggle />
         </div>
       </div>
-      {viewMode === "chat" ? (
-        <div className="relative flex flex-1 flex-col overflow-hidden view-fade-in">
-          <div ref={scrollRef} className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 scrollbar-thin">
-            {messages.length === 0 && streamingContent === null && optimisticMessage === null ? (
-              <div className="flex flex-1 items-center justify-center">
-                <span className="text-xs text-muted-foreground">No messages yet. Start the conversation.</span>
-              </div>
-            ) : (
-              <>
-                {messages.length > 0 && epic && (
-                  <ContextSummaryCard
-                    epicTitle={epic.title}
-                    epicStatus={epic.status}
-                    pendingTickets={tickets.filter((t) => t.status !== "completed").length}
-                    totalTickets={tickets.length}
-                  />
-                )}
-                {messages.map((message) => (
-                  <ChatMessage
-                    key={message._id}
-                    message={{
-                      id: message._id,
-                      role: message.role === "assistant" ? "agent" : "user",
-                      type: "text",
-                      content: message.content,
-                      commits: message.metadata?.commits,
-                      actions: message.metadata?.actions,
-                      timestamp: new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                      isInterrupted: message.isInterrupted === true,
-                    }}
-                    userInitial={initial}
-                    onRetry={handleRetry}
-                  />
-                ))}
-                {optimisticMessage !== null && (
-                  <ChatMessage
-                    message={{
-                      id: "optimistic",
-                      role: "user",
-                      type: "text",
-                      content: optimisticMessage,
-                      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                    }}
-                    userInitial={initial}
-                  />
-                )}
-                {isSending && streamingContent === null && (
-                  <ChatMessage
-                    message={{
-                      id: "typing",
-                      role: "agent",
-                      type: "text",
-                      content: "",
-                      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                    }}
-                    userInitial={initial}
-                    isStreaming
-                  />
-                )}
-                {streamingContent !== null && (
-                  <ChatMessage
-                    message={{
-                      id: "streaming",
-                      role: "agent",
-                      type: "text",
-                      content: streamingContent,
-                      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                    }}
-                    userInitial={initial}
-                    isStreaming
-                  />
-                )}
-              </>
-            )}
-          </div>
-          {showScrollButton && (
-            <button
-              onClick={scrollToBottom}
-              className="absolute bottom-20 right-4 z-10 flex size-8 items-center justify-center rounded-full bg-background/80 shadow-md ring-1 ring-border/50 backdrop-blur-sm transition-opacity hover:bg-background"
-              aria-label="Scroll to bottom"
-            >
-              <ChevronDown className="size-4 text-muted-foreground" />
-            </button>
+      <div className="relative flex flex-1 flex-col overflow-hidden">
+        <div ref={scrollRef} className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 scrollbar-thin">
+          {messages.length === 0 && streamingContent === null && optimisticMessage === null ? (
+            <div className="flex flex-1 items-center justify-center">
+              <span className="text-xs text-muted-foreground">No messages yet. Start the conversation.</span>
+            </div>
+          ) : (
+            <>
+              {messages.length > 0 && epic && (
+                <ContextSummaryCard
+                  epicTitle={epic.title}
+                  epicStatus={epic.status}
+                  pendingTickets={tickets.filter((t) => t.status !== "completed").length}
+                  totalTickets={tickets.length}
+                />
+              )}
+              {messages.map((message) => (
+                <ChatMessage
+                  key={message._id}
+                  message={{
+                    id: message._id,
+                    role: message.role === "assistant" ? "agent" : "user",
+                    type: "text",
+                    content: message.content,
+                    commits: message.metadata?.commits,
+                    actions: message.metadata?.actions,
+                    timestamp: new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                    isInterrupted: message.isInterrupted === true,
+                  }}
+                  userInitial={initial}
+                  onRetry={handleRetry}
+                />
+              ))}
+              {optimisticMessage !== null && (
+                <ChatMessage
+                  message={{
+                    id: "optimistic",
+                    role: "user",
+                    type: "text",
+                    content: optimisticMessage,
+                    timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                  }}
+                  userInitial={initial}
+                />
+              )}
+              {isSending && streamingContent === null && (
+                <ChatMessage
+                  message={{
+                    id: "typing",
+                    role: "agent",
+                    type: "text",
+                    content: "",
+                    timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                  }}
+                  userInitial={initial}
+                  isStreaming
+                />
+              )}
+              {streamingContent !== null && (
+                <ChatMessage
+                  message={{
+                    id: "streaming",
+                    role: "agent",
+                    type: "text",
+                    content: streamingContent,
+                    timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                  }}
+                  userInitial={initial}
+                  isStreaming
+                />
+              )}
+            </>
           )}
-          <ChatInput
-            value={value}
-            onChange={setValue}
-            onSend={handleSend}
-            onStop={handleStop}
-            onKeyDown={handleKeyDown}
-            isSending={isSending}
-            isStreaming={isStreaming}
-            hasQueued={hasQueued}
-            queueLength={queueLength}
-            pendingImages={pendingImages}
-            onPasteImage={handlePasteImage}
-            onRemoveImage={removePendingImage}
-            ticketOptions={ticketOptions}
-            activeFile={activeFile ?? null}
-            onDismissActiveFile={onDismissActiveFile}
-          />
         </div>
-      ) : (
-        <CodeView
-          projectId={projectId}
-          epicId={epicId}
-          owner={repoOwner}
-          repo={repoName}
-          defaultBranch={branch}
-          onActiveFileChange={onActiveFileChange}
+        {showScrollButton && (
+          <button
+            onClick={scrollToBottom}
+            className="absolute bottom-20 right-4 z-10 flex size-8 items-center justify-center rounded-full bg-background/80 shadow-md ring-1 ring-border/50 backdrop-blur-sm transition-opacity hover:bg-background"
+            aria-label="Scroll to bottom"
+          >
+            <ChevronDown className="size-4 text-muted-foreground" />
+          </button>
+        )}
+        <ChatInput
+          value={value}
+          onChange={setValue}
+          onSend={handleSend}
+          onStop={handleStop}
+          onKeyDown={handleKeyDown}
+          isSending={isSending}
+          isStreaming={isStreaming}
+          hasQueued={hasQueued}
+          queueLength={queueLength}
+          pendingImages={pendingImages}
+          onPasteImage={handlePasteImage}
+          onRemoveImage={removePendingImage}
+          ticketOptions={ticketOptions}
+          activeFile={activeFile ?? null}
+          onDismissActiveFile={onDismissActiveFile}
         />
-      )}
+      </div>
     </div>
   )
 }

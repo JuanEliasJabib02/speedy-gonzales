@@ -182,12 +182,8 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
         onSendDirectReady={handleSendDirectReady}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
-        repoOwner={repoOwner ?? ""}
-        repoName={repoName ?? ""}
-        branch={epic?.branch ?? "main"}
         activeFile={activeFile}
         onDismissActiveFile={handleDismissActiveFile}
-        onActiveFileChange={(file) => file ? setActiveFile(file) : setActiveFile(null)}
       />
     </div>
   )
