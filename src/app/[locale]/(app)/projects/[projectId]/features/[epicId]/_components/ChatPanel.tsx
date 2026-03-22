@@ -1,7 +1,7 @@
 "use client"
 
-import { useRef, useEffect, useMemo, useCallback } from "react"
-import { Download } from "lucide-react"
+import { useRef, useEffect, useMemo, useCallback, useState } from "react"
+import { Download, ChevronDown } from "lucide-react"
 import { ChatMessage } from "./ChatMessage"
 import { ChatInput } from "./ChatInput"
 import { ContextSummaryCard } from "./ContextSummaryCard"
@@ -85,6 +85,22 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
         : "bg-green-500"
 
   const scrollRef = useRef<HTMLDivElement>(null)
+  const [showScrollButton, setShowScrollButton] = useState(false)
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const handleScroll = () => {
+      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+      setShowScrollButton(distanceFromBottom > 200)
+    }
+    el.addEventListener("scroll", handleScroll, { passive: true })
+    return () => el.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  const scrollToBottom = useCallback(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
+  }, [])
 
   const handleExport = useCallback(() => {
     if (messages.length === 0) return
@@ -118,8 +134,8 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
   useEffect(() => {
     const el = scrollRef.current
     if (!el) return
-    const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100
-    if (isNearBottom || isStreaming) {
+    const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 200
+    if (isNearBottom) {
       el.scrollTop = el.scrollHeight
     }
   }, [messages.length, streamingContent, optimisticMessage, isStreaming])
@@ -183,7 +199,7 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
         </div>
       </div>
       {viewMode === "chat" ? (
-        <div className="flex flex-1 flex-col overflow-hidden view-fade-in">
+        <div className="relative flex flex-1 flex-col overflow-hidden view-fade-in">
           <div ref={scrollRef} className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 scrollbar-thin">
             {messages.length === 0 && streamingContent === null && optimisticMessage === null ? (
               <div className="flex flex-1 items-center justify-center">
@@ -257,6 +273,15 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
               </>
             )}
           </div>
+          {showScrollButton && (
+            <button
+              onClick={scrollToBottom}
+              className="absolute bottom-20 right-4 z-10 flex size-8 items-center justify-center rounded-full bg-background/80 shadow-md ring-1 ring-border/50 backdrop-blur-sm transition-opacity hover:bg-background"
+              aria-label="Scroll to bottom"
+            >
+              <ChevronDown className="size-4 text-muted-foreground" />
+            </button>
+          )}
           <ChatInput
             value={value}
             onChange={setValue}
