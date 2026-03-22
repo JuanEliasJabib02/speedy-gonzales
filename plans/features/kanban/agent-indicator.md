@@ -1,6 +1,6 @@
 # Agent Indicator in Project Header
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** medium
 **Agent:** Charizard 🔥
 
