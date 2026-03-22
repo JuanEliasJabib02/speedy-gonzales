@@ -20,6 +20,8 @@ export const projects = defineTable({
   agentEmoji: v.optional(v.string()),
   agentStatus: v.optional(v.string()), // "idle" | "working"
   agentCurrentFeature: v.optional(v.string()),
+  maxConcurrentPerFeature: v.optional(v.number()), // default: 3
+  maxConcurrentGlobal: v.optional(v.number()), // default: 5
   createdAt: v.number(),
   updatedAt: v.number(),
 })

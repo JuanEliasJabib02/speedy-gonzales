@@ -60,6 +60,8 @@ export default function ProjectPage() {
         agentEmoji={project.agentEmoji}
         agentStatus={project.agentStatus}
         agentCurrentFeature={project.agentCurrentFeature}
+        maxConcurrentPerFeature={project.maxConcurrentPerFeature}
+        maxConcurrentGlobal={project.maxConcurrentGlobal}
       />
       <KanbanBoard features={features} showCompleted={showCompleted} projectId={projectId} />
     </div>

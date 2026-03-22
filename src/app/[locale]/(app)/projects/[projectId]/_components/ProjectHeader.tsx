@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from "@/src/lib/components/ui/dialog"
 import { cn } from "@/src/lib/helpers/cn"
+import { ConcurrencySettings } from "./ConcurrencySettings"
 
 type ProjectHeaderProps = {
   projectId: Id<"projects">
@@ -29,6 +30,8 @@ type ProjectHeaderProps = {
   agentEmoji?: string
   agentStatus?: string
   agentCurrentFeature?: string
+  maxConcurrentPerFeature?: number
+  maxConcurrentGlobal?: number
 }
 
 function useSyncTimer(lastSyncAt?: number) {
@@ -64,6 +67,8 @@ export function ProjectHeader({
   agentEmoji,
   agentStatus,
   agentCurrentFeature,
+  maxConcurrentPerFeature,
+  maxConcurrentGlobal,
 }: ProjectHeaderProps) {
   const router = useRouter()
   const forceResync = useMutation(api.githubSync.forceResync)
@@ -125,6 +130,11 @@ export function ProjectHeader({
             <RefreshCw className={cn("size-4", isSyncing && "animate-spin")} />
             {isSyncing ? "Syncing..." : "Sync now"}
           </Button>
+          <ConcurrencySettings
+            projectId={projectId}
+            maxConcurrentPerFeature={maxConcurrentPerFeature ?? 3}
+            maxConcurrentGlobal={maxConcurrentGlobal ?? 5}
+          />
         </div>
       </div>
 

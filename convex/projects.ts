@@ -90,6 +90,25 @@ export const deleteProject = mutation({
   },
 })
 
+export const updateSettings = mutation({
+  args: {
+    projectId: v.id("projects"),
+    maxConcurrentPerFeature: v.number(),
+    maxConcurrentGlobal: v.number(),
+  },
+  handler: async (ctx, { projectId, maxConcurrentPerFeature, maxConcurrentGlobal }) => {
+    const userId = await requireAuth(ctx)
+    const project = await ctx.db.get(projectId)
+    if (!project || project.userId !== userId) return throwError(ErrorCodes.NOT_FOUND)
+
+    await ctx.db.patch(projectId, {
+      maxConcurrentPerFeature,
+      maxConcurrentGlobal,
+      updatedAt: Date.now(),
+    })
+  },
+})
+
 // Internal queries used by sync engine and webhook handler
 export const getProjectInternal = internalQuery({
   args: { projectId: v.id("projects") },
