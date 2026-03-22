@@ -1,127 +1,163 @@
-# Autonomous Dev Loop — How it works in Speedy Gonzales
+# Autonomous Dev Loop — Setup & Usage
 
-## TL;DR
+## What it is
 
-The **Autonomous Dev Loop** is the core feature that turns Speedy from an "IDE without an editor" into a **development team that works while you sleep**.
+The **Autonomous Dev Loop** is the core feature of Speedy Gonzales — it turns your ticket backlog into working code while you sleep.
 
-You define the tickets. Charizard runs overnight on the VPS, picks up available work, dispatches it to the coding agent (Perro salchicha), opens PRs, and sends you a Slack report in the morning.
+You write tickets. Charizard picks them up overnight, dispatches work to the coding agent, opens PRs, and sends you a Slack report in the morning.
+
+No manual triggers. No babysitting. Just wake up to finished work.
 
 ---
 
-## The loop (a typical night)
+## How it works
 
 ```
-23:00 — You create tickets in Speedy and go to sleep
-         ↓
-Every N minutes — Cron fires Charizard
-         ↓
-Charizard queries Convex → any tickets in `todo` with a configured project?
-         ↓
-      YES → Analyzes file dependencies between pending tickets
-            → Queues in order (nothing in parallel touching the same files)
-            → Dispatches first ticket to the coding agent
-            → Agent works: code → commit → push → PR → status: review
-            ↓
-      NO (everything blocked) → Charizard notifies you on Slack:
-            "Nothing to do — these tickets are blocked: [list]. Need your input."
-         ↓
-08:00 — You get a report on Slack:
-         "Worked on [project X]: completed [ticket A] and [ticket B].
-          [Ticket C] is blocked: reason. [Ticket D] in review: PR link."
+You create tickets in Speedy → go to sleep
+        ↓
+Charizard runs on your VPS on a schedule
+        ↓
+Picks up available tickets (todo → in_progress)
+        ↓
+Dispatches to coding agent (implements → commits → pushes → PR)
+        ↓
+Ticket moves to review
+        ↓
+8:00 AM — you get a Slack report with what was done
+        ↓
+You review the PRs and merge what looks good
 ```
 
----
-
-## Layers of the system
-
-| Layer | Who | What they do |
-|-------|-----|-------------|
-| **Planning** | Charizard | Reads projects, analyzes dependencies, queues tickets, writes the report |
-| **Execution** | Perro salchicha (Claude Code) | Implements the ticket, commits, pushes, opens the PR |
-| **Review** | You | Approves PRs, unblocks tickets, moves to `completed` |
-
-Charizard never writes production code. Perro salchicha never plans. The loop only works because both stay in their lane.
+Charizard never writes production code — it plans and orchestrates. The coding agent (Perro salchicha) implements. You review and approve the final step.
 
 ---
 
-## Operating rules
+## Installation
 
-### Charizard (planning layer)
-- Before dispatching, checks which files each ticket touches
-- **Nothing runs in parallel if it touches the same files** — strict queue
-- If two tickets both modify `ChatPanel.tsx`, they run sequentially, not simultaneously
-- If all available tickets are blocked → notifies you, does not guess
+### Prerequisites
 
-### Perro salchicha (execution layer)
-- If the ticket description is unclear → immediately marks `blocked`, does not interpret
-- If something breaks during execution → `git revert` + ticket to `blocked` with an explanation
-- **Never pushes broken code** — revert is always the safe exit
-- Always ends in `review`, never in `completed` — you approve the final step
+- OpenClaw running on your VPS
+- Speedy Gonzales deployed (Vercel + Convex)
+- Slack workspace connected to OpenClaw
+
+---
+
+### Step 1 — Connect Slack to OpenClaw
+
+In your `openclaw.json`, add the Slack plugin with your workspace token:
+
+```json
+{
+  "plugins": {
+    "slack": {
+      "token": "xoxb-your-bot-token",
+      "defaultChannel": "#dev-reports"
+    }
+  }
+}
+```
+
+> Get your bot token from [api.slack.com/apps](https://api.slack.com/apps) — you need `chat:write` and `channels:join` scopes.
+
+---
+
+### Step 2 — Configure the cron job in OpenClaw
+
+This cron triggers Charizard to run the loop on a schedule and send the morning report.
+
+Add this to your `openclaw.json`:
+
+```json
+{
+  "cron": [
+    {
+      "name": "autonomous-dev-loop",
+      "schedule": "0 */2 * * *",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run the autonomous dev loop: check all active projects in Speedy, pick up available tickets, dispatch to Perro salchicha, and update statuses."
+      },
+      "sessionTarget": "isolated"
+    },
+    {
+      "name": "daily-dev-report",
+      "schedule": "0 8 * * *",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Generate and send the daily dev loop report to Slack. Include completed tickets, PRs in review, and any blocked items that need attention."
+      },
+      "sessionTarget": "isolated",
+      "delivery": {
+        "mode": "announce",
+        "channel": "slack"
+      }
+    }
+  ]
+}
+```
+
+> **Schedule explained:**
+> - Loop runs every 2 hours (adjust to your preference)
+> - Report fires at 8:00 AM — change to your timezone as needed
+
+---
+
+### Step 3 — Enable the loop per project in Speedy
+
+In Speedy, go to your project's settings and configure:
+
+| Field | What to fill |
+|-------|-------------|
+| **Autonomous Loop** | Toggle ON |
+| **Repo path on VPS** | Path where the repo is cloned, e.g. `/home/juan/Projects/speedy-gonzales` |
+| **Slack channel** | Channel for this project's reports, e.g. `#speedy-gonzales` |
+
+Charizard only works on projects with the loop enabled and a repo path set. Everything else is ignored.
+
+---
+
+### Step 4 — Write good tickets
+
+The loop is only as good as your ticket descriptions. A ticket that gets autonomously completed has:
+
+- **Clear title** — what to build, not just a label
+- **Description** — the specific behavior, file hints if relevant, acceptance criteria
+- **No blockers** — dependencies resolved or documented
+
+A vague ticket (`"fix the bug"`) will end up `blocked` with a note asking for more context.
 
 ---
 
 ## Daily Slack report
 
-**When:** configurable cron (default: 8:00 AM Bogotá)  
-**Where:** Slack — channel configured per project (set in Speedy's project settings)  
-**Fallback:** default Slack channel if no project-specific channel is configured
+Every morning at 8:00 AM (or your configured time), Charizard sends a report to each project's Slack channel:
 
-**Report format:**
 ```
 🤖 Autonomous Dev Loop — Overnight Report
 
 📁 speedy-gonzales
-  ✅ Completed → ticket-foo (PR: link)
-  🔄 In review → ticket-bar (PR: link)
-  🚫 Blocked → ticket-baz — reason: undeclared dependency
+  ✅ Completed → render-markdown (PR #42: link)
+  🔄 In review → export-conversation (PR #43: link)
+  🚫 Blocked → github-link-preview — needs API token in env
 
 📁 action-experience
-  ✅ Completed → ticket-qux (PR: link)
+  ✅ Completed → fix-login-screen (PR #17: link)
 
 ⚠️ Needs your input:
-  - ticket-baz in speedy-gonzales is blocked. Unblock?
+  - github-link-preview in speedy-gonzales is blocked. Add GITHUB_TOKEN to env vars.
 ```
 
 ---
 
-## Project configuration
+## What happens with failed or blocked tickets
 
-Each project in Speedy has three fields that control the loop:
+If the coding agent runs into something unexpected:
 
-| Field | Type | Purpose |
-|-------|------|---------|
-| `autonomousLoop` | boolean | Enables the loop for this project |
-| `localPath` | string | Path on the VPS where the repo is cloned (e.g. `/home/juan/Projects/speedy-gonzales`) |
-| `slackChannel` | string | Slack channel for reports (e.g. `#speedy-gonzales`) |
+- Code is reverted (`git revert`) — no broken code lands in the branch
+- Ticket is moved to `blocked` with a clear explanation
+- You see it in the morning report
 
-Charizard only works on projects where `autonomousLoop: true` and `localPath` is set. Everything else is ignored.
-
----
-
-## Speedy local vs Speedy cloud
-
-### TL;DR: **Speedy lives in the cloud. Always.**
-
-Speedy Gonzales is a cloud-first app. Running it locally is not a supported workflow.
-
-**Why?**
-- Convex is cloud — there is no real local mode
-- The autonomous loop runs on the OpenClaw VPS — requires connection
-- Notifications go to Slack — requires internet
-- PRs are opened on GitHub — requires internet
-- The daily report goes to Slack — requires internet
-
-**When does local make sense?**
-
-One case only: **when Speedy itself has a bug you need to reproduce with devtools open**.
-
-> **Even the person actively developing Speedy never uses local.**  
-> Speedy self-develops in the cloud. The flow is:  
-> Describe the ticket in Speedy (cloud) → Perro salchicha implements → Vercel preview → review at the URL → merge.
-
-You could technically run `npm run dev` locally, but you'd still connect to the same cloud Convex instance — so "local" would only mean the Next.js frontend. Not worth it unless the bug is specifically in the frontend and doesn't reproduce on the preview URL.
-
-**Official recommendation:** Speedy local = debugging Speedy. Nothing else.
+You unblock the ticket (clarify the description, fix the dependency, add the env var) and it gets picked up in the next cycle.
 
 ---
 
@@ -131,18 +167,30 @@ You could technically run `npm run dev` locally, but you'd still connect to the 
 |-------------|-------------------|
 | UI components (Tailwind + shadcn) | ~85% |
 | Convex mutations / queries | ~75% |
-| Integration features (Convex + UI) | ~65% |
-| Debugging known bugs | ~50% |
-| Debugging vague bugs | ~25% |
+| Integration features | ~65% |
+| Known bugs with clear repro | ~50% |
+| Vague bugs | ~25% |
 
-**Overall average: ~70% of tickets complete overnight on their own.**
+**Average: ~70% of tickets complete without your involvement.**
 
-The remaining 30% end up `blocked` with a clear note explaining why — and you resolve them the next morning.
+The remaining 30% land in `blocked` with context — you resolve them in minutes, not hours.
+
+---
+
+## Local development — important note
+
+**Speedy is cloud-first. There is no local mode worth using.**
+
+> Even the person actively developing Speedy never runs it locally.  
+> **Speedy self-develops in the cloud.** Tickets are created in Speedy → Perro salchicha implements → Vercel preview → review at the URL → merge.
+
+Running `npm run dev` locally is technically possible, but you'd still connect to the same Convex cloud instance — so you'd only have the Next.js frontend locally. The loop, the agent, the reports — all of that still requires the VPS.
+
+**Only run locally if:** you need to reproduce a frontend bug with browser devtools that doesn't show up on the Vercel preview URL. That's it.
 
 ---
 
 ## Related
 
 - [Context Window doc](./context-window.md)
-- [Agent Repo Push ticket](../plans/features/chat/agent-repo-push.md)
-- [Autonomous Dev Loop feature plan](../plans/features/autonomous-dev-loop/_context.md)
+- [Feature plan — internal](../plans/features/autonomous-dev-loop/_context.md)
