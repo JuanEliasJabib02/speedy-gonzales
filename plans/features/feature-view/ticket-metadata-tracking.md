@@ -7,16 +7,34 @@
 
 Adds `updatedAt` and `agentName` fields to the tickets table in Convex. This enables:
 
-1. **Sort tickets by last modified** — most recently touched tickets appear first in the sidebar
-2. **Agent attribution** — track which agent (Charizard, Goku, etc.) last worked on a ticket
+1. **Sort tickets by last modified** — sidebar always shows most recently touched first
+2. **Agent attribution** — track which agent owns/worked on each ticket
 3. **Future analytics** — completion rate per agent, velocity dashboards, activity timelines
+
+## Decisions (refined)
+
+- **Sort is always `updatedAt` desc** — no toggle needed. Existing status filters (todo, completed, etc.) stay, but within each filter the order is always last-modified-first.
+- **Agent is set on creation** — whoever creates the ticket owns it. The creator is always the agent that will work on it.
+- **No manual reassignment from UI** — if a ticket needs to move between agents, it's done by editing the .md file and pushing (rare edge case, not worth UI effort now).
+- **Agent name resolved from git email** — the webhook sync maps commit author email → agent name. This is the source of truth.
+
+## Agent email → name map
+
+Stored in Convex (a `settings` or `agents` table, or hardcoded initially):
+
+| Git email | Agent | Emoji |
+|-----------|-------|-------|
+| `juaneliasjabib02@gmail.com` | Charizard | 🔥 |
+| `juan@iot4a.com` | Goku | 💪 |
+
+Future agents get a new row when they're set up.
 
 ## Schema changes
 
 Add to `convex/schema/tickets.ts`:
 ```ts
 updatedAt: v.optional(v.number()),    // timestamp (ms) of last status/content change
-agentName: v.optional(v.string()),    // "Charizard", "Goku", etc. — who last modified it
+agentName: v.optional(v.string()),    // "Charizard", "Goku", etc. — resolved from git email
 ```
 
 Add index for sorting:
@@ -27,23 +45,16 @@ Add index for sorting:
 ## Sync logic changes
 
 In the webhook sync (`convex/github.ts` or equivalent):
-- When a ticket is created or updated, set `updatedAt: Date.now()`
-- Parse `agentName` from the git commit author or from a metadata comment in the .md file (TBD)
-
-## Agent name injection
-
-Two options (decide during implementation):
-- **Option A:** Parse from git commit — `git log -1 --format='%an' -- <file>` → map author to agent name
-- **Option B:** Add an optional YAML frontmatter field `agent: Charizard` to .md files (simpler but manual)
-
-Recommend **Option A** — git is already the source of truth, and each agent commits with a known email.
+- On every ticket create/update → set `updatedAt: Date.now()`
+- On ticket creation → resolve `agentName` from the git commit author email using the map above
+- `agentName` persists — it doesn't change on subsequent updates unless a different agent modifies the file (then it updates to the new agent)
 
 ## UI changes
 
 ### Ticket sidebar (`TicketSidebar.tsx`)
-- Default sort: `updatedAt` descending (most recently modified first)
-- Show small "Updated 2h ago" or date badge on each ticket card
-- Optional: show agent avatar/emoji next to the badge
+- Default and only sort: `updatedAt` descending
+- Show small "Updated 2h ago" relative time on each ticket card
+- Show agent emoji + name badge on each card (e.g. "🔥 Charizard")
 
 ### Future (not this ticket)
 - Dashboard analytics: tickets completed per agent per week
@@ -55,9 +66,9 @@ Recommend **Option A** — git is already the source of truth, and each agent co
 - [ ] Add `by_epic_updated` index
 - [ ] Update webhook sync to set `updatedAt` on every upsert
 - [ ] Map git commit email → agent name in sync logic
-- [ ] Update ticket sidebar to sort by `updatedAt` desc
+- [ ] Update ticket sidebar query to sort by `updatedAt` desc
 - [ ] Show "updated X ago" on ticket cards
-- [ ] Show agent name/emoji on ticket cards
+- [ ] Show agent emoji + name on ticket cards
 
 ## Files
 
