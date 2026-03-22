@@ -41,13 +41,15 @@ export const sendMessage = mutation({
   args: {
     epicId: v.id("epics"),
     content: v.string(),
+    tokenCount: v.optional(v.number()),
   },
-  handler: async (ctx, { epicId, content }) => {
+  handler: async (ctx, { epicId, content, tokenCount }) => {
     await requireAuth(ctx)
     return ctx.db.insert("chatMessages", {
       epicId,
       role: "user",
       content,
+      tokenCount,
       createdAt: Date.now(),
     })
   },
