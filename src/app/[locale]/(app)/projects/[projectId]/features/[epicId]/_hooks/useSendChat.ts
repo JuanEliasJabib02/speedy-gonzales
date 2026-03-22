@@ -74,6 +74,7 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
   const [hasQueued, setHasQueued] = useState(false)
   const [queueLength, setQueueLength] = useState(0)
   const [optimisticMessage, setOptimisticMessage] = useState<string | null>(null)
+  const [showAll, setShowAll] = useState(false)
 
   const typedEpicId = epicId as Id<"epics">
   const typedProjectId = projectId as Id<"projects">
@@ -81,7 +82,13 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
   const project = useQuery(api.projects.getProject, { projectId: typedProjectId })
   const epic = useQuery(api.epics.getEpic, { epicId: typedEpicId })
   const tickets = useQuery(api.tickets.getByEpic, { epicId: typedEpicId })
-  const messages = useQuery(api.chat.getMessages, { epicId: typedEpicId })
+  const recentMessages = useQuery(api.chat.getRecentMessages, !showAll ? { epicId: typedEpicId } : "skip")
+  const allMessages = useQuery(api.chat.getMessages, showAll ? { epicId: typedEpicId } : "skip")
+  const messages = showAll ? allMessages : recentMessages
+  const totalCount = useQuery(api.chat.getMessageCount, { epicId: typedEpicId })
+  const hasEarlier = !showAll && totalCount !== undefined && (totalCount > (messages?.length ?? 0))
+  const loadEarlier = () => setShowAll(true)
+  const loadingEarlier = showAll && !allMessages
   const sendMessage = useMutation(api.chat.sendMessage)
   const deleteMessage = useMutation(api.chat.deleteMessage)
   const markInterrupted = useMutation(api.chat.markMessageInterrupted)
@@ -180,11 +187,12 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
 
   const buildHistory = useCallback((): HistoryMessage[] => {
     if (!messages) return []
-    // Last 20 messages for history
-    return messages.slice(-20).map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    }))
+    // Last 12 messages for history
+    return messages.slice(-12).map((m) => {
+      const raw = m.content
+      const truncated = raw.length > 600 ? raw.slice(0, 600) + "\u2026" : raw
+      return { role: m.role as "user" | "assistant", content: truncated }
+    })
   }, [messages])
 
   const enrichWithMentions = useCallback(
@@ -441,5 +449,8 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
     handlePasteImage,
     removePendingImage,
     sendDirect,
+    hasEarlier,
+    loadEarlier,
+    loadingEarlier,
   }
 }

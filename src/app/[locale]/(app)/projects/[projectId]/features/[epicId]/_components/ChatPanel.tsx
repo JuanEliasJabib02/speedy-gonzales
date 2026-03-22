@@ -41,6 +41,9 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, activeF
     handlePasteImage,
     removePendingImage,
     sendDirect,
+    hasEarlier,
+    loadEarlier,
+    loadingEarlier,
   } = useSendChat(projectId, epicId, activeFile ?? null)
 
   useEffect(() => {
@@ -122,6 +125,12 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, activeF
     URL.revokeObjectURL(url)
   }, [messages, epic])
 
+  // Scroll to bottom on mount
+  const bottomRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "instant" })
+  }, [])
+
   // Auto-scroll only when user is near the bottom
   const isStreaming = streamingContent !== null
   useEffect(() => {
@@ -173,6 +182,17 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, activeF
             </div>
           ) : (
             <>
+              {hasEarlier && (
+                <div className="flex justify-center py-2">
+                  <button
+                    onClick={loadEarlier}
+                    disabled={loadingEarlier}
+                    className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md border border-border hover:bg-muted transition-colors disabled:opacity-50"
+                  >
+                    {loadingEarlier ? "Loading..." : "Load earlier messages"}
+                  </button>
+                </div>
+              )}
               {messages.length > 0 && epic && (
                 <ContextSummaryCard
                   epicTitle={epic.title}
@@ -236,6 +256,7 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, activeF
                   isStreaming
                 />
               )}
+              <div ref={bottomRef} />
             </>
           )}
         </div>

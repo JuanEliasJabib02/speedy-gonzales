@@ -13,6 +13,30 @@ export const getMessages = query({
   },
 })
 
+export const getRecentMessages = query({
+  args: { epicId: v.id("epics") },
+  handler: async (ctx, { epicId }) => {
+    await requireAuth(ctx)
+    const all = await ctx.db
+      .query("chatMessages")
+      .withIndex("by_epic", (q) => q.eq("epicId", epicId))
+      .collect()
+    return all.slice(-30)
+  },
+})
+
+export const getMessageCount = query({
+  args: { epicId: v.id("epics") },
+  handler: async (ctx, { epicId }) => {
+    await requireAuth(ctx)
+    const all = await ctx.db
+      .query("chatMessages")
+      .withIndex("by_epic", (q) => q.eq("epicId", epicId))
+      .collect()
+    return all.length
+  },
+})
+
 export const sendMessage = mutation({
   args: {
     epicId: v.id("epics"),
