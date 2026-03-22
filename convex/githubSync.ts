@@ -368,6 +368,17 @@ export const upsertPlans = internalMutation({
         (t) => t.status === "completed" || t.status === "review"
       ).length
       await ctx.db.patch(epicId, { completedTicketCount })
+
+      // Auto-promote epic to review when all tickets are done
+      const allDone = epicData.tickets.length > 0 &&
+        epicData.tickets.every((t) => t.status === "completed" || t.status === "review")
+
+      if (allDone) {
+        const currentEpic = await ctx.db.get(epicId)
+        if (currentEpic && currentEpic.status !== "review" && currentEpic.status !== "completed") {
+          await ctx.db.patch(epicId, { status: "review" })
+        }
+      }
     }
 
     // Soft-delete epics no longer in repo
