@@ -1,6 +1,6 @@
 # Command Palette — File Search (Cmd+P)
 
-**Status:** review
+**Status:** completed
 **Priority:** high
 
 ## Overview

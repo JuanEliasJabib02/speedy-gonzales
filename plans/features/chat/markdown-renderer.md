@@ -1,6 +1,6 @@
 # Full Markdown Renderer in PlanViewer
 
-**Status:** review
+**Status:** completed
 **Priority:** medium
 
 ## Problem

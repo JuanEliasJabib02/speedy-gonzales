@@ -1,6 +1,6 @@
 # Agent Action Cards
 
-**Status:** review
+**Status:** completed
 **Priority:** medium
 
 ## What it does
