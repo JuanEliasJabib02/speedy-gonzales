@@ -1,65 +1,37 @@
 "use client"
 
-import { useState, useCallback, useRef, useEffect } from "react"
+import { useState, useCallback, useRef } from "react"
 import { TicketSidebar } from "./TicketSidebar"
 import { PlanViewer } from "./PlanViewer"
-import { ChatPanel } from "./ChatPanel"
-import { FileTree } from "./FileTree"
-import { FileViewer } from "./FileViewer"
+// Chat panel hidden — kept for future re-enable
+// import { ChatPanel } from "./ChatPanel"
+import { CommitTimeline } from "./CommitTimeline"
 import { ResizeHandle } from "./ResizeHandle"
 import { useLivePlan } from "../_hooks/useLivePlan"
+import { useCommitTimeline } from "../_hooks/useCommitTimeline"
 
-const CHAT_MIN_WIDTH = 320
-const CHAT_MAX_WIDTH = 700
-const CHAT_DEFAULT_WIDTH = 380
+const TIMELINE_MIN_WIDTH = 280
+const TIMELINE_MAX_WIDTH = 600
+const TIMELINE_DEFAULT_WIDTH = 360
 
 type FeatureLayoutProps = {
   projectId: string
   epicId: string
 }
 
-export type ViewMode = "plan" | "code"
-
-export type ActiveFile = {
-  path: string
-  content: string
-}
-
 export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
   const { plan: epic, isLoading, getTicketContent, lastSyncAt, syncStatus, repoOwner, repoName } = useLivePlan(epicId, projectId)
   const [selectedTicketId, setSelectedTicketId] = useState("")
-  const [chatWidth, setChatWidth] = useState(CHAT_DEFAULT_WIDTH)
+  const [timelineWidth, setTimelineWidth] = useState(TIMELINE_DEFAULT_WIDTH)
+  const [ticketFilter, setTicketFilter] = useState<string | null>(null)
 
-  const storageKey = `speedy-view-mode-${epicId}`
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    if (typeof window === "undefined") return "plan"
-    const stored = localStorage.getItem(storageKey)
-    if (stored === "code") return "code"
-    return "plan"
+  const { commits, loading: commitsLoading, error: commitsError, hasMore, loadMore, refresh } = useCommitTimeline({
+    owner: repoOwner,
+    repo: repoName,
+    branch: epic?.branch ?? "",
   })
 
-  useEffect(() => {
-    localStorage.setItem(storageKey, viewMode)
-  }, [storageKey, viewMode])
-
-  // Code mode state
-  const [selectedFile, setSelectedFile] = useState<{ path: string; sha: string } | null>(null)
-  // TODO: use epic?.branch when branch-per-feature workflow is implemented
-  const [branch] = useState("main")
-
-  // Context bridge: track the active file being viewed
-  const [activeFile, setActiveFile] = useState<ActiveFile | null>(null)
-
   const isDragging = useRef(false)
-  const sendDirectRef = useRef<((message: string) => void) | null>(null)
-
-  const handleSendDirectReady = useCallback((fn: (message: string) => void) => {
-    sendDirectRef.current = fn
-  }, [])
-
-  const handleCreateTicket = useCallback((message: string) => {
-    sendDirectRef.current?.(message)
-  }, [])
 
   const handleDragStart = useCallback(() => {
     isDragging.current = true
@@ -67,7 +39,7 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging.current) return
       const newWidth = window.innerWidth - e.clientX
-      setChatWidth(Math.min(CHAT_MAX_WIDTH, Math.max(CHAT_MIN_WIDTH, newWidth)))
+      setTimelineWidth(Math.min(TIMELINE_MAX_WIDTH, Math.max(TIMELINE_MIN_WIDTH, newWidth)))
     }
 
     const handleMouseUp = () => {
@@ -82,16 +54,6 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
     document.body.style.userSelect = "none"
     document.addEventListener("mousemove", handleMouseMove)
     document.addEventListener("mouseup", handleMouseUp)
-  }, [])
-
-  // Notify when a file is fully loaded into the viewer
-  const handleFileContentLoaded = useCallback((path: string, content: string) => {
-    setActiveFile({ path, content })
-  }, [])
-
-  // Dismiss active file from ChatInput pill
-  const handleDismissActiveFile = useCallback(() => {
-    setActiveFile(null)
   }, [])
 
   if (isLoading || !epic) {
@@ -113,80 +75,57 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
 
   return (
     <div className="flex h-full">
-      {/* Left panel: changes based on view mode */}
-      {viewMode === "code" ? (
-        <>
-          <div className="flex w-[280px] shrink-0 flex-col border-r border-border bg-card overflow-hidden">
-            <FileTree
-              owner={repoOwner ?? ""}
-              repo={repoName ?? ""}
-              branch={branch}
-              selectedFile={selectedFile?.path ?? undefined}
-              onFileSelect={(path, sha) => setSelectedFile({ path, sha })}
-            />
-          </div>
-          <div className="flex flex-1 overflow-hidden">
-            {selectedFile ? (
-              <FileViewer
-                owner={repoOwner ?? ""}
-                repo={repoName ?? ""}
-                path={selectedFile.path}
-                ref={branch}
-                onContentLoaded={handleFileContentLoaded}
-              />
-            ) : (
-              <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-                Select a file to view
-              </div>
-            )}
-          </div>
-        </>
-      ) : (
-        <>
-          <TicketSidebar
-            epicTitle={epic.title}
-            branch="main"
-            tickets={epic.tickets}
-            selectedId={effectiveId}
-            onSelect={setSelectedTicketId}
-            projectId={projectId}
-            epicId={epicId}
-            lastSyncAt={lastSyncAt}
-            syncStatus={syncStatus}
-            overviewContent={overviewData.content}
-            overviewStatus={epic.status}
-            overviewPriority={epic.priority}
-            onCreateTicket={handleCreateTicket}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-          />
-          <PlanViewer
-            title={selectedTicket?.title ?? epic.title}
-            status={selectedTicket?.status ?? epic.status}
-            priority={epic.priority}
-            content={ticketData.content}
-            checklist={ticketData.checklist}
-            ticketId={selectedTicket?.id !== "_context" ? selectedTicket?.id : undefined}
-            blockedReason={selectedTicket?.blockedReason}
-            commits={(selectedTicket as { commits?: string[] } | undefined)?.commits ?? []}
-            repoOwner={repoOwner}
-            repoName={repoName}
-          />
-        </>
-      )}
-
-      {/* ResizeHandle + ChatPanel always visible */}
-      <ResizeHandle onDragStart={handleDragStart} />
-      <ChatPanel
-        width={chatWidth}
+      {/* Left panel: ticket sidebar */}
+      <TicketSidebar
+        epicTitle={epic.title}
+        branch={epic.branch}
+        tickets={epic.tickets}
+        selectedId={effectiveId}
+        onSelect={setSelectedTicketId}
         projectId={projectId}
         epicId={epicId}
-        onSendDirectReady={handleSendDirectReady}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        activeFile={activeFile}
-        onDismissActiveFile={handleDismissActiveFile}
+        lastSyncAt={lastSyncAt}
+        syncStatus={syncStatus}
+        overviewContent={overviewData.content}
+        overviewStatus={epic.status}
+        overviewPriority={epic.priority}
       />
+
+      {/* Center panel: plan viewer */}
+      <PlanViewer
+        title={selectedTicket?.title ?? epic.title}
+        status={selectedTicket?.status ?? epic.status}
+        priority={epic.priority}
+        content={ticketData.content}
+        checklist={ticketData.checklist}
+        ticketId={selectedTicket?.id !== "_context" ? selectedTicket?.id : undefined}
+        blockedReason={selectedTicket?.blockedReason}
+        commits={(selectedTicket as { commits?: string[] } | undefined)?.commits ?? []}
+        repoOwner={repoOwner}
+        repoName={repoName}
+      />
+
+      {/* ResizeHandle + right panel: commit timeline */}
+      <ResizeHandle onDragStart={handleDragStart} />
+      <div
+        className="flex shrink-0 flex-col border-l border-border bg-card overflow-hidden"
+        style={{ width: timelineWidth }}
+      >
+        <CommitTimeline
+          commits={commits}
+          loading={commitsLoading}
+          error={commitsError}
+          hasMore={hasMore}
+          branch={epic.branch}
+          repoOwner={repoOwner ?? ""}
+          repoName={repoName ?? ""}
+          onLoadMore={loadMore}
+          onRefresh={refresh}
+          ticketFilter={ticketFilter}
+          onTicketFilterChange={setTicketFilter}
+          tickets={realTickets.map((t) => ({ id: t.id, title: t.title }))}
+        />
+      </div>
     </div>
   )
 }

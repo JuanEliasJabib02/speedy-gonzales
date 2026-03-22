@@ -1,6 +1,6 @@
 # Feature Commit Timeline
 
-**Status:** in-progress
+**Status:** review
 **Priority:** high
 
 ## What it does
@@ -17,11 +17,11 @@ Replace the chat panel (right side) with a commit timeline that shows all commit
 
 ## Checklist
 
-- [ ] Create `CommitTimeline` component — fetches commits from GitHub API for the feature branch
-- [ ] Render commit cards in a vertical timeline layout (newest first)
-- [ ] Each card: short hash, commit message, relative timestamp, files changed badge
-- [ ] Click to expand → show file diffs inline (reuse existing CommitDiffPanel / diff viewer)
-- [ ] Tag commits with ticket slugs when commit message contains the ticket name (e.g. `feat(chat): ...` → matches chat tickets)
-- [ ] Filter: show all commits or filter by ticket
-- [ ] Empty state: "No commits yet" when the branch has no pushes
-- [ ] Wire into FeatureLayout as the right panel (replacing ChatPanel)
+- [x] Create `CommitTimeline` component — fetches commits from GitHub API for the feature branch
+- [x] Render commit cards in a vertical timeline layout (newest first)
+- [x] Each card: short hash, commit message, relative timestamp, files changed badge
+- [x] Click to expand → show file diffs inline (reuse existing CommitDiffPanel / diff viewer)
+- [x] Tag commits with ticket slugs when commit message contains the ticket name (e.g. `feat(chat): ...` → matches chat tickets)
+- [x] Filter: show all commits or filter by ticket
+- [x] Empty state: "No commits yet" when the branch has no pushes
+- [x] Wire into FeatureLayout as the right panel (replacing ChatPanel)
