@@ -36,6 +36,25 @@ export const updateStatus = mutation({
       ticketId,
       newStatus: status,
     })
+
+    // Auto-promote epic to review when all tickets are completed
+    if (status === "completed") {
+      const ticket = await ctx.db.get(ticketId)
+      if (ticket) {
+        const allTickets = await ctx.db
+          .query("tickets")
+          .withIndex("by_epic", (q) => q.eq("epicId", ticket.epicId))
+          .collect()
+        const activeTickets = allTickets.filter((t) => !t.isDeleted)
+        const allCompleted = activeTickets.every((t) => t.status === "completed")
+        if (allCompleted && activeTickets.length > 0) {
+          const epic = await ctx.db.get(ticket.epicId)
+          if (epic && epic.status !== "review" && epic.status !== "completed") {
+            await ctx.db.patch(ticket.epicId, { status: "review" })
+          }
+        }
+      }
+    }
   },
 })
 
