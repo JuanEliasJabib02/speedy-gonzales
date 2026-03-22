@@ -1,0 +1,21 @@
+{
+	"autorun": true,
+	"terminals": [
+		{
+			"name": "claude",
+			"focus": true,
+			"command": "claude",
+			"color": "terminal.ansiYellow"
+		},
+		{
+			"name": "app",
+			"command": "pnpm dev",
+
+			"color": "terminal.ansiMagenta"
+		},
+		{
+			"name": "git",
+			"color": "terminal.ansiGray"
+		}
+	]
+}
