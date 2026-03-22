@@ -1,6 +1,6 @@
 # Start/Stop Feature Buttons
 
-**Status:** in-progress
+**Status:** review
 **Priority:** high
 **Agent:** Charizard 🔥
 
@@ -22,14 +22,14 @@ The user should NOT be able to move features to `review` or `completed` manually
 
 ## Checklist
 
-- [ ] Add "Start" button to FeatureCard when status is `todo` or `blocked`
-- [ ] Add "Stop" button to FeatureCard when status is `in-progress`
-- [ ] Wire buttons to Convex mutation to update epic status
-- [ ] Prevent click-through to feature view when clicking Start/Stop (stopPropagation)
-- [ ] Add loading state while mutation runs
-- [ ] Hide both buttons for `review` and `completed` features
+- [x] Add "Start" button to FeatureCard when status is `todo` or `blocked`
+- [x] Add "Stop" button to FeatureCard when status is `in-progress`
+- [x] Wire buttons to Convex mutation to update epic status
+- [x] Prevent click-through to feature view when clicking Start/Stop (stopPropagation)
+- [x] Add loading state while mutation runs
+- [x] Hide both buttons for `review` and `completed` features
 
 ## Files
 
 - `src/app/[locale]/(app)/projects/[projectId]/_components/FeatureCard.tsx`
-- `convex/epics.ts` — add `updateStatus` mutation if not exists
+- `convex/epics.ts` — added `updateStatus` mutation with transition guard
