@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, useRef, useEffect } from "react"
+import { MessageSquare } from "lucide-react"
 import { TicketSidebar } from "./TicketSidebar"
 import { PlanViewer } from "./PlanViewer"
 import { ChatPanel } from "./ChatPanel"
@@ -142,7 +143,7 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
 
       {/* Center panel: PlanViewer in Chat mode, FileViewer in Code mode */}
       {viewMode === "code" ? (
-        <div className="flex flex-1 overflow-hidden">
+        <div className="relative flex flex-1 overflow-hidden">
           {selectedFile ? (
             <FileViewer
               owner={repoOwner ?? ""}
@@ -156,6 +157,15 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
               Select a file to view
             </div>
           )}
+          {/* Floating button to return to Chat mode */}
+          <button
+            onClick={() => setViewMode("chat")}
+            title="Switch to Chat"
+            className="absolute top-3 right-3 z-10 flex items-center gap-1.5 rounded-md bg-card border border-border px-2.5 py-1.5 text-xs text-muted-foreground shadow-sm hover:bg-accent hover:text-foreground transition-colors"
+          >
+            <MessageSquare className="size-3.5" />
+            <span>Switch to Chat</span>
+          </button>
         </div>
       ) : (
         <PlanViewer
@@ -172,21 +182,26 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
         />
       )}
 
-      <ResizeHandle onDragStart={handleDragStart} />
-      <ChatPanel
-        width={chatWidth}
-        projectId={projectId}
-        epicId={epicId}
-        onSendDirectReady={handleSendDirectReady}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        repoOwner={repoOwner ?? ""}
-        repoName={repoName ?? ""}
-        branch={epic?.branch ?? "main"}
-        activeFile={activeFile}
-        onDismissActiveFile={handleDismissActiveFile}
-        onActiveFileChange={(file) => file ? setActiveFile(file) : setActiveFile(null)}
-      />
+      {/* ResizeHandle and ChatPanel only visible in Chat mode */}
+      {viewMode === "chat" && (
+        <>
+          <ResizeHandle onDragStart={handleDragStart} />
+          <ChatPanel
+            width={chatWidth}
+            projectId={projectId}
+            epicId={epicId}
+            onSendDirectReady={handleSendDirectReady}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            repoOwner={repoOwner ?? ""}
+            repoName={repoName ?? ""}
+            branch={epic?.branch ?? "main"}
+            activeFile={activeFile}
+            onDismissActiveFile={handleDismissActiveFile}
+            onActiveFileChange={(file) => file ? setActiveFile(file) : setActiveFile(null)}
+          />
+        </>
+      )}
     </div>
   )
 }
