@@ -1,6 +1,7 @@
 # syncRepo Action
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

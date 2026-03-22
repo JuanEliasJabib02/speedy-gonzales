@@ -1,6 +1,7 @@
 # Manual Sync Button
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

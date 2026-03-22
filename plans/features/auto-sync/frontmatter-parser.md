@@ -1,6 +1,7 @@
 # Frontmatter Parser
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

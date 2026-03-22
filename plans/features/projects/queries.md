@@ -1,6 +1,7 @@
 # getProjects & getProject Queries
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

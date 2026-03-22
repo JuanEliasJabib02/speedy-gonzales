@@ -1,6 +1,7 @@
 # Completed Toggle
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

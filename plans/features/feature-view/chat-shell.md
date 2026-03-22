@@ -1,6 +1,7 @@
 # Chat Panel Shell
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

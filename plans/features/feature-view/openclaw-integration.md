@@ -1,6 +1,7 @@
 # OpenClaw API Integration
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

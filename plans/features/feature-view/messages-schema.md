@@ -1,6 +1,7 @@
 # Chat Messages Schema
 
 **Status:** review
+**Priority:** medium
 
 ## What it does
 

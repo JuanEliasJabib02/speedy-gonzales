@@ -1,6 +1,7 @@
 # Create Project Dialog
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

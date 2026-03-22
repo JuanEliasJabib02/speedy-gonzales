@@ -1,6 +1,7 @@
 # createProject Mutation
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

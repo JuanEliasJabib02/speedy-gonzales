@@ -1,6 +1,7 @@
 # Route Protection Middleware
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

@@ -1,6 +1,7 @@
 import { v } from "convex/values"
-import { action, internalAction, internalMutation } from "./_generated/server"
+import { action, mutation, internalAction, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
+import { requireAuth } from "./helpers"
 import type { Id } from "./_generated/dataModel"
 import { getGitProvider } from "./model/providers"
 import { groupFilesIntoEpics } from "./model/groupFiles"
@@ -14,13 +15,27 @@ export const syncProject = action({
   },
 })
 
+// Force-reset a stuck sync and re-trigger
+export const forceResync = mutation({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, { projectId }) => {
+    await requireAuth(ctx)
+    await ctx.db.patch(projectId, { syncStatus: "idle", updatedAt: Date.now() })
+    await ctx.scheduler.runAfter(0, internal.githubSync.syncRepoInternal, { projectId })
+  },
+})
+
 export const syncRepoInternal = internalAction({
   args: { projectId: v.id("projects") },
   handler: async (ctx, { projectId }) => {
     // Guard: skip if already syncing to prevent race conditions
     const project = await ctx.runQuery(internal.projects.getProjectInternal, { projectId })
     if (!project) throw new Error("Project not found")
-    if (project.syncStatus === "syncing") return
+    console.log(`[sync] Starting sync for ${project.repoOwner}/${project.repoName}, current status: ${project.syncStatus}`)
+    if (project.syncStatus === "syncing") {
+      console.log("[sync] Skipped — already syncing")
+      return
+    }
 
     // Set syncing status
     await ctx.runMutation(internal.githubSync.updateSyncStatus, {
@@ -31,6 +46,7 @@ export const syncRepoInternal = internalAction({
     try {
       const accessToken = process.env.GITHUB_PAT
       if (!accessToken) throw new Error("GITHUB_PAT env var not set")
+      console.log(`[sync] Fetching tree from GitHub (branch: ${project.branch}, plansPath: ${project.plansPath})`)
 
       const config: GitProviderConfig = {
         provider: project.gitProvider as GitProviderType,
@@ -45,9 +61,11 @@ export const syncRepoInternal = internalAction({
       // Fetch file tree
       const allFiles = await provider.fetchTree(config)
       const plansFiles = allFiles.filter((f) => f.path.startsWith(project.plansPath))
+      console.log(`[sync] Found ${allFiles.length} total files, ${plansFiles.length} in plansPath`)
 
       // Group into epics
       const epicGroups = groupFilesIntoEpics(plansFiles, project.plansPath)
+      console.log(`[sync] Grouped into ${epicGroups.size} epics: ${[...epicGroups.keys()].join(", ")}`)
 
       // Get existing epics and tickets for hash comparison
       const existingEpics = await ctx.runQuery(internal.epics.getByProjectInternal, { projectId })
@@ -513,5 +531,26 @@ export const pushTicketStatusToGitHub = internalAction({
     }
 
     console.log(`[git-status-push] ✅ ${ticket.path} → ${newStatus}`)
+  },
+})
+
+// One-time migration: move chat messages from an old epic to a new one.
+// Run via Convex dashboard, then remove this function.
+export const migrateEpicMessages = internalMutation({
+  args: {
+    oldEpicId: v.id("epics"),
+    newEpicId: v.id("epics"),
+  },
+  handler: async (ctx, { oldEpicId, newEpicId }) => {
+    const messages = await ctx.db
+      .query("chatMessages")
+      .withIndex("by_epic", (q) => q.eq("epicId", oldEpicId))
+      .collect()
+    for (const msg of messages) {
+      await ctx.db.patch(msg._id, { epicId: newEpicId })
+    }
+    console.log(
+      `[migrate] Moved ${messages.length} messages from ${oldEpicId} to ${newEpicId}`
+    )
   },
 })

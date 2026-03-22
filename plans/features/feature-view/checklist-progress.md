@@ -1,6 +1,7 @@
 # Checklist Progress Bar
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

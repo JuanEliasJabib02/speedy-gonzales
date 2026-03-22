@@ -1,6 +1,7 @@
 # Resizable Chat Panel
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

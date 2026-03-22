@@ -1,6 +1,7 @@
 # Project Cards Grid
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

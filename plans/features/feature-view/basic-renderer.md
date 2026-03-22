@@ -1,6 +1,7 @@
 # Basic Markdown Rendering
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

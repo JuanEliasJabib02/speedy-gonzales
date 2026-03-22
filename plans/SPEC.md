@@ -16,7 +16,6 @@ plans/
 │   │   └── ...
 ├── business-model.md          # Optional — project-level docs
 ├── design-system.md           # Optional — project-level docs
-├── roadmap.md                 # Optional — project-level docs
 └── SPEC.md                    # This file
 ```
 

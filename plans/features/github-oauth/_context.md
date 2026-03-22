@@ -1,6 +1,7 @@
 # GitHub OAuth Flow
 
 **Status:** in-progress
+**Priority:** medium
 
 ## What it does
 

@@ -1,6 +1,7 @@
 # Convex Auth Setup
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

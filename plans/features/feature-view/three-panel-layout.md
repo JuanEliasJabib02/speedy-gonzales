@@ -1,6 +1,7 @@
 # Three-Panel Layout
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

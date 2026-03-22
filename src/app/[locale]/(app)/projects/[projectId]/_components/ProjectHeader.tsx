@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { AlertTriangle, ArrowLeft, CheckCircle2, ExternalLink, Github, RefreshCw } from "lucide-react"
-import { useAction } from "convex/react"
+import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import { useRouter } from "@/src/i18n/routing"
@@ -58,14 +58,14 @@ export function ProjectHeader({
   lastSyncAt,
 }: ProjectHeaderProps) {
   const router = useRouter()
-  const syncProject = useAction(api.githubSync.syncProject)
+  const forceResync = useMutation(api.githubSync.forceResync)
   const isSyncing = syncStatus === "syncing"
   const secondsAgo = useSyncTimer(lastSyncAt)
   const [showSyncDialog, setShowSyncDialog] = useState(false)
 
   const handleSync = () => {
     setShowSyncDialog(false)
-    syncProject({ projectId })
+    forceResync({ projectId })
   }
 
   return (

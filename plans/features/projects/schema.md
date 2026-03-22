@@ -1,6 +1,7 @@
 # Projects Schema & Indexes
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

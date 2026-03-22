@@ -1,6 +1,7 @@
 # Webhook Handler Endpoint
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 
