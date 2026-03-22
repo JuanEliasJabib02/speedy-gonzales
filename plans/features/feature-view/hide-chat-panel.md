@@ -1,6 +1,6 @@
 # Hide Chat Panel
 
-**Status:** in-progress
+**Status:** review
 **Priority:** high
 
 ## What it does
@@ -9,8 +9,8 @@ Hide the chat panel from the feature-view layout. Don't delete the code — just
 
 ## Checklist
 
-- [ ] Remove ChatPanel from FeatureLayout (comment out, don't delete)
-- [ ] Remove the Plan/Code toggle in the header (no longer needed)
-- [ ] Keep all chat components, hooks, API routes, and Convex schema intact — just unused
-- [ ] Update the three-panel layout to two panels: ticket sidebar (left) + plan viewer (center/right)
-- [ ] Keep ResizeHandle if the commit timeline replaces the right panel
+- [x] Remove ChatPanel from FeatureLayout (comment out, don't delete)
+- [x] Remove the Plan/Code toggle in the header (no longer needed)
+- [x] Keep all chat components, hooks, API routes, and Convex schema intact — just unused
+- [x] Update the three-panel layout to two panels: ticket sidebar (left) + plan viewer (center/right)
+- [x] Keep ResizeHandle if the commit timeline replaces the right panel
