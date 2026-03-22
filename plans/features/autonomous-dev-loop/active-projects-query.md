@@ -1,6 +1,6 @@
 # Active Projects Query
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** critical
 **Agent:** Charizard 🔥
 
