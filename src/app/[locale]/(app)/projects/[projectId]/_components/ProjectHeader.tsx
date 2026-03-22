@@ -32,6 +32,11 @@ type ProjectHeaderProps = {
   agentCurrentFeature?: string
   maxConcurrentPerFeature?: number
   maxConcurrentGlobal?: number
+  autonomousLoop?: boolean
+  localPath?: string
+  notificationEnabled?: boolean
+  loopStatus?: string
+  lastLoopAt?: number
 }
 
 function useSyncTimer(lastSyncAt?: number) {
@@ -69,6 +74,11 @@ export function ProjectHeader({
   agentCurrentFeature,
   maxConcurrentPerFeature,
   maxConcurrentGlobal,
+  autonomousLoop,
+  localPath,
+  notificationEnabled,
+  loopStatus,
+  lastLoopAt,
 }: ProjectHeaderProps) {
   const router = useRouter()
   const forceResync = useMutation(api.githubSync.forceResync)
@@ -138,6 +148,9 @@ export function ProjectHeader({
             projectId={projectId}
             maxConcurrentPerFeature={maxConcurrentPerFeature ?? 3}
             maxConcurrentGlobal={maxConcurrentGlobal ?? 5}
+            autonomousLoop={autonomousLoop ?? false}
+            localPath={localPath ?? ""}
+            notificationEnabled={notificationEnabled ?? false}
           />
         </div>
       </div>

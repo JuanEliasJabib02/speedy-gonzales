@@ -62,6 +62,11 @@ export default function ProjectPage() {
         agentCurrentFeature={project.agentCurrentFeature}
         maxConcurrentPerFeature={project.maxConcurrentPerFeature}
         maxConcurrentGlobal={project.maxConcurrentGlobal}
+        autonomousLoop={project.autonomousLoop}
+        localPath={project.localPath}
+        notificationEnabled={project.notificationEnabled}
+        loopStatus={project.loopStatus}
+        lastLoopAt={project.lastLoopAt}
       />
       <KanbanBoard features={features} showCompleted={showCompleted} projectId={projectId} />
     </div>

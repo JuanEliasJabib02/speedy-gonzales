@@ -1,6 +1,6 @@
 # Project Settings — Autonomous Loop
 
-**Status:** in-progress
+**Status:** review
 **Priority:** medium
 **Agent:** Charizard 🔥
 
@@ -19,11 +19,11 @@ Add a settings panel to the project page where Juan can configure the autonomous
 
 ## Checklist
 
-- [ ] Extend `ConcurrencySettings.tsx` popover OR create a new `ProjectSettings.tsx` that includes both concurrency and loop settings
-- [ ] Add toggle switch for `autonomousLoop` (boolean)
-- [ ] Add text input for `localPath` with placeholder (e.g. `/home/juan/Projects/speedy-gonzales`)
-- [ ] Add text input for `notificationEnabled` with placeholder (e.g. `on/off`)
-- [ ] Update `updateSettings` mutation to accept the new fields
+- [x] Extend `ConcurrencySettings.tsx` popover OR create a new `ProjectSettings.tsx` that includes both concurrency and loop settings
+- [x] Add toggle switch for `autonomousLoop` (boolean)
+- [x] Add text input for `localPath` with placeholder (e.g. `/home/juan/Projects/speedy-gonzales`)
+- [x] Add toggle for `notificationEnabled`
+- [x] Update `updateSettings` mutation to accept the new fields
 - [ ] Show current loop status (idle/running) and last run timestamp
 
 ## Files

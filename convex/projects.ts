@@ -106,6 +106,9 @@ export const updateSettings = mutation({
     agentEmoji: v.optional(v.string()),
     agentStatus: v.optional(v.string()),
     agentCurrentFeature: v.optional(v.string()),
+    autonomousLoop: v.optional(v.boolean()),
+    localPath: v.optional(v.string()),
+    notificationEnabled: v.optional(v.boolean()),
   },
   handler: async (ctx, { projectId, ...updates }) => {
     const userId = await requireAuth(ctx)
@@ -119,6 +122,9 @@ export const updateSettings = mutation({
     if (updates.agentEmoji !== undefined) patch.agentEmoji = updates.agentEmoji
     if (updates.agentStatus !== undefined) patch.agentStatus = updates.agentStatus
     if (updates.agentCurrentFeature !== undefined) patch.agentCurrentFeature = updates.agentCurrentFeature
+    if (updates.autonomousLoop !== undefined) patch.autonomousLoop = updates.autonomousLoop
+    if (updates.localPath !== undefined) patch.localPath = updates.localPath
+    if (updates.notificationEnabled !== undefined) patch.notificationEnabled = updates.notificationEnabled
 
     await ctx.db.patch(projectId, patch)
   },
