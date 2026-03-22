@@ -320,6 +320,7 @@ export const upsertPlans = internalMutation({
           const commitsChanged = JSON.stringify(existingTicket.commits ?? []) !== JSON.stringify(ticketData.commits)
 
           if (contentChanged || movedEpic || orderChanged || wasDeleted || commitsChanged) {
+            const meaningfulChange = contentChanged || movedEpic || wasDeleted || commitsChanged
             await ctx.db.patch(existingTicket._id, {
               epicId,
               title: ticketData.title,
@@ -332,7 +333,7 @@ export const upsertPlans = internalMutation({
               commits: ticketData.commits.length > 0 ? ticketData.commits : undefined,
               sortOrder: ticketData.sortOrder,
               isDeleted: false,
-              updatedAt: Date.now(),
+              ...(meaningfulChange ? { updatedAt: Date.now() } : {}),
               agentName: ticketData.agentName,
             })
           }

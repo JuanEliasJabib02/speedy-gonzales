@@ -66,8 +66,8 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
     .filter((t) => activeFilter.match(t.status))
     .filter((t) => !search || t.title.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
-      const aTime = a.updatedAt ?? 0
-      const bTime = b.updatedAt ?? 0
+      const aTime = a.updatedAt ?? a._creationTime ?? 0
+      const bTime = b.updatedAt ?? b._creationTime ?? 0
       return bTime - aTime
     })
 
