@@ -50,6 +50,7 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
   // Context bridge: track the active file being viewed
   const [activeFile, setActiveFile] = useState<ActiveFile | null>(null)
 
+  const router = useRouter()
   const isDragging = useRef(false)
   const sendDirectRef = useRef<((message: string) => void) | null>(null)
 

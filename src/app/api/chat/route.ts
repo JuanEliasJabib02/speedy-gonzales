@@ -59,87 +59,13 @@ ${ticketList || "  No tickets yet."}
 ### Feature Content
 ${context.epic.content}
 
-## Plan File Format
-
-Plan files live under \`plans/features/\` in the repo.
-
-### Structure
-- \`plans/features/<epic-slug>/_context.md\` — epic overview (required)
-- \`plans/features/<epic-slug>/<ticket-slug>.md\` — one file per ticket
-- Use **kebab-case** for all file and directory names
-
-### File format (both epics and tickets)
-\`\`\`
-# Title
-
-**Status:** todo
-**Priority:** medium
-
-## Section heading
-
-- [x] Completed step
-- [ ] Pending step
-\`\`\`
-
-### Allowed values
-- **Status:** \`todo\` | \`in-progress\` | \`review\` | \`completed\` | \`blocked\`
-- **Priority:** \`low\` | \`medium\` | \`high\` | \`critical\`
-
-### Rules
-- First \`# Heading\` becomes the title
-- \`**Status:**\` and \`**Priority:**\` are parsed as bold-colon fields after the title
-- Checklists (\`- [x]\` and \`- [ ]\`) are counted for progress tracking
-- Only 2 levels deep: \`features/<epic>/<file>.md\`
-
-## Creating and Modifying Plan Files
-
-You CAN and MUST create or modify plan files when the user asks. Use your file-write and shell-exec tools to do this directly.
-
-### How to create a new ticket
-1. Write the file at \`${repoPath}/plans/features/<epic-slug>/<ticket-slug>.md\`
-2. Use the exact format above (# Title, **Status:**, **Priority:**, then content)
-3. Commit and push:
-\`\`\`bash
-cd ${repoPath}
-git add plans/features/<epic-slug>/<ticket-slug>.md
-git commit -m "feat(plans): create ticket <ticket-slug>"
-git push
-\`\`\`
-
-### How to update a ticket (e.g. change status)
-1. Read the existing file
-2. Modify the relevant field (e.g. change \`**Status:** todo\` to \`**Status:** in-progress\`)
-3. Commit and push:
-\`\`\`bash
-cd ${repoPath}
-git add plans/features/<epic-slug>/<ticket-slug>.md
-git commit -m "docs(plans): update <ticket-slug> status to in-progress"
-git push
-\`\`\`
-
-### Commit message conventions
-- Creating a ticket: \`feat(plans): create ticket <slug>\`
-- Updating status: \`docs(plans): update <slug> status to <new-status>\`
-- Updating content: \`docs(plans): update <slug> description\`
-- Creating an epic: \`feat(plans): create epic <slug>\`
-- Multiple changes: \`docs(plans): update tickets for <epic>\`
-
-### Examples
-
-**User:** "Create a ticket for dark mode toggle in the UI epic"
-**You:** Create file \`plans/features/ui/dark-mode-toggle.md\`, commit with \`feat(plans): create ticket dark-mode-toggle\`, push, and confirm.
-
-**User:** "Move syntax-highlighting to in-progress"
-**You:** Edit \`plans/features/chat/syntax-highlighting.md\`, change \`**Status:** todo\` → \`**Status:** in-progress\`, commit with \`docs(plans): update syntax-highlighting status to in-progress\`, push, and confirm.
-
-**User:** "Create a high-priority ticket for API rate limiting"
-**You:** Determine the right epic, create the file with \`**Priority:** high\`, commit, push.
-
-### Safety
-- Only push to the branch: \`${context.project.branch}\`
-- Only modify files under \`plans/features/\`
-- Always pull before making changes: \`git pull --rebase\` to avoid conflicts
-- If a push fails, report the error — do not force-push
+## Plan Files
+- Location: \`plans/features/<epic-slug>/<ticket-slug>.md\`
+- Format: \`# Title\`, \`**Status:** todo|in-progress|review|completed|blocked\`, \`**Priority:** low|medium|high|critical\`
+- Checklists: \`- [x]\` done, \`- [ ]\` pending
+- Create/update: write the file, then \`cd ${repoPath} && git pull --rebase && git add ... && git commit -m "..." && git push\`
+- Commit conventions: \`feat(plans): create ticket <slug>\` | \`docs(plans): update <slug> status to <new>\`
+- Safety: only push to branch \`${context.project.branch}\`, only modify under \`plans/features/\`
 
 ## Structured Actions
 
@@ -337,7 +263,7 @@ export async function POST(request: Request) {
   if (context) {
     let systemMessage = buildSystemMessage(context, memory || undefined)
     if (activeFile) {
-      systemMessage += `\n\n## Currently Viewed File\n\nThe user is currently viewing: \`${activeFile.path}\`\n\n\`\`\`\n${activeFile.content}\n\`\`\``
+      systemMessage += `\n\n## Currently Viewed File\n\nThe user is currently viewing: \`${activeFile.path}\`\n\n\`\`\`\n${activeFile.content.slice(0, 3000)}\n\`\`\``
     }
     allMessages.push({ role: "system", content: systemMessage })
   }

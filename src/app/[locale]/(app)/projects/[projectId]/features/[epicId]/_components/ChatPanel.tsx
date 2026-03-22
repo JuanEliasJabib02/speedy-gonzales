@@ -9,7 +9,7 @@ import { ThemeToggle } from "@/src/lib/components/common/ThemeToggle"
 import { Button } from "@/src/lib/components/ui/button"
 import { useCurrentUser } from "@/src/lib/hooks/useCurrentUser"
 import { useSendChat } from "../_hooks/useSendChat"
-import type { ViewMode, ActiveFile } from "./FeatureLayout"
+import type { ActiveFile } from "./FeatureLayout"
 
 type ChatPanelProps = {
   width: number
@@ -43,6 +43,9 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
     handlePasteImage,
     removePendingImage,
     sendDirect,
+    hasEarlier,
+    loadEarlier,
+    loadingEarlier,
   } = useSendChat(projectId, epicId, activeFile ?? null)
 
   useEffect(() => {
@@ -123,6 +126,12 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
     a.click()
     URL.revokeObjectURL(url)
   }, [messages, epic])
+
+  // Scroll to bottom on mount
+  const bottomRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "instant" })
+  }, [])
 
   // Auto-scroll only when user is near the bottom
   const isStreaming = streamingContent !== null
