@@ -1,7 +1,7 @@
 # Test Blocked Notes
 
-status: todo
-priority: low
+**Status:** in-progress
+**Priority:** low
 
 ## What it does
 
@@ -9,6 +9,6 @@ Test ticket to verify the agent block notes feature works end-to-end. This ticke
 
 ## Checklist
 
-- [ ] Move to in_progress
+- [x] Move to in_progress
 - [ ] Wait 1 minute
 - [ ] Move to blocked with a reason note
