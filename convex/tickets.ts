@@ -1,5 +1,5 @@
 import { v } from "convex/values"
-import { query, mutation, internalQuery } from "./_generated/server"
+import { query, mutation, internalQuery, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
 import { requireAuth } from "./helpers"
 
@@ -103,5 +103,73 @@ export const getByProjectInternal = internalQuery({
       .query("tickets")
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect()
+  },
+})
+
+export const getByProjectPath = internalQuery({
+  args: { projectId: v.id("projects"), path: v.string() },
+  handler: async (ctx, { projectId, path }) => {
+    return ctx.db
+      .query("tickets")
+      .withIndex("by_project_path", (q) => q.eq("projectId", projectId).eq("path", path))
+      .first()
+  },
+})
+
+export const updateStatusInternal = internalMutation({
+  args: {
+    ticketId: v.id("tickets"),
+    status: v.string(),
+    blockedReason: v.optional(v.string()),
+  },
+  handler: async (ctx, { ticketId, status, blockedReason }) => {
+    const ticket = await ctx.db.get(ticketId)
+    if (!ticket) throw new Error("Ticket not found")
+
+    const previousStatus = ticket.status
+
+    const patch: Record<string, unknown> = { status }
+    if (status === "blocked") {
+      patch.blockedReason = blockedReason ?? undefined
+    } else {
+      patch.blockedReason = undefined
+    }
+    await ctx.db.patch(ticketId, patch)
+
+    // Async: push status change to GitHub so the .md file stays in sync
+    await ctx.scheduler.runAfter(0, internal.githubSync.pushTicketStatusToGitHub, {
+      ticketId,
+      newStatus: status,
+    })
+
+    // Update denormalized completed ticket count + auto-promote epic
+    const allTickets = await ctx.db
+      .query("tickets")
+      .withIndex("by_epic", (q) => q.eq("epicId", ticket.epicId))
+      .collect()
+    const activeTickets = allTickets.filter((t) => !t.isDeleted)
+    const completedCount = activeTickets.filter(
+      (t) => t.status === "completed" || t.status === "review"
+    ).length
+
+    const epicPatch: Record<string, unknown> = { completedTicketCount: completedCount }
+
+    if (status === "completed" || status === "review") {
+      const allDone = activeTickets.every((t) => t.status === "completed" || t.status === "review")
+      if (allDone && activeTickets.length > 0) {
+        const epic = await ctx.db.get(ticket.epicId)
+        if (epic && epic.status !== "review" && epic.status !== "completed") {
+          epicPatch.status = "review"
+          await ctx.scheduler.runAfter(0, internal.githubSync.pushEpicStatusToGitHub, {
+            epicId: ticket.epicId,
+            newStatus: "review",
+          })
+        }
+      }
+    }
+
+    await ctx.db.patch(ticket.epicId, epicPatch)
+
+    return { ticketId, previousStatus, newStatus: status }
   },
 })
