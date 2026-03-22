@@ -1,6 +1,6 @@
 # Code View Layout With Chat
 
-**Status:** in-progress
+**Status:** review
 **Priority:** high
 
 ## Overview
@@ -22,14 +22,14 @@ The toggle switches the LEFT area between Plan mode and Code mode.
 
 ## Requirements
 
-- [ ] ChatPanel is always visible — never hidden by mode toggle
-- [ ] Toggle button switches left+center area between Plan and Code
-- [ ] Plan mode: TicketSidebar + PlanViewer (current behavior)
-- [ ] Code mode: FileTree + FileViewer (replaces TicketSidebar + PlanViewer)
-- [ ] ChatPanel stays mounted and preserves state across mode switches
-- [ ] ResizeHandle between FileViewer and ChatPanel (same as PlanViewer↔Chat)
-- [ ] Remove the back "← Chat" floating button from FileViewer (no longer needed)
-- [ ] Toggle button lives in ChatPanel header or top bar (always visible)
+- [x] ChatPanel is always visible — never hidden by mode toggle
+- [x] Toggle button switches left+center area between Plan and Code
+- [x] Plan mode: TicketSidebar + PlanViewer (current behavior)
+- [x] Code mode: FileTree + FileViewer (replaces TicketSidebar + PlanViewer)
+- [x] ChatPanel stays mounted and preserves state across mode switches
+- [x] ResizeHandle between FileViewer and ChatPanel (same as PlanViewer↔Chat)
+- [x] Remove the back "← Chat" floating button from FileViewer (no longer needed)
+- [x] Toggle button lives in ChatPanel header or top bar (always visible)
 
 ## Files to modify
 

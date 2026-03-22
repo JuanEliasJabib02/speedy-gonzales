@@ -1,6 +1,6 @@
 # Scroll to Bottom Button
 
-**Status:** todo
+**Status:** review
 **Priority:** medium
 
 ## Overview
@@ -9,12 +9,12 @@ When the chat has many messages and the user scrolls up to read history, a float
 
 ## Acceptance criteria
 
-- [ ] Button is hidden when the user is already at (or near) the bottom
-- [ ] Button appears when the user scrolls up past a threshold (~200px from bottom)
-- [ ] Button is a floating pill/icon anchored to the bottom-right of the chat message list
-- [ ] Clicking it smooth-scrolls to the latest message
-- [ ] Button disappears again once the user is back at the bottom
-- [ ] Works with streaming responses (new tokens arriving while scrolled up)
+- [x] Button is hidden when the user is already at (or near) the bottom
+- [x] Button appears when the user scrolls up past a threshold (~200px from bottom)
+- [x] Button is a floating pill/icon anchored to the bottom-right of the chat message list
+- [x] Clicking it smooth-scrolls to the latest message
+- [x] Button disappears again once the user is back at the bottom
+- [x] Works with streaming responses (new tokens arriving while scrolled up)
 
 ## Implementation notes
 
