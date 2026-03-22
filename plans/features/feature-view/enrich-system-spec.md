@@ -1,6 +1,6 @@
 # Enrich System Message with Plan SPEC
 
-**Status:** todo
+**Status:** completed
 **Priority:** high
 
 ## What it does

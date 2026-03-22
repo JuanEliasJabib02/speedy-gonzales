@@ -27,6 +27,7 @@ plans/
 - Each **`.md` file** (other than `_context.md`) in an epic directory is a **ticket**.
 - Only **2 levels deep**: `features/<epic>/<file>.md`. Nested subdirectories are ignored.
 - Use **kebab-case** for directory and file names: `github-sync`, `create-dialog.md`.
+- **NEVER rename files or directories after creation.** Convex identifies tickets and epics by their `path` (e.g. `plans/features/feature-view/chat-panel-shell.md`). Renaming creates a duplicate and orphans the old record. If you need a different name, create a new file and delete the old one (which will properly remove it from Convex on next sync).
 - Files outside `features/` (like `business-model.md`) are **not synced** — they're reference docs only.
 
 ## File format — `_context.md` (epic)

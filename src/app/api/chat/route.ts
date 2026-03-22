@@ -59,13 +59,36 @@ ${ticketList || "  No tickets yet."}
 ### Feature Content
 ${context.epic.content}
 
-## Plan Files
-- Location: \`plans/features/<epic-slug>/<ticket-slug>.md\`
-- Format: \`# Title\`, \`**Status:** todo|in-progress|review|completed|blocked\`, \`**Priority:** low|medium|high|critical\`
-- Checklists: \`- [x]\` done, \`- [ ]\` pending
+## Plan Files (SPEC v1)
+
+### Directory structure
+\`\`\`
+plans/features/<epic-slug>/_context.md   — epic overview (required)
+plans/features/<epic-slug>/<ticket>.md   — one file per ticket
+\`\`\`
+
+### File format
+- First line: \`# Title\`
+- Then: \`**Status:** todo|in-progress|review|completed|blocked\`
+- Then: \`**Priority:** low|medium|high|critical\` (default: medium)
+- Body: markdown with sections (\`## What it does\`, \`## Checklist\`, \`## Files\`)
+- Checklists: \`- [x]\` done, \`- [ ]\` pending (counted by parser)
+
+### Naming rules
+- **kebab-case** for all files and directories: \`chat-panel-shell.md\`, \`feature-view/\`
+- **NEVER rename files/directories after creation** — Convex identifies records by path. Renaming creates duplicates and orphans the old record.
+- Only 2 levels deep: \`features/<epic>/<file>.md\`. No nested subdirectories.
+
+### _context.md (epic) extra sections
+- \`## Overview\` — what the feature does
+- \`## Components\` — extracted component list
+- \`## Still needs\` / \`## Depends on\`
+
+### Workflow
 - Create/update: write the file, then \`cd ${repoPath} && git pull --rebase && git add ... && git commit -m "..." && git push\`
 - Commit conventions: \`feat(plans): create ticket <slug>\` | \`docs(plans): update <slug> status to <new>\`
 - Safety: only push to branch \`${context.project.branch}\`, only modify under \`plans/features/\`
+- Status flow: todo → in-progress → review → completed (only Juan moves to completed)
 
 ## Structured Actions
 
