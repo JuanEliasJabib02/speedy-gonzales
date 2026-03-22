@@ -7,7 +7,7 @@ import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import { Link } from "@/src/i18n/routing"
 import { Button } from "@/src/lib/components/ui/button"
-import type { Feature } from "../_constants/mock-data"
+import type { Feature } from "../_constants/kanban-config"
 
 const PRIORITY_STYLES: Record<string, string> = {
   low: "bg-muted text-muted-foreground",

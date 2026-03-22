@@ -1,6 +1,6 @@
 # Rename mock-data.ts to kanban-config.ts
 
-**Status:** in-progress
+**Status:** review
 **Priority:** low
 **Agent:** Charizard 🔥
 
@@ -10,8 +10,8 @@ The file `_constants/mock-data.ts` no longer contains mock data — it holds rea
 
 ## Checklist
 
-- [ ] Rename `_constants/mock-data.ts` → `_constants/kanban-config.ts`
-- [ ] Update all imports referencing `mock-data` across KanbanBoard, KanbanColumn, FeatureCard, and page.tsx
+- [x] Rename `_constants/mock-data.ts` → `_constants/kanban-config.ts`
+- [x] Update all imports referencing `mock-data` across KanbanBoard, KanbanColumn, FeatureCard, and page.tsx
 
 ## Files
 

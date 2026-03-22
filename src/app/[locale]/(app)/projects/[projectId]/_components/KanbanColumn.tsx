@@ -1,5 +1,5 @@
 import { FeatureCard } from "./FeatureCard"
-import type { Feature } from "../_constants/mock-data"
+import type { Feature } from "../_constants/kanban-config"
 
 type KanbanColumnProps = {
   label: string

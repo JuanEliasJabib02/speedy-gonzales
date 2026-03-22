@@ -1,5 +1,5 @@
 import { KanbanColumn } from "./KanbanColumn"
-import { ACTIVE_COLUMNS, STATUS_CONFIG, type Feature } from "../_constants/mock-data"
+import { ACTIVE_COLUMNS, STATUS_CONFIG, type Feature } from "../_constants/kanban-config"
 
 type KanbanBoardProps = {
   features: Feature[]
