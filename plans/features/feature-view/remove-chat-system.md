@@ -26,11 +26,17 @@ Delete the entire chat system from Speedy. The chat is redundant — all agent i
 - [ ] Draft persistence (localStorage for chat input)
 - [ ] Stream reconnect / orphan cleanup logic
 
+## Also delete (code viewer — no longer needed)
+
+- [ ] FileTree component
+- [ ] FileViewer component
+- [ ] CodeView component
+- [ ] syntax-highlighting component (CommitDiffPanel doesn't use it)
+
 ## Keep
 
 - [ ] `memory/speedy-*.md` files — agent memory, used from Telegram
 - [ ] CommitDiffPanel — reused by commit timeline
-- [ ] Code viewer components — may be useful standalone
 - [ ] GitHub API helpers — reused by commit timeline
 
 ## Checklist
