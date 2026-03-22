@@ -1,6 +1,6 @@
 # OTP Verification Dialog
 
-**Status:** todo
+**Status:** completed
 **Priority:** medium
 
 ## What it does

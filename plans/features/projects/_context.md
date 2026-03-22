@@ -1,6 +1,6 @@
 # Projects
 
-**Status:** in-progress
+**Status:** completed
 **Priority:** high
 
 ## Overview

@@ -1,6 +1,6 @@
 # Env Vars Strategy (Local vs Cloud)
 
-**Status:** todo
+**Status:** completed
 **Priority:** high
 
 ## The rule

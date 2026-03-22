@@ -1,6 +1,6 @@
 # Magic Link Sign-in
 
-**Status:** todo
+**Status:** completed
 **Priority:** medium
 
 ## What it does
