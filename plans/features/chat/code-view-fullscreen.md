@@ -1,6 +1,6 @@
 # Code View Fullscreen Layout
 
-**Status:** todo
+**Status:** completed
 **Priority:** high
 
 ## Overview
@@ -9,11 +9,11 @@ When switching to Code mode, the CodeView should expand to fill the full width o
 
 ## What to build
 
-- [ ] In `FeatureLayout.tsx`: when `mode === "code"`, hide `PlanViewer` and `ChatPanel` (and resize handles), let `CodeView` take full width
-- [ ] Add a floating "Back to Chat" button (MessageSquare icon, top-right of `FileViewer`) so the user can switch back without needing the ChatPanel header toggle
-- [ ] Code mode layout: `[FileTree 280px] | [FileViewer — full remaining width]`
-- [ ] Chat mode layout: unchanged — `[TicketSidebar] | [PlanViewer] | [ChatPanel]`
-- [ ] Transition should be smooth (no layout jump)
+- [x] In `FeatureLayout.tsx`: when `mode === "code"`, hide `PlanViewer` and `ChatPanel` (and resize handles), let `CodeView` take full width
+- [x] Add a floating "Back to Chat" button (MessageSquare icon, top-right of `FileViewer`) so the user can switch back without needing the ChatPanel header toggle
+- [x] Code mode layout: `[FileTree 280px] | [FileViewer — full remaining width]`
+- [x] Chat mode layout: unchanged — `[TicketSidebar] | [PlanViewer] | [ChatPanel]`
+- [x] Transition should be smooth (no layout jump)
 
 ## Files likely involved
 
