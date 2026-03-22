@@ -144,7 +144,7 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
         <div className="flex items-center rounded-md border border-border bg-muted/50 p-0.5">
           <button
             onClick={() => onViewModeChange("plan")}
-            className={`rounded px-2.5 py-1 text-xs font-medium transition-all ${
+            className={`rounded px-3.5 py-1.5 text-sm font-medium transition-all ${
               viewMode === "plan"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -154,7 +154,7 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
           </button>
           <button
             onClick={() => onViewModeChange("code")}
-            className={`rounded px-2.5 py-1 text-xs font-medium transition-all ${
+            className={`rounded px-3.5 py-1.5 text-sm font-medium transition-all ${
               viewMode === "code"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
