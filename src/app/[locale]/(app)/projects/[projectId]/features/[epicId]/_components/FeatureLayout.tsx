@@ -50,7 +50,6 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
   // Context bridge: track the active file being viewed
   const [activeFile, setActiveFile] = useState<ActiveFile | null>(null)
 
-  const router = useRouter()
   const isDragging = useRef(false)
   const sendDirectRef = useRef<((message: string) => void) | null>(null)
 
@@ -158,6 +157,8 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
             overviewStatus={epic.status}
             overviewPriority={epic.priority}
             onCreateTicket={handleCreateTicket}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
           />
           <PlanViewer
             title={selectedTicket?.title ?? epic.title}

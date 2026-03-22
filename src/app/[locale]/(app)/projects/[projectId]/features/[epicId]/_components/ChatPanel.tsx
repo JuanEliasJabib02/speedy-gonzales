@@ -9,7 +9,7 @@ import { ThemeToggle } from "@/src/lib/components/common/ThemeToggle"
 import { Button } from "@/src/lib/components/ui/button"
 import { useCurrentUser } from "@/src/lib/hooks/useCurrentUser"
 import { useSendChat } from "../_hooks/useSendChat"
-import type { ActiveFile } from "./FeatureLayout"
+import type { ViewMode, ActiveFile } from "./FeatureLayout"
 
 type ChatPanelProps = {
   width: number
