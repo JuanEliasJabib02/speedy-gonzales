@@ -54,11 +54,26 @@ In the webhook sync (`convex/github.ts` or equivalent):
 ### Ticket sidebar (`TicketSidebar.tsx`)
 - Default and only sort: `updatedAt` descending
 - Show small "Updated 2h ago" relative time on each ticket card
-- Show agent emoji + name badge on each card (e.g. "🔥 Charizard")
+
+### Ticket card (`TicketCard.tsx`)
+- Show agent emoji + name as a visible badge on each card (e.g. "🔥 Charizard")
+- The badge should be clearly visible — not hidden in a tooltip, shown inline on the card itself
+
+### Ticket detail view
+- Agent name + emoji displayed prominently near the ticket title or in the metadata section
+- Should be immediately obvious who owns the ticket when viewing it
 
 ### Future (not this ticket)
 - Dashboard analytics: tickets completed per agent per week
 - Activity timeline: who did what and when
+
+## Workflow rule: Perro salchicha
+
+When Perro salchicha (or any coding agent) picks up a ticket to work on:
+1. **FIRST** move the ticket status to `in-progress` in the .md file, commit and push
+2. **THEN** start coding
+
+This ensures Juan can always see in real-time what's being worked on. A ticket sitting at `todo` means nobody has started. `in-progress` means an agent is actively coding it.
 
 ## Checklist
 
