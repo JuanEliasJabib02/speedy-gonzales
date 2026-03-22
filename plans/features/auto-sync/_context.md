@@ -1,6 +1,6 @@
 # Auto-Sync
 
-**Status:** completed
+**Status:** in-progress
 **Priority:** critical
 
 ## Overview
@@ -65,6 +65,8 @@ This is the foundation every other feature builds on. Without Auto-Sync, there a
 - [ ] Support for renamed/deleted plan files (currently only handles creates and updates)
 - [ ] Per-epic sync status (currently project-level only)
 - [ ] Sync history log in UI (last N syncs with timestamps and changed files)
+- [ ] Cron fallback sync — 15 min periodic safety net if webhooks fail
+- [x] Epic auto-promote on sync — auto-move epic to review when all tickets done
 
 ## Key files
 
