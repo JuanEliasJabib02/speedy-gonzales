@@ -49,10 +49,10 @@ export const updateStatus = mutation({
 
       const epicPatch: Record<string, unknown> = { completedTicketCount: completedCount }
 
-      // Auto-promote epic to review when all tickets are completed
-      if (status === "completed") {
-        const allCompleted = activeTickets.every((t) => t.status === "completed")
-        if (allCompleted && activeTickets.length > 0) {
+      // Auto-promote epic to review when all tickets are done (completed or review)
+      if (status === "completed" || status === "review") {
+        const allDone = activeTickets.every((t) => t.status === "completed" || t.status === "review")
+        if (allDone && activeTickets.length > 0) {
           const epic = await ctx.db.get(ticket.epicId)
           if (epic && epic.status !== "review" && epic.status !== "completed") {
             epicPatch.status = "review"
