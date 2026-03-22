@@ -1,6 +1,6 @@
 # Test Blocked Notes
 
-**Status:** in-progress
+**Status:** blocked
 **Priority:** low
 
 ## What it does
@@ -10,5 +10,9 @@ Test ticket to verify the agent block notes feature works end-to-end. This ticke
 ## Checklist
 
 - [x] Move to in_progress
-- [ ] Wait 1 minute
+- [x] Wait 1 minute
 - [ ] Move to blocked with a reason note
+
+## Blocked
+
+Waiting for the GitHub OAuth feature to be completed. Cannot test authenticated API endpoints without proper token flow.
