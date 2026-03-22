@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, Brain, CheckCircle, Circle, Clock, Code, FolderTree, GitBranch, Heart, MessageSquare, Rocket, Zap } from "lucide-react"
+import { Activity, ArrowRight, BookOpen, Brain, CheckCircle, Circle, Clock, Code, FolderTree, GitBranch, Heart, MessageSquare, Rocket, Zap } from "lucide-react"
 import Link from "next/link"
 
 const guides = [
@@ -53,6 +53,20 @@ const features = [
       "How context injection works: plan files, ticket state, and chat history — auto-injected so the agent knows everything.",
     href: "/docs/chat-memory",
     icon: Brain,
+  },
+  {
+    title: "Context Window",
+    description:
+      "What the token counter and colored dot in the chat header mean — and the difference between context window and chat memory.",
+    href: "/docs/context-window",
+    icon: Cpu,
+  },
+  {
+    title: "Context Window",
+    description:
+      "What the token counter means, how history windowing works, and when to start a fresh session.",
+    href: "/docs/context-window",
+    icon: Activity,
   },
   {
     title: "AI Development Workflow",
