@@ -1,4 +1,4 @@
-import { Activity, ArrowRight, BookOpen, Brain, CheckCircle, Circle, Clock, Code, FolderTree, GitBranch, Heart, MessageSquare, Rocket, Zap } from "lucide-react"
+import { Activity, ArrowRight, BookOpen, Brain, CheckCircle, Circle, Clock, Code, Cpu, FolderTree, GitBranch, Heart, MessageSquare, Rocket, Zap } from "lucide-react"
 import Link from "next/link"
 
 const guides = [
