@@ -1,6 +1,6 @@
 # Agent Indicator in Project Header
 
-**Status:** in-progress
+**Status:** review
 **Priority:** medium
 **Agent:** Charizard 🔥
 
@@ -24,12 +24,12 @@ These fields are updated by the autonomous loop when it picks up or finishes wor
 
 ## Checklist
 
-- [ ] Add agent fields to `convex/schema/projects.ts`
-- [ ] Create migration or default values for existing projects
-- [ ] Update `ProjectHeader.tsx` to display agent name + emoji + status
-- [ ] Show current feature name when status is "working"
-- [ ] Show "idle" with muted styling when no work is happening
-- [ ] Add a subtle pulse animation when the agent is actively working
+- [x] Add agent fields to `convex/schema/projects.ts`
+- [x] Create migration or default values for existing projects (fields are optional, no migration needed)
+- [x] Update `ProjectHeader.tsx` to display agent name + emoji + status
+- [x] Show current feature name when status is "working"
+- [x] Show "idle" with muted styling when no work is happening
+- [x] Add a subtle pulse animation when the agent is actively working
 
 ## Files
 
