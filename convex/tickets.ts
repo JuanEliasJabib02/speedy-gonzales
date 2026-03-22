@@ -51,6 +51,11 @@ export const updateStatus = mutation({
           const epic = await ctx.db.get(ticket.epicId)
           if (epic && epic.status !== "review" && epic.status !== "completed") {
             await ctx.db.patch(ticket.epicId, { status: "review" })
+            // Push epic status change to GitHub
+            await ctx.scheduler.runAfter(0, internal.githubSync.pushEpicStatusToGitHub, {
+              epicId: ticket.epicId,
+              newStatus: "review",
+            })
           }
         }
       }

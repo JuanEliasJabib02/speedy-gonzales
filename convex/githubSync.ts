@@ -549,3 +549,81 @@ export const pushTicketStatusToGitHub = internalAction({
     console.log(`[git-status-push] ✅ ${ticket.path} → ${newStatus}`)
   },
 })
+
+export const pushEpicStatusToGitHub = internalAction({
+  args: {
+    epicId: v.id("epics"),
+    newStatus: v.string(),
+  },
+  handler: async (ctx, { epicId, newStatus }) => {
+    const epic = await ctx.runQuery(internal.epics.getEpicInternal, { epicId })
+    if (!epic) return
+
+    const project = await ctx.runQuery(internal.projects.getProjectInternal, {
+      projectId: epic.projectId,
+    })
+    if (!project) return
+
+    const accessToken = process.env.GITHUB_PAT
+    if (!accessToken) {
+      console.error("[git-epic-push] GITHUB_PAT not set")
+      return
+    }
+
+    const { repoOwner, repoName, branch } = project
+    const filePath = `${epic.path}/_context.md`
+
+    const fileRes = await fetch(
+      `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}?ref=${branch}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "application/vnd.github+json",
+        },
+      }
+    )
+
+    if (!fileRes.ok) {
+      console.error(`[git-epic-push] Failed to fetch: ${filePath}`, await fileRes.text())
+      return
+    }
+
+    const fileData = await fileRes.json()
+    const currentContent = atob(fileData.content.replace(/\n/g, ""))
+    const fileSha = fileData.sha
+
+    const updatedContent = currentContent.replace(
+      /\*\*Status:\*\*\s*\S+/,
+      `**Status:** ${newStatus}`
+    )
+
+    if (updatedContent === currentContent) return
+
+    const encodedContent = btoa(unescape(encodeURIComponent(updatedContent)))
+
+    const updateRes = await fetch(
+      `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "application/vnd.github+json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: `chore(plans): auto-promote ${epic.title} to ${newStatus}`,
+          content: encodedContent,
+          sha: fileSha,
+          branch,
+        }),
+      }
+    )
+
+    if (!updateRes.ok) {
+      console.error(`[git-epic-push] Failed to commit: ${filePath}`, await updateRes.text())
+      return
+    }
+
+    console.log(`[git-epic-push] ✅ ${filePath} → ${newStatus}`)
+  },
+})

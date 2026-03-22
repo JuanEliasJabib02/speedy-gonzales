@@ -67,6 +67,13 @@ export const updateStatus = mutation({
   },
 })
 
+export const getEpicInternal = internalQuery({
+  args: { epicId: v.id("epics") },
+  handler: async (ctx, { epicId }) => {
+    return ctx.db.get(epicId)
+  },
+})
+
 export const getByProjectInternal = internalQuery({
   args: { projectId: v.id("projects") },
   handler: async (ctx, { projectId }) => {
