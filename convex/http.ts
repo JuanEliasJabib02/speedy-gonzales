@@ -137,4 +137,96 @@ http.route({
   }),
 })
 
+// Update ticket status — called by the autonomous loop when an agent finishes a ticket
+http.route({
+  path: "/update-ticket-status",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    // API key auth
+    const authHeader = request.headers.get("authorization")
+    const expectedKey = process.env.LOOP_API_KEY
+    if (expectedKey && authHeader !== `Bearer ${expectedKey}`) {
+      return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      })
+    }
+
+    let body: {
+      repoOwner?: string
+      repoName?: string
+      ticketPath?: string
+      status?: string
+      blockedReason?: string
+    }
+
+    try {
+      body = await request.json()
+    } catch {
+      return new Response(JSON.stringify({ ok: false, error: "Invalid JSON" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      })
+    }
+
+    const { repoOwner, repoName, ticketPath, status, blockedReason } = body
+
+    if (!repoOwner || !repoName || !ticketPath || !status) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "Missing required fields: repoOwner, repoName, ticketPath, status" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      )
+    }
+
+    const validStatuses = ["todo", "in-progress", "review", "completed", "blocked"]
+    if (!validStatuses.includes(status)) {
+      return new Response(
+        JSON.stringify({ ok: false, error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      )
+    }
+
+    // Look up project
+    const project = await ctx.runQuery(internal.projects.getByRepo, {
+      owner: repoOwner,
+      name: repoName,
+    })
+    if (!project) {
+      return new Response(
+        JSON.stringify({ ok: false, error: `Project not found: ${repoOwner}/${repoName}` }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      )
+    }
+
+    // Look up ticket by path
+    const ticket = await ctx.runQuery(internal.tickets.getByProjectPath, {
+      projectId: project._id,
+      path: ticketPath,
+    })
+    if (!ticket) {
+      return new Response(
+        JSON.stringify({ ok: false, error: `Ticket not found: ${ticketPath}` }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      )
+    }
+
+    // Update status
+    const result = await ctx.runMutation(internal.tickets.updateStatusInternal, {
+      ticketId: ticket._id,
+      status,
+      blockedReason: status === "blocked" ? blockedReason : undefined,
+    })
+
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        ticketId: result.ticketId,
+        previousStatus: result.previousStatus,
+        newStatus: result.newStatus,
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    )
+  }),
+})
+
 export default http
