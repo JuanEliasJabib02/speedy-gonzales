@@ -18,6 +18,7 @@ type Ticket = {
   blockedReason?: string
   updatedAt?: number
   agentName?: string
+  _creationTime?: number
 }
 
 type TicketSidebarProps = {

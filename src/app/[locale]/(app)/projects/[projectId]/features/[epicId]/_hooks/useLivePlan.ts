@@ -31,6 +31,7 @@ export function useLivePlan(epicId: string, projectId?: string) {
             commits: t.commits ?? [],
             updatedAt: t.updatedAt,
             agentName: t.agentName,
+            _creationTime: t._creationTime,
           })),
         ],
         planContent: epic.content,
