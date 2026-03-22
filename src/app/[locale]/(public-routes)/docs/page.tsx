@@ -1,4 +1,4 @@
-import { Activity, ArrowRight, BookOpen, Brain, CheckCircle, Circle, Clock, Code, Cpu, FolderTree, GitBranch, Heart, MessageSquare, Rocket, Zap } from "lucide-react"
+import { Activity, ArrowRight, BookOpen, Brain, CheckCircle, Circle, Clock, Code, FolderTree, GitBranch, Heart, MessageSquare, Rocket, Zap } from "lucide-react"
 import Link from "next/link"
 
 const guides = [
@@ -43,30 +43,9 @@ const features = [
   {
     title: "OpenClaw Chat",
     description:
-      "Per-feature AI chat powered by OpenClaw's Charizard agent. Context-aware conversations with memory.",
+      "The super-chat wired to your AI agent. Context injection, streaming, memory, agent actions, slash commands, ticket mentions, image uploads, and more — all in one panel.",
     href: "/docs/chat",
     icon: MessageSquare,
-  },
-  {
-    title: "Chat Memory",
-    description:
-      "How context injection works: plan files, ticket state, and chat history — auto-injected so the agent knows everything.",
-    href: "/docs/chat-memory",
-    icon: Brain,
-  },
-  {
-    title: "Context Window",
-    description:
-      "What the token counter and colored dot in the chat header mean — and the difference between context window and chat memory.",
-    href: "/docs/context-window",
-    icon: Cpu,
-  },
-  {
-    title: "Context Window",
-    description:
-      "What the token counter means, how history windowing works, and when to start a fresh session.",
-    href: "/docs/context-window",
-    icon: Activity,
   },
   {
     title: "AI Development Workflow",
@@ -121,74 +100,129 @@ const roadmapItems = [
   {
     status: "done" as const,
     label: "Per-feature AI Chat",
-    description: "OpenClaw chat with context injection (project, tickets, plan).",
-  },
-  {
-    status: "done" as const,
-    label: "Syntax Highlighting",
-    description: "Code blocks in chat with copy button and language detection.",
+    description: "OpenClaw chat with full context injection (project, tickets, plan, active file).",
   },
   {
     status: "done" as const,
     label: "Streaming UX",
-    description: "ChatGPT-style incremental rendering with typing indicator.",
+    description: "ChatGPT-style incremental rendering with typing indicator and blinking cursor.",
   },
   {
-    status: "in-progress" as const,
-    label: "Production Login (Magic Link)",
-    description: "Convex Auth + Resend email OTP — working locally, fixing Vercel deploy.",
+    status: "done" as const,
+    label: "Syntax Highlighting",
+    description: "Code blocks in chat with copy button and language auto-detection.",
   },
   {
-    status: "in-progress" as const,
+    status: "done" as const,
     label: "Markdown Rendering",
-    description: "react-markdown + remark-gfm for bold, italic, lists, headers in chat.",
+    description: "Full markdown in agent messages: headings, tables, blockquotes, lists.",
   },
   {
-    status: "next" as const,
-    label: "Image Upload in Chat",
-    description: "Paste or upload screenshots directly into the chat (Ctrl+V support).",
-    priority: "high",
-  },
-  {
-    status: "next" as const,
-    label: "Roadmap Modal",
-    description: "Visual roadmap button per feature — shows all tickets by priority in a modal.",
-    priority: "high",
-  },
-  {
-    status: "next" as const,
-    label: "Stop Button",
-    description: "Cancel a streaming agent response mid-generation.",
-    priority: "medium",
-  },
-  {
-    status: "next" as const,
-    label: "GitHub Link Preview",
-    description: "Inline GitHub card previews when sharing commit/PR/issue links in chat.",
-    priority: "medium",
-  },
-  {
-    status: "next" as const,
+    status: "done" as const,
     label: "Ticket Mentions (#)",
     description: "Type # in chat to autocomplete and reference tickets inline.",
+  },
+  {
+    status: "done" as const,
+    label: "Slash Commands",
+    description: "/create-ticket, /update-status, /sync, /tickets — agent actions from the input.",
+  },
+  {
+    status: "done" as const,
+    label: "Image Upload in Chat",
+    description: "Paste screenshots directly into the chat (Ctrl+V). Up to 4 images per message.",
+  },
+  {
+    status: "done" as const,
+    label: "Stop Button",
+    description: "Cancel a streaming response mid-generation. Partial content saved as interrupted.",
+  },
+  {
+    status: "done" as const,
+    label: "Retry Last Message",
+    description: "Re-send the last message with one click if the response was bad.",
+  },
+  {
+    status: "done" as const,
+    label: "Export Conversation",
+    description: "Download the full chat thread as a .md file.",
+  },
+  {
+    status: "done" as const,
+    label: "GitHub Link Preview",
+    description: "Inline GitHub card previews when sharing commit/PR/issue links in chat.",
+  },
+  {
+    status: "done" as const,
+    label: "Commit Cards",
+    description: "Commit refs in agent messages render as branded cards with diff viewer.",
+  },
+  {
+    status: "done" as const,
+    label: "Agent Action Cards",
+    description: "Structured <actions> blocks rendered as visual cards (ticket-created, status-updated, sync-triggered).",
+  },
+  {
+    status: "done" as const,
+    label: "Draft Persistence",
+    description: "Unfinished messages auto-saved to localStorage, restored when you return. 24h expiry.",
+  },
+  {
+    status: "done" as const,
+    label: "Message Queue",
+    description: "Send a message while a response is streaming — it queues and sends automatically (Slack-style).",
+  },
+  {
+    status: "done" as const,
+    label: "Roadmap Modal",
+    description: "Visual roadmap button per feature — all tickets by priority in a single modal.",
+  },
+  {
+    status: "done" as const,
+    label: "Chat Memory (Cross-Session)",
+    description: "Charizard maintains memory files on the VPS. Decisions and context survive across sessions.",
+  },
+  {
+    status: "done" as const,
+    label: "Stream Reconnect",
+    description: "Orphaned streaming messages on page reload are auto-detected and marked as interrupted.",
+  },
+  {
+    status: "done" as const,
+    label: "Code View + Chat Split",
+    description: "Open any file in the code view alongside the chat. File content auto-injected as context.",
+  },
+  {
+    status: "done" as const,
+    label: "Chat Pagination",
+    description: "Load earlier messages on demand. Default view shows only recent history for performance.",
+  },
+  {
+    status: "in-progress" as const,
+    label: "Agent Repo Push (Full Loop)",
+    description: "Charizard creates tickets, pushes to GitHub, auto-sync fires — full agentic loop in review.",
+  },
+  {
+    status: "in-progress" as const,
+    label: "OpenClaw API Integration",
+    description: "Connecting Speedy's API route to the full OpenClaw gateway with auth and session management.",
+  },
+  {
+    status: "next" as const,
+    label: "Production Login (Magic Link)",
+    description: "Convex Auth + Resend email OTP for production deploy.",
+    priority: "high",
+  },
+  {
+    status: "next" as const,
+    label: "Multi-agent Orchestration",
+    description: "Spawn Perro salchicha (Codex/Claude Code) directly from the chat UI.",
     priority: "medium",
   },
   {
     status: "next" as const,
-    label: "Retry Last Message",
-    description: "Re-send your last message with one click if the response was bad.",
-    priority: "low",
-  },
-  {
-    status: "next" as const,
-    label: "Export Conversation",
-    description: "Download a chat thread as markdown.",
-    priority: "low",
-  },
-  {
-    status: "next" as const,
-    label: "Slash Commands",
-    description: "/create-ticket, /update-status, /sync — agent actions from the chat input.",
+    label: "Voice Input",
+    description: "Speak your message — transcribed and sent to the agent.",
     priority: "low",
   },
 ]
