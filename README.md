@@ -68,6 +68,12 @@ SpeedIDE reads these files via GitHub API, parses the frontmatter (`**Status:**`
 
 ---
 
+## Architecture docs
+
+- [Context Window & Memory Architecture](./docs/context-window.md) — how the two memory layers work (chat memory vs context window), token budgets, and the full request flow
+
+---
+
 ## Self-hosted setup
 
 You bring your own keys. No vendor lock-in, no subscription.

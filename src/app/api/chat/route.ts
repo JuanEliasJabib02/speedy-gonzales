@@ -258,15 +258,38 @@ export async function POST(request: Request) {
   // Load cross-session memory if projectId is available
   const memory = projectId ? await loadMemoryFile(projectId) : ""
 
+  // ─── Token Budget (approximate, 1 token ≈ 4 chars) ──────────────────────────
+  // System message breakdown:
+  //   • Static agent instructions + plan file conventions: ~300 tokens
+  //   • Project/epic/repo metadata:                        ~100 tokens
+  //   • Ticket list (status + title per ticket):           ~10–20 tokens each
+  //   • Epic content (plan body, passed as-is):            ~500–2000 tokens
+  //   • Chat Memory (speedy-<project>.md):                 ~200–800 tokens
+  //   • Active file (code view, capped at 3000 chars):     ~0–750 tokens
+  //   Total system message budget target:                  < 5000 tokens
+  //
+  // History window:
+  //   • Last 12 messages, each truncated to 600 chars:     ~1800 tokens max
+  //
+  // User message:                                          ~50–300 tokens
+  //
+  // Grand total per request budget target:                 < 8000 tokens
+  // Model context limit (Claude Sonnet):                   200,000 tokens
+  //
+  // See docs/context-window.md for full architecture explanation.
+  // ─────────────────────────────────────────────────────────────────────────────
+
   // Build messages for OpenAI-compatible API
   const allMessages: Array<{ role: string; content: string }> = []
   if (context) {
     let systemMessage = buildSystemMessage(context, memory || undefined)
     if (activeFile) {
+      // Active file capped at 3000 chars (~750 tokens) to stay within budget
       systemMessage += `\n\n## Currently Viewed File\n\nThe user is currently viewing: \`${activeFile.path}\`\n\n\`\`\`\n${activeFile.content.slice(0, 3000)}\n\`\`\``
     }
     allMessages.push({ role: "system", content: systemMessage })
   }
+  // History window: last 12 messages, each truncated to 600 chars to cap at ~1800 tokens
   for (const m of history ?? []) {
     allMessages.push({ role: m.role, content: m.content })
   }

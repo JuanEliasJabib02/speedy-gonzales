@@ -1,6 +1,6 @@
 # Context Architecture Docs
 
-**Status:** review
+**Status:** completed
 **Priority:** medium
 
 ## Overview
@@ -27,5 +27,5 @@ Document how the chat context works — what gets injected, token budgets, how h
 
 - [x] Write `docs/context-window.md` covering context window, memory layers, historial windowing, and full call flow
 - [x] Info icon (ℹ️) en el token counter header linkea directo a la doc
-- [ ] Add token budget comments in `route.ts`
-- [ ] Link from main README or docs index
+- [x] Add token budget comments in `route.ts`
+- [x] Link from main README or docs index
