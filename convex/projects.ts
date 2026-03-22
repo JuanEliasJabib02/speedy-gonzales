@@ -93,19 +93,27 @@ export const deleteProject = mutation({
 export const updateSettings = mutation({
   args: {
     projectId: v.id("projects"),
-    maxConcurrentPerFeature: v.number(),
-    maxConcurrentGlobal: v.number(),
+    maxConcurrentPerFeature: v.optional(v.number()),
+    maxConcurrentGlobal: v.optional(v.number()),
+    agentName: v.optional(v.string()),
+    agentEmoji: v.optional(v.string()),
+    agentStatus: v.optional(v.string()),
+    agentCurrentFeature: v.optional(v.string()),
   },
-  handler: async (ctx, { projectId, maxConcurrentPerFeature, maxConcurrentGlobal }) => {
+  handler: async (ctx, { projectId, ...updates }) => {
     const userId = await requireAuth(ctx)
     const project = await ctx.db.get(projectId)
     if (!project || project.userId !== userId) return throwError(ErrorCodes.NOT_FOUND)
 
-    await ctx.db.patch(projectId, {
-      maxConcurrentPerFeature,
-      maxConcurrentGlobal,
-      updatedAt: Date.now(),
-    })
+    const patch: Record<string, unknown> = { updatedAt: Date.now() }
+    if (updates.maxConcurrentPerFeature !== undefined) patch.maxConcurrentPerFeature = updates.maxConcurrentPerFeature
+    if (updates.maxConcurrentGlobal !== undefined) patch.maxConcurrentGlobal = updates.maxConcurrentGlobal
+    if (updates.agentName !== undefined) patch.agentName = updates.agentName
+    if (updates.agentEmoji !== undefined) patch.agentEmoji = updates.agentEmoji
+    if (updates.agentStatus !== undefined) patch.agentStatus = updates.agentStatus
+    if (updates.agentCurrentFeature !== undefined) patch.agentCurrentFeature = updates.agentCurrentFeature
+
+    await ctx.db.patch(projectId, patch)
   },
 })
 
