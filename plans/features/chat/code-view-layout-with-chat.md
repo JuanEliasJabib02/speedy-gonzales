@@ -1,32 +1,43 @@
 # Code View Layout With Chat
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** high
 
 ## Overview
 
-Redesign the Chat/Code toggle so the ChatPanel is always visible. The toggle swaps the LEFT panel only.
+Restructure the FeatureLayout so the ChatPanel is always visible on the right side.
+The toggle switches the LEFT area between Plan mode and Code mode.
 
 ## Layout
 
-### Chat mode (current left panel)
+**Plan mode (default):**
 ```
-[TicketSidebar + PlanViewer  |  ChatPanel]
-```
-
-### Code mode (new)
-```
-[FileTree + FileViewer       |  ChatPanel]
+[TicketSidebar 280px] | [PlanViewer flex] | [ChatPanel 380px]
 ```
 
-The ChatPanel never unmounts — it stays on the right at all times.
+**Code mode:**
+```
+[FileTree 280px] | [FileViewer flex] | [ChatPanel 380px]
+```
 
-## Implementation
+## Requirements
 
-- [ ] Remove the logic that hides ChatPanel in Code mode
-- [ ] Keep `FeatureLayout.tsx` toggle but only swap the left panel content
-- [ ] In Code mode: render `<CodeView>` (FileTree + FileViewer) in the left region
-- [ ] In Chat mode: render `<TicketSidebar>` + `<PlanViewer>` in the left region
-- [ ] Remove the floating "← Chat" button from FileViewer (no longer needed)
-- [ ] Ensure resize handles work in both modes
-- [ ] ChatPanel width stays consistent between mode switches (no layout jump)
+- [ ] ChatPanel is always visible — never hidden by mode toggle
+- [ ] Toggle button switches left+center area between Plan and Code
+- [ ] Plan mode: TicketSidebar + PlanViewer (current behavior)
+- [ ] Code mode: FileTree + FileViewer (replaces TicketSidebar + PlanViewer)
+- [ ] ChatPanel stays mounted and preserves state across mode switches
+- [ ] ResizeHandle between FileViewer and ChatPanel (same as PlanViewer↔Chat)
+- [ ] Remove the back "← Chat" floating button from FileViewer (no longer needed)
+- [ ] Toggle button lives in ChatPanel header or top bar (always visible)
+
+## Files to modify
+
+- `src/components/features/FeatureLayout.tsx` — main layout logic
+- `src/components/features/CodeView/FileViewer.tsx` — remove floating back button
+- `src/components/chat/ChatPanel.tsx` — ensure toggle is accessible from chat header
+
+## Notes
+
+- ChatPanel should NOT unmount on toggle — preserve conversation state
+- The resize handle between center and chat should work in both modes
