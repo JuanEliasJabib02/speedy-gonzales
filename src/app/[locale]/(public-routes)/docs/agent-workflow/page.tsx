@@ -32,8 +32,8 @@ export default function AgentWorkflowPage() {
           {[
             {
               icon: MessageSquare,
-              title: "Chat as command center",
-              desc: "Describe what you want in natural language. The agent reads your plan, creates tickets, writes code, and pushes — all from the chat.",
+              title: "Telegram as command center",
+              desc: "Describe what you want in natural language via Telegram. The agent reads your plan, creates tickets, writes code, and pushes.",
             },
             {
               icon: Brain,
@@ -84,8 +84,8 @@ export default function AgentWorkflowPage() {
             },
             {
               step: "3",
-              title: "Chat with the agent",
-              desc: "Open the feature chat. The agent has your full context: project, epic, all tickets, conversation history. Ask it to build, review, explain, or refactor.",
+              title: "Talk to the agent via Telegram",
+              desc: "Message Charizard on Telegram. The agent has your full context: project, epic, all tickets. Ask it to build, review, explain, or refactor.",
               tip: "Be direct. 'Build the RoadmapModal component based on the ticket spec' works better than 'can you maybe help with the modal?'",
             },
             {
@@ -130,7 +130,7 @@ export default function AgentWorkflowPage() {
               <span className="font-medium">Charizard — Orchestrator</span>
             </div>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              The main agent you talk to in chat. Reads plans, manages tickets, delegates coding tasks to Perro salchicha,
+              The main agent you talk to via Telegram. Reads plans, manages tickets, delegates coding tasks to Perro salchicha,
               and monitors progress. Has persistent memory and full project context. Lives in OpenClaw on the VPS.
             </p>
           </div>
@@ -169,7 +169,7 @@ export default function AgentWorkflowPage() {
               examples: [
                 "Build the RoadmapModal component based on the ticket spec",
                 "Add error handling to the /api/chat route",
-                "Refactor the ChatMessage component to use react-markdown",
+                "Refactor the PlanViewer component to use react-markdown",
               ],
             },
             {
@@ -226,8 +226,8 @@ export default function AgentWorkflowPage() {
               desc: "When asking the agent to build something complex, point it to the plan: 'Build this per the PLAN.md spec in plans/features/chat/'. The plan is the source of truth.",
             },
             {
-              title: "Keep chat history clean",
-              desc: "Start new conversations for new topics. Long, wandering chat history degrades agent performance. Each feature has isolated history for this reason.",
+              title: "Keep conversations focused",
+              desc: "Start new conversations for new topics. Long, wandering history degrades agent performance. Keep discussions scoped to one feature.",
             },
           ].map((item) => (
             <div key={item.title} className="flex gap-3">

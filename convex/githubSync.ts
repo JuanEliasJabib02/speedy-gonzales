@@ -544,24 +544,3 @@ export const pushTicketStatusToGitHub = internalAction({
     console.log(`[git-status-push] ✅ ${ticket.path} → ${newStatus}`)
   },
 })
-
-// One-time migration: move chat messages from an old epic to a new one.
-// Run via Convex dashboard, then remove this function.
-export const migrateEpicMessages = internalMutation({
-  args: {
-    oldEpicId: v.id("epics"),
-    newEpicId: v.id("epics"),
-  },
-  handler: async (ctx, { oldEpicId, newEpicId }) => {
-    const messages = await ctx.db
-      .query("chatMessages")
-      .withIndex("by_epic", (q) => q.eq("epicId", oldEpicId))
-      .collect()
-    for (const msg of messages) {
-      await ctx.db.patch(msg._id, { epicId: newEpicId })
-    }
-    console.log(
-      `[migrate] Moved ${messages.length} messages from ${oldEpicId} to ${newEpicId}`
-    )
-  },
-})

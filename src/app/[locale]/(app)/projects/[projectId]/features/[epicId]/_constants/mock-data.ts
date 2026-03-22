@@ -6,24 +6,6 @@ export type Ticket = {
   status: TicketStatus
 }
 
-export type ChatMessageType = "text" | "commit"
-
-export type CommitData = {
-  hash: string
-  message: string
-  url: string
-  filesChanged: number
-}
-
-export type ChatMessage = {
-  id: string
-  role: "user" | "agent"
-  type: ChatMessageType
-  content: string
-  commit?: CommitData
-  timestamp: string
-}
-
 export type EpicData = {
   title: string
   status: TicketStatus
@@ -32,7 +14,6 @@ export type EpicData = {
   tickets: Ticket[]
   planContent: string
   checklist: { total: number; completed: number }
-  chatMessages: ChatMessage[]
 }
 
 export const TICKET_STATUS_COLORS: Record<TicketStatus, string> = {
@@ -86,14 +67,6 @@ Users can log in with Magic Link (email OTP). After login, they're redirected to
 - [x] \`src/app/[locale]/(public-routes)/login/\` — Login page + components + hooks
 - [x] \`src/app/[locale]/(app)/dashboard/\` — Protected placeholder page`,
     checklist: { total: 7, completed: 7 },
-    chatMessages: [
-      { id: "m1", role: "user", type: "text", content: "Set up Convex Auth with magic link. Use Resend for the OTP emails.", timestamp: "2:30 PM" },
-      { id: "m2", role: "agent", type: "text", content: "On it. I'll configure Convex Auth with the Resend provider, create the users table schema, and set up the auth config files.", timestamp: "2:30 PM" },
-      { id: "m3", role: "agent", type: "commit", content: "", commit: { hash: "a1b2c3d", message: "feat: configure Convex Auth with Resend OTP provider", url: `${REPO}/a1b2c3d`, filesChanged: 5 }, timestamp: "2:32 PM" },
-      { id: "m4", role: "user", type: "text", content: "Now build the login page with the email input and the OTP dialog.", timestamp: "2:33 PM" },
-      { id: "m5", role: "agent", type: "text", content: "Done. Login page, OTP dialog, middleware, and users table are all wired up. Auth is fully functional.", timestamp: "2:38 PM" },
-      { id: "m6", role: "agent", type: "commit", content: "", commit: { hash: "da27afe", message: "feat: scaffold speedy gonzales template with auth and design system", url: `${REPO}/da27afe`, filesChanged: 24 }, timestamp: "2:38 PM" },
-    ],
   },
 
   "02-projects": {
@@ -142,10 +115,6 @@ The user can create, view, edit, and delete projects. Each project has exactly o
 - [ ] \`updateProject(projectId, name?, description?)\`
 - [ ] \`deleteProject(projectId)\` — deletes project and all synced data`,
     checklist: { total: 9, completed: 0 },
-    chatMessages: [
-      { id: "m1", role: "user", type: "text", content: "Start with the projects schema. Each project = one repo.", timestamp: "3:00 PM" },
-      { id: "m2", role: "agent", type: "text", content: "Got it. I'll create the projects table with userId, name, description, repoUrl, repoOwner, repoName, plansPath, branch, and timestamps. Indexes on by_user and by_repo_owner_name.", timestamp: "3:00 PM" },
-    ],
   },
 
   "03-dashboard": {
@@ -184,11 +153,6 @@ The main page after login. Shows all the user's projects as cards. This is the e
 - [ ] Wire to Convex \`useQuery(api.projects.getProjects)\`
 - [ ] Wire create dialog to \`useMutation(api.projects.createProject)\``,
     checklist: { total: 5, completed: 3 },
-    chatMessages: [
-      { id: "m1", role: "user", type: "text", content: "Build the dashboard UI with project cards, create dialog, and empty state.", timestamp: "4:00 PM" },
-      { id: "m2", role: "agent", type: "text", content: "I'll create the dashboard with a responsive grid of project cards, a create project dialog with name/description/repo URL fields, and an empty state component.", timestamp: "4:00 PM" },
-      { id: "m3", role: "agent", type: "commit", content: "", commit: { hash: "b3f8a12", message: "feat: build dashboard UI with project cards and create dialog", url: `${REPO}/b3f8a12`, filesChanged: 6 }, timestamp: "4:05 PM" },
-    ],
   },
 
   "04-github-sync": {
@@ -239,10 +203,6 @@ POST /github-webhook:
 ### tickets table
 - projectId, epicId, title, path, content, contentHash, status, priority, checklistProgress`,
     checklist: { total: 7, completed: 0 },
-    chatMessages: [
-      { id: "m1", role: "user", type: "text", content: "This is the next big one. We need to sync plans/ from GitHub repos into Convex.", timestamp: "5:00 PM" },
-      { id: "m2", role: "agent", type: "text", content: "This is the core engine. I'll start with the GitHub OAuth flow, then webhook registration, handler, sync action, and frontmatter parser. Want me to begin with the OAuth setup?", timestamp: "5:00 PM" },
-    ],
   },
 
   "05-kanban": {
@@ -285,11 +245,6 @@ When you click a project from the dashboard, you see a kanban board of features 
 - [ ] Wire to Convex \`useQuery(api.epics.getByProject)\`
 - [ ] Drag & drop to change feature status (optional)`,
     checklist: { total: 5, completed: 3 },
-    chatMessages: [
-      { id: "m1", role: "user", type: "text", content: "Build the kanban board UI. 4 active columns, completed hidden by default with a toggle.", timestamp: "6:00 PM" },
-      { id: "m2", role: "agent", type: "text", content: "I'll create the board with Todo, In Progress, Review, and Blocked columns visible by default. A 'Completed' toggle in the header reveals the fifth column. Each feature card shows title, progress, tickets, and priority.", timestamp: "6:00 PM" },
-      { id: "m3", role: "agent", type: "commit", content: "", commit: { hash: "c4d5e6f", message: "feat: build kanban board with feature cards and completed toggle", url: `${REPO}/c4d5e6f`, filesChanged: 8 }, timestamp: "6:08 PM" },
-    ],
   },
 
   "06-feature-view": {
@@ -302,16 +257,15 @@ When you click a project from the dashboard, you see a kanban board of features 
       { id: "t1", title: "Three-panel layout", status: "completed" },
       { id: "t2", title: "Ticket sidebar", status: "completed" },
       { id: "t3", title: "Plan viewer (basic)", status: "completed" },
-      { id: "t4", title: "Chat panel shell", status: "completed" },
-      { id: "t5", title: "Resizable chat", status: "completed" },
-      { id: "t6", title: "Wire to Convex queries", status: "todo" },
+      { id: "t4", title: "Commit timeline", status: "completed" },
+      { id: "t5", title: "Wire to Convex queries", status: "todo" },
     ],
     planContent: `## What it does
 
 The core screen of the app. A three-panel layout where you:
 - Browse tickets in a sidebar (like a wiki)
 - Read the selected plan rendered as HTML
-- Chat with your OpenClaw agent about the feature
+- Review commit history for the feature branch
 
 ## Sidebar
 
@@ -326,29 +280,20 @@ The core screen of the app. A three-panel layout where you:
 - Checklists rendered as checkboxes (read-only)
 - Checklist progress shown as bar at top
 
-## Chat (right)
+## Commit timeline (right)
 
-- Message list with user/agent bubbles
-- Resizable panel (drag left edge)
-- Agent avatar (Zap icon) + user avatar (initial)
-- Commit messages rendered as clickable cards with GitHub links
+- Branch commit history
+- Diff viewer per commit
+- Filter by ticket
 
 ## UI built
 
-- [x] Three-panel layout (sidebar + viewer + chat)
+- [x] Three-panel layout (sidebar + viewer + timeline)
 - [x] Ticket sidebar with status dots and selection
 - [x] Plan viewer with basic markdown rendering
-- [x] Chat panel with messages and input
-- [x] Resizable chat panel (320px - 700px)
+- [x] Commit timeline with diff viewer
 - [ ] Wire to Convex \`useQuery(api.tickets.getByEpic)\``,
-    checklist: { total: 6, completed: 5 },
-    chatMessages: [
-      { id: "m1", role: "user", type: "text", content: "Build the three-panel feature view. Sidebar with tickets, plan viewer in center, chat on right.", timestamp: "7:00 PM" },
-      { id: "m2", role: "agent", type: "text", content: "I'll create the three-panel layout. Ticket sidebar (280px) with status dots, plan viewer with markdown rendering and checklist progress, and a chat panel (380px) with user/agent avatars.", timestamp: "7:00 PM" },
-      { id: "m3", role: "agent", type: "commit", content: "", commit: { hash: "e7f8g9h", message: "feat: build three-panel feature view with ticket sidebar, plan viewer, and chat", url: `${REPO}/e7f8g9h`, filesChanged: 12 }, timestamp: "7:12 PM" },
-      { id: "m4", role: "user", type: "text", content: "Make the chat panel resizable so I can drag to adjust the width.", timestamp: "7:15 PM" },
-      { id: "m5", role: "agent", type: "commit", content: "", commit: { hash: "h1i2j3k", message: "feat: add resizable chat panel with drag handle", url: `${REPO}/h1i2j3k`, filesChanged: 3 }, timestamp: "7:17 PM" },
-    ],
+    checklist: { total: 5, completed: 4 },
   },
 
   "07-plan-viewer": {
@@ -384,62 +329,6 @@ Renders a PLAN.md file as formatted HTML inside the Feature View center panel. T
 - [ ] Install and use \`react-markdown\` + \`remark-gfm\`
 - [ ] Code block syntax highlighting`,
     checklist: { total: 4, completed: 2 },
-    chatMessages: [
-      { id: "m1", role: "user", type: "text", content: "We need a proper markdown renderer for the plan viewer. react-markdown + remark-gfm.", timestamp: "8:00 PM" },
-      { id: "m2", role: "agent", type: "text", content: "I'll install react-markdown and remark-gfm, then replace the current line-by-line renderer with a proper component that handles headings, code blocks, tables, and GFM task lists.", timestamp: "8:00 PM" },
-    ],
-  },
-
-  "08-chat": {
-    title: "OpenClaw Chat",
-    status: "todo",
-    priority: "medium",
-    branch: "feat/chat",
-    tickets: [
-      { id: "t0", title: "Overview", status: "todo" },
-      { id: "t1", title: "Chat messages schema", status: "todo" },
-      { id: "t2", title: "sendMessage action", status: "todo" },
-      { id: "t3", title: "OpenClaw API integration", status: "todo" },
-      { id: "t4", title: "Real-time message updates", status: "todo" },
-      { id: "t5", title: "Agent context injection", status: "todo" },
-    ],
-    planContent: `## What it does
-
-The right panel in the Feature View. A chat where you talk to your OpenClaw agent about the current feature. The agent can read plans, create tickets, modify plans, and push changes — all from the conversation.
-
-This is NOT a generic AI chat. The backend is OpenClaw — your agent with full context, memory, and execution access.
-
-## What you can do from the chat
-
-- [ ] Ask the agent to explain a plan
-- [ ] Tell the agent to create new tickets
-- [ ] Tell the agent to modify an existing plan
-- [ ] Tell the agent to start working on a ticket
-- [ ] Ask for a status update
-- [ ] Tell the agent to split a big ticket into smaller ones
-
-## Chat storage
-
-### chat_messages table
-- epicId — Feature this chat belongs to
-- role — "user" or "assistant"
-- content — Message text
-- actions — Actions the agent took (optional)
-- createdAt — Timestamp
-
-## OpenClaw connection (TBD)
-
-- API protocol: HTTP REST? WebSocket? gRPC?
-- Streaming: token-by-token or all at once?
-- Authentication: How does Speedy authenticate with OpenClaw?
-- Hosting: VPS? Cloud? Local with tunnel?
-
-For MVP, the chat UI is built with a placeholder backend.`,
-    checklist: { total: 6, completed: 0 },
-    chatMessages: [
-      { id: "m1", role: "user", type: "text", content: "This is the final big feature. We need to connect the chat to OpenClaw.", timestamp: "9:00 PM" },
-      { id: "m2", role: "agent", type: "text", content: "I'll need to research the OpenClaw API protocol first. For now, the chat UI is built and ready — we just need to swap the mock messages for real API calls once the protocol is defined.", timestamp: "9:00 PM" },
-    ],
   },
 }
 

@@ -36,7 +36,6 @@ export function useLivePlan(epicId: string, projectId?: string) {
         ],
         planContent: epic.content,
         checklist: { total: epic.checklistTotal, completed: epic.checklistCompleted },
-        chatMessages: [],
       }
     : null
 

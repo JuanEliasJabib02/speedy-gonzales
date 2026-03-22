@@ -157,8 +157,8 @@ export default function SourceOfTruthDocsPage() {
               </tr>
               <tr className="border-t border-border">
                 <td className="px-4 py-2.5 font-medium text-foreground">Charizard (OpenClaw)</td>
-                <td className="px-4 py-2.5">Modifies plans from chat, pushes to repo, triggers auto-sync</td>
-                <td className="px-4 py-2.5">Chat &rarr; Plans &rarr; Kanban</td>
+                <td className="px-4 py-2.5">Modifies plans via Telegram, pushes to repo, triggers auto-sync</td>
+                <td className="px-4 py-2.5">Telegram &rarr; Plans &rarr; Kanban</td>
               </tr>
             </tbody>
           </table>

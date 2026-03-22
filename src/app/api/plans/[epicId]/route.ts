@@ -62,7 +62,6 @@ const ID_TO_FOLDER: Record<string, string> = {
   "05-kanban": "kanban",
   "06-feature-view": "feature-view",
   "07-plan-viewer": "plan-viewer",
-  "08-chat": "chat",
 }
 
 export async function GET(

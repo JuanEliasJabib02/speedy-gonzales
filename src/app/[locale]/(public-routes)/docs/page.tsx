@@ -1,4 +1,4 @@
-import { Activity, ArrowRight, BookOpen, Brain, CheckCircle, Circle, Clock, Code, FolderTree, GitBranch, Heart, Layout, Rocket, Zap } from "lucide-react"
+import { ArrowRight, BookOpen, CheckCircle, Circle, Clock, Code, FolderTree, GitBranch, Heart, Layout, Rocket, Zap } from "lucide-react"
 import Link from "next/link"
 
 const guides = [
@@ -36,7 +36,7 @@ const features = [
   {
     title: "Feature View",
     description:
-      "Your command center for building a feature. Orchestrate your AI agent, control tickets, read plans, and browse code — all in one screen.",
+      "Your command center for building a feature. Control tickets, read plans, and review commits — all in one screen.",
     href: "/docs/feature-view",
     icon: Layout,
   },
@@ -50,7 +50,7 @@ const features = [
   {
     title: "AI Development Workflow",
     description:
-      "How to leverage Charizard and Perro salchicha for faster development. Best practices, chat patterns, and when to use AI.",
+      "How to leverage Charizard and Perro salchicha for faster development. Best practices and when to use AI.",
     href: "/docs/ai-workflow",
     icon: Zap,
   },
@@ -99,113 +99,23 @@ const roadmapItems = [
   },
   {
     status: "done" as const,
-    label: "Per-feature AI Chat",
-    description: "OpenClaw chat with full context injection (project, tickets, plan, active file).",
+    label: "Feature View",
+    description: "Ticket sidebar, plan viewer, and commit timeline — all in one screen per feature.",
   },
   {
     status: "done" as const,
-    label: "Streaming UX",
-    description: "ChatGPT-style incremental rendering with typing indicator and blinking cursor.",
-  },
-  {
-    status: "done" as const,
-    label: "Syntax Highlighting",
-    description: "Code blocks in chat with copy button and language auto-detection.",
+    label: "Commit Timeline",
+    description: "Browse commit history per feature branch with diff viewer and ticket filtering.",
   },
   {
     status: "done" as const,
     label: "Markdown Rendering",
-    description: "Full markdown in agent messages: headings, tables, blockquotes, lists.",
-  },
-  {
-    status: "done" as const,
-    label: "Ticket Mentions (#)",
-    description: "Type # in chat to autocomplete and reference tickets inline.",
-  },
-  {
-    status: "done" as const,
-    label: "Slash Commands",
-    description: "/create-ticket, /update-status, /sync, /tickets — agent actions from the input.",
-  },
-  {
-    status: "done" as const,
-    label: "Image Upload in Chat",
-    description: "Paste screenshots directly into the chat (Ctrl+V). Up to 4 images per message.",
-  },
-  {
-    status: "done" as const,
-    label: "Stop Button",
-    description: "Cancel a streaming response mid-generation. Partial content saved as interrupted.",
-  },
-  {
-    status: "done" as const,
-    label: "Retry Last Message",
-    description: "Re-send the last message with one click if the response was bad.",
-  },
-  {
-    status: "done" as const,
-    label: "Export Conversation",
-    description: "Download the full chat thread as a .md file.",
-  },
-  {
-    status: "done" as const,
-    label: "GitHub Link Preview",
-    description: "Inline GitHub card previews when sharing commit/PR/issue links in chat.",
-  },
-  {
-    status: "done" as const,
-    label: "Commit Cards",
-    description: "Commit refs in agent messages render as branded cards with diff viewer.",
-  },
-  {
-    status: "done" as const,
-    label: "Agent Action Cards",
-    description: "Structured <actions> blocks rendered as visual cards (ticket-created, status-updated, sync-triggered).",
-  },
-  {
-    status: "done" as const,
-    label: "Draft Persistence",
-    description: "Unfinished messages auto-saved to localStorage, restored when you return. 24h expiry.",
-  },
-  {
-    status: "done" as const,
-    label: "Message Queue",
-    description: "Send a message while a response is streaming — it queues and sends automatically (Slack-style).",
-  },
-  {
-    status: "done" as const,
-    label: "Roadmap Modal",
-    description: "Visual roadmap button per feature — all tickets by priority in a single modal.",
-  },
-  {
-    status: "done" as const,
-    label: "Chat Memory (Cross-Session)",
-    description: "Charizard maintains memory files on the VPS. Decisions and context survive across sessions.",
-  },
-  {
-    status: "done" as const,
-    label: "Stream Reconnect",
-    description: "Orphaned streaming messages on page reload are auto-detected and marked as interrupted.",
-  },
-  {
-    status: "done" as const,
-    label: "Code View + Chat Split",
-    description: "Open any file in the code view alongside the chat. File content auto-injected as context.",
-  },
-  {
-    status: "done" as const,
-    label: "Chat Pagination",
-    description: "Load earlier messages on demand. Default view shows only recent history for performance.",
+    description: "Full markdown in plan viewer: headings, tables, blockquotes, lists, checklists.",
   },
   {
     status: "in-progress" as const,
     label: "Agent Repo Push (Full Loop)",
     description: "Charizard creates tickets, pushes to GitHub, auto-sync fires — full agentic loop in review.",
-  },
-  {
-    status: "in-progress" as const,
-    label: "OpenClaw API Integration",
-    description: "Connecting Speedy's API route to the full OpenClaw gateway with auth and session management.",
   },
   {
     status: "next" as const,
@@ -216,14 +126,8 @@ const roadmapItems = [
   {
     status: "next" as const,
     label: "Multi-agent Orchestration",
-    description: "Spawn Perro salchicha (Codex/Claude Code) directly from the chat UI.",
+    description: "Spawn Perro salchicha (Codex/Claude Code) directly from Telegram.",
     priority: "medium",
-  },
-  {
-    status: "next" as const,
-    label: "Voice Input",
-    description: "Speak your message — transcribed and sent to the agent.",
-    priority: "low",
   },
 ]
 

@@ -68,7 +68,7 @@ export const deleteProject = mutation({
     const project = await ctx.db.get(projectId)
     if (!project || project.userId !== userId) return throwError(ErrorCodes.NOT_FOUND)
 
-    // Cascade delete: tickets → epics → chat messages → project
+    // Cascade delete: tickets → epics → project
     const epics = await ctx.db
       .query("epics")
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
@@ -81,14 +81,6 @@ export const deleteProject = mutation({
         .collect()
       for (const ticket of tickets) {
         await ctx.db.delete(ticket._id)
-      }
-
-      const messages = await ctx.db
-        .query("chatMessages")
-        .withIndex("by_epic", (q) => q.eq("epicId", epic._id))
-        .collect()
-      for (const msg of messages) {
-        await ctx.db.delete(msg._id)
       }
 
       await ctx.db.delete(epic._id)

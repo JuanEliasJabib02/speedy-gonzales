@@ -1,4 +1,4 @@
-import { ArrowLeft, Brain, Zap, GitBranch, Lightbulb, MessageSquare } from "lucide-react"
+import { ArrowLeft, Brain, GitBranch, Zap } from "lucide-react"
 import Link from "next/link"
 
 export default function AIWorkflowPage() {
@@ -14,7 +14,7 @@ export default function AIWorkflowPage() {
         </Link>
         <h1 className="text-3xl font-semibold tracking-tight">AI Development Workflow</h1>
         <p className="mt-2 text-muted-foreground">
-          How to leverage Charizard (your OpenClaw agent) for faster, collaborative development.
+          How to leverage Charizard (your OpenClaw agent) via Telegram for faster, collaborative development.
         </p>
       </div>
 
@@ -52,10 +52,10 @@ export default function AIWorkflowPage() {
           <div className="rounded-lg border border-border bg-muted/30 p-4">
             <h3 className="mb-2 flex items-center gap-2 font-medium">
               <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-primary-foreground">2</span>
-              Chat with Charizard
+              Talk to Charizard via Telegram
             </h3>
             <p className="ml-7 text-sm text-muted-foreground">
-              Open the feature view and chat with Charizard in the right panel. Ask questions about the plan, 
+              Message Charizard on Telegram. Ask questions about the plan,
               discuss implementation, or request code generation. Charizard reads your PLAN.md automatically.
             </p>
           </div>
@@ -117,47 +117,47 @@ export default function AIWorkflowPage() {
             </p>
           </div>
           <div>
-            <h3 className="mb-1 font-medium text-foreground">✅ Use the Chat for Debugging</h3>
+            <h3 className="mb-1 font-medium text-foreground">✅ Use Telegram for Debugging</h3>
             <p className="text-sm text-muted-foreground">
-              If something breaks, paste the error in chat. Charizard has access to your logs and can help 
+              If something breaks, paste the error to Charizard via Telegram. It has access to your logs and can help
               diagnose and fix issues faster than you working alone.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Chat Commands */}
+      {/* Useful Patterns */}
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Useful Chat Patterns</h2>
+        <h2 className="text-xl font-semibold">Useful Patterns</h2>
         <div className="space-y-3 text-sm text-muted-foreground">
           <div>
-            <p className="mb-1 font-medium text-foreground">Create a ticket from chat</p>
+            <p className="mb-1 font-medium text-foreground">Create a ticket</p>
             <p>
-              "Create a ticket for [feature]. Title: [title], Priority: [high/medium/low], Description: [details]"
+              &quot;Create a ticket for [feature]. Title: [title], Priority: [high/medium/low], Description: [details]&quot;
             </p>
           </div>
           <div>
             <p className="mb-1 font-medium text-foreground">Ask for code review</p>
             <p>
-              "Review the changes in [file] for bugs, performance, or style issues. Suggest improvements."
+              &quot;Review the changes in [file] for bugs, performance, or style issues. Suggest improvements.&quot;
             </p>
           </div>
           <div>
             <p className="mb-1 font-medium text-foreground">Delegate coding</p>
             <p>
-              "Implement [feature description]. Use [tech stack]. Follow the pattern in [example file]."
+              &quot;Implement [feature description]. Use [tech stack]. Follow the pattern in [example file].&quot;
             </p>
           </div>
           <div>
             <p className="mb-1 font-medium text-foreground">Debug together</p>
             <p>
-              "I&apos;m getting [error]. Here&apos;s the stack trace: [paste]. What&apos;s the root cause?"
+              &quot;I&apos;m getting [error]. Here&apos;s the stack trace: [paste]. What&apos;s the root cause?&quot;
             </p>
           </div>
           <div>
             <p className="mb-1 font-medium text-foreground">Update the plan</p>
             <p>
-              "The PLAN.md for this feature needs to be updated. New context: [details]. Please update it."
+              &quot;The PLAN.md for this feature needs to be updated. New context: [details]. Please update it.&quot;
             </p>
           </div>
         </div>
@@ -201,8 +201,8 @@ export default function AIWorkflowPage() {
             earlier conversations. Use it.
           </li>
           <li>
-            <strong>Chat is per-feature:</strong> Each feature has its own conversation. This keeps discussions 
-            focused and prevents context confusion.
+            <strong>Keep discussions per-feature:</strong> Scope each conversation to a single feature. This keeps
+            context focused and prevents confusion.
           </li>
           <li>
             <strong>Use GitHub links:</strong> Paste links to commits, PRs, or code snippets. Charizard can 

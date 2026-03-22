@@ -210,12 +210,10 @@ export default function TicketSidebarDocsPage() {
 
       {/* Plan / Code toggle */}
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Plan / Code toggle</h2>
+        <h2 className="text-xl font-semibold">Layout</h2>
         <p className="leading-relaxed text-muted-foreground">
-          The sidebar header has a toggle to switch between{" "}
-          <strong>Plan</strong> mode (ticket list + plan viewer) and{" "}
-          <strong>Code</strong> mode (file tree + code viewer). The chat panel
-          stays visible in both modes.
+          The sidebar sits on the left, with the plan viewer in the center and
+          the commit timeline on the right.
         </p>
       </section>
     </div>

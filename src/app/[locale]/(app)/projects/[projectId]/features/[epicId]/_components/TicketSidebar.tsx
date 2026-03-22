@@ -6,8 +6,6 @@ import { useRouter } from "@/src/i18n/routing"
 import { Button } from "@/src/lib/components/ui/button"
 import { Input } from "@/src/lib/components/ui/input"
 import { TicketItem } from "./TicketItem"
-import { RoadmapModal } from "./RoadmapModal"
-import { OverviewModal } from "./OverviewModal"
 import { NewTicketModal } from "./NewTicketModal"
 
 type Ticket = {
@@ -30,9 +28,6 @@ type TicketSidebarProps = {
   epicId: string
   lastSyncAt?: number
   syncStatus?: string
-  overviewContent?: string
-  overviewStatus?: string
-  overviewPriority?: string
 }
 
 const STATUS_TABS = [
@@ -46,7 +41,7 @@ const STATUS_TABS = [
 
 type TabKey = (typeof STATUS_TABS)[number]["key"]
 
-export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId, epicId, lastSyncAt, syncStatus, overviewContent, overviewStatus, overviewPriority }: TicketSidebarProps) {
+export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId, epicId, lastSyncAt, syncStatus }: TicketSidebarProps) {
   const isSyncing = syncStatus === "syncing"
   const syncAgo = lastSyncAt ? Math.floor((Date.now() - lastSyncAt) / 1000) : null
   const syncLabel = syncAgo === null ? null : syncAgo < 60 ? `${syncAgo}s ago` : syncAgo < 3600 ? `${Math.floor(syncAgo / 60)}m ago` : `${Math.floor(syncAgo / 3600)}h ago`
@@ -104,15 +99,6 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
         )}
       </div>
       <div className="flex gap-2 px-3 pb-3">
-        {overviewContent && (
-          <OverviewModal
-            title={epicTitle}
-            status={overviewStatus ?? "todo"}
-            priority={overviewPriority ?? "medium"}
-            content={overviewContent}
-          />
-        )}
-        <RoadmapModal epicId={epicId} />
         <NewTicketModal epicId={epicId} />
       </div>
       <div className="px-3 pb-3">

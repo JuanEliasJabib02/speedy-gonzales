@@ -128,97 +128,9 @@ export default function SetupDocsPage() {
         </p>
       </section>
 
-      {/* Step 4 — OpenClaw */}
+      {/* Step 4 — Deploy to production */}
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Step 4 — Connect OpenClaw Chat</h2>
-        <p className="leading-relaxed text-muted-foreground">
-          The AI chat is powered by an OpenClaw agent via an OpenAI-compatible API.
-          The agent runs on a remote server exposed through a Cloudflare Tunnel.
-        </p>
-
-        <div className="space-y-3">
-          <h3 className="font-medium">Environment variables</h3>
-          <p className="text-sm text-muted-foreground">
-            Add these to your <code className="rounded bg-muted px-1.5 py-0.5">.env.local</code>:
-          </p>
-          <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
-{`OPENCLAW_BASE_URL=https://<your-tunnel>.trycloudflare.com/v1
-OPENCLAW_API_KEY=<your-gateway-token>
-OPENCLAW_MODEL=openclaw:main`}
-          </pre>
-          <p className="text-sm text-muted-foreground">
-            Also set them in Convex for future use:
-          </p>
-          <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
-{`npx convex env set OPENCLAW_BASE_URL "https://<your-tunnel>.trycloudflare.com/v1"
-npx convex env set OPENCLAW_API_KEY "<your-gateway-token>"
-npx convex env set OPENCLAW_MODEL "openclaw:main"`}
-          </pre>
-        </div>
-
-        <div className="space-y-3">
-          <h3 className="font-medium">How it works</h3>
-          <ul className="list-inside list-disc space-y-2 text-sm text-muted-foreground">
-            <li>The agent runs on a VPS, exposed via <strong className="text-foreground">Cloudflare Tunnel</strong> (temporary URL for development)</li>
-            <li>The Next.js API route at <code className="rounded bg-muted px-1.5 py-0.5">/api/chat</code> proxies requests, keeping credentials server-side</li>
-            <li>Streaming is supported via SSE &mdash; responses appear token-by-token</li>
-            <li>The <code className="rounded bg-muted px-1.5 py-0.5">user: &quot;juan&quot;</code> field enables persistent sessions across messages</li>
-          </ul>
-        </div>
-
-        <div className="space-y-3">
-          <h3 className="font-medium">Connection methods</h3>
-          <p className="text-sm text-muted-foreground">
-            The default method is <strong className="text-foreground">Cloudflare Tunnel</strong> &mdash;
-            the agent runs on a VPS and Cloudflare exposes it via a public HTTPS URL.
-            This is the simplest setup and what we use for development.
-          </p>
-          <div className="overflow-hidden rounded-lg border border-border">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/50">
-                  <th className="px-4 py-2.5 text-left font-medium">Method</th>
-                  <th className="px-4 py-2.5 text-left font-medium">When to use</th>
-                  <th className="px-4 py-2.5 text-left font-medium">URL format</th>
-                </tr>
-              </thead>
-              <tbody className="text-muted-foreground">
-                <tr className="border-t border-border">
-                  <td className="px-4 py-2.5 font-medium text-foreground">Cloudflare Tunnel</td>
-                  <td className="px-4 py-2.5">Development (default)</td>
-                  <td className="px-4 py-2.5"><code className="rounded bg-muted px-1.5 py-0.5">https://&lt;random&gt;.trycloudflare.com/v1</code></td>
-                </tr>
-                <tr className="border-t border-border">
-                  <td className="px-4 py-2.5 font-medium text-foreground">Tailscale</td>
-                  <td className="px-4 py-2.5">Production (permanent, private network)</td>
-                  <td className="px-4 py-2.5"><code className="rounded bg-muted px-1.5 py-0.5">http://&lt;machine&gt;:18789/v1</code></td>
-                </tr>
-                <tr className="border-t border-border">
-                  <td className="px-4 py-2.5 font-medium text-foreground">Same network</td>
-                  <td className="px-4 py-2.5">Both on same LAN/VPN</td>
-                  <td className="px-4 py-2.5"><code className="rounded bg-muted px-1.5 py-0.5">http://&lt;local-ip&gt;:18789/v1</code></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            All methods use the same env vars &mdash; just change <code className="rounded bg-muted px-1.5 py-0.5">OPENCLAW_BASE_URL</code> and restart.
-          </p>
-        </div>
-
-        <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
-          <p className="text-sm text-muted-foreground">
-            <strong className="text-foreground">Roadmap:</strong> We will migrate to
-            <strong className="text-foreground"> Tailscale</strong> for a permanent, secure connection.
-            The Cloudflare Tunnel URL is temporary and changes on restart. Since connection
-            details are env vars, the migration is just updating <code className="rounded bg-muted px-1.5 py-0.5">OPENCLAW_BASE_URL</code> &mdash; no code changes needed.
-          </p>
-        </div>
-      </section>
-
-      {/* Step 5 — Deploy to production */}
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Step 5 — Deploy to production (Vercel)</h2>
+        <h2 className="text-xl font-semibold">Step 4 — Deploy to production (Vercel)</h2>
         <p className="leading-relaxed text-muted-foreground">
           Once everything works locally, deploy to Vercel so your app is live and
           auto-deploys on every push.
@@ -253,10 +165,7 @@ npx convex env set OPENCLAW_MODEL "openclaw:main"`}
             Go to your Vercel project → <strong className="text-foreground">Settings</strong> → <strong className="text-foreground">Environment Variables</strong> and add:
           </p>
           <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
-{`NEXT_PUBLIC_CONVEX_URL=https://<your-deployment>.convex.cloud
-OPENCLAW_BASE_URL=https://<your-tunnel-url>/v1
-OPENCLAW_API_KEY=<your-gateway-token>
-OPENCLAW_MODEL=openclaw:main`}
+{`NEXT_PUBLIC_CONVEX_URL=https://<your-deployment>.convex.cloud`}
           </pre>
           <p className="text-sm text-muted-foreground">
             Find <code className="rounded bg-muted px-1.5 py-0.5">NEXT_PUBLIC_CONVEX_URL</code> in the Convex dashboard under <strong className="text-foreground">Settings → URL</strong>.
@@ -282,56 +191,9 @@ SITE_URL=https://<your-app>.vercel.app`}
           </pre>
         </div>
 
-        {/* 5.4 Tunnel setup */}
+        {/* 4.4 Auto-deploy */}
         <div className="space-y-3">
-          <h3 className="font-medium">4. Tunnel setup (so Vercel can reach OpenClaw)</h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            OpenClaw runs on your VPS at <code className="rounded bg-muted px-1.5 py-0.5">127.0.0.1:18789</code>.
-            Vercel runs in the cloud and can&apos;t reach localhost, so you need a tunnel to expose it with a public URL.
-          </p>
-
-          <div className="overflow-hidden rounded-lg border border-border">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/50">
-                  <th className="px-4 py-2.5 text-left font-medium">Option</th>
-                  <th className="px-4 py-2.5 text-left font-medium">Setup</th>
-                  <th className="px-4 py-2.5 text-left font-medium">URL stability</th>
-                </tr>
-              </thead>
-              <tbody className="text-muted-foreground">
-                <tr className="border-t border-border">
-                  <td className="px-4 py-2.5 font-medium text-foreground">ngrok</td>
-                  <td className="px-4 py-2.5">Free account → <code className="rounded bg-muted px-1.5 py-0.5">ngrok http 18789</code></td>
-                  <td className="px-4 py-2.5">Fixed URL on free tier (1 static domain)</td>
-                </tr>
-                <tr className="border-t border-border">
-                  <td className="px-4 py-2.5 font-medium text-foreground">Cloudflare Tunnel</td>
-                  <td className="px-4 py-2.5">Custom domain → permanent URL</td>
-                  <td className="px-4 py-2.5">Permanent with a domain you own</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <p className="text-sm text-muted-foreground">
-            After setting up the tunnel, update <code className="rounded bg-muted px-1.5 py-0.5">OPENCLAW_BASE_URL</code> in Vercel with the tunnel URL
-            (e.g. <code className="rounded bg-muted px-1.5 py-0.5">https://your-domain.com/v1</code>).
-          </p>
-
-          <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
-            <p className="text-sm text-muted-foreground">
-              <strong className="text-foreground">Important:</strong> Without a tunnel,
-              the AI chat won&apos;t work in production. Vercel serverless functions
-              cannot reach <code className="rounded bg-muted px-1.5 py-0.5">127.0.0.1</code> on
-              your VPS &mdash; they need a public HTTPS URL.
-            </p>
-          </div>
-        </div>
-
-        {/* 5.5 Auto-deploy */}
-        <div className="space-y-3">
-          <h3 className="font-medium">5. How auto-deploy works</h3>
+          <h3 className="font-medium">4. How auto-deploy works</h3>
           <p className="text-sm leading-relaxed text-muted-foreground">
             Once connected, Vercel handles everything automatically:
           </p>
@@ -435,90 +297,11 @@ https://abc123.ngrok-free.app/github-webhook`}</pre>
           <p className="mt-1 text-sm text-muted-foreground">
             Convex is always deployed in the cloud — it doesn&apos;t matter if Speedy runs locally or on Vercel.
             GitHub fires the webhook directly to Convex, which handles the sync internally.
-            The GitHub sync and the chat agent connection are completely independent.
+            The webhook goes directly to Convex — no middleman needed.
           </p>
         </div>
       </section>
 
-      {/* Switching between local and production */}
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Switching Between Local and Production</h2>
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          You can run Speedy against your local OpenClaw instance (for development) or against the production tunnel
-          (ngrok/Cloudflare). The only thing that changes is <code className="rounded bg-muted px-1.5 py-0.5">OPENCLAW_BASE_URL</code>.
-        </p>
-
-        <div className="space-y-3">
-          <h3 className="font-medium">Mode A — Local dev (Next.js running locally)</h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            When you run <code className="rounded bg-muted px-1.5 py-0.5">pnpm dev</code> on your machine and OpenClaw
-            is also on the same machine, you can point directly to localhost — no tunnel needed:
-          </p>
-          <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-xs">
-{`# .env.local (local development)
-NEXT_PUBLIC_CONVEX_URL=https://necessary-fish-66.convex.cloud
-NEXT_PUBLIC_CONVEX_SITE_URL=https://necessary-fish-66.convex.site
-OPENCLAW_BASE_URL=http://127.0.0.1:18789/v1
-OPENCLAW_API_KEY=<your-gateway-token>
-OPENCLAW_MODEL=openclaw:main`}
-          </pre>
-          <p className="text-sm text-muted-foreground">
-            This is the fastest setup for development — zero latency, no tunnel process needed.
-          </p>
-        </div>
-
-        <div className="space-y-3">
-          <h3 className="font-medium">Mode B — Production tunnel (Vercel deploy)</h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            When deployed to Vercel, the app runs in the cloud and can&apos;t reach your local machine.
-            You need a public tunnel (ngrok or Cloudflare Tunnel) pointing to OpenClaw on your VPS:
-          </p>
-          <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-xs">
-{`# Vercel Environment Variables (Settings → Environment Variables)
-NEXT_PUBLIC_CONVEX_URL=https://necessary-fish-66.convex.cloud
-NEXT_PUBLIC_CONVEX_SITE_URL=https://necessary-fish-66.convex.site
-OPENCLAW_BASE_URL=https://<your-ngrok-url>.ngrok-free.app/v1
-OPENCLAW_API_KEY=<your-gateway-token>
-OPENCLAW_MODEL=openclaw:main
-AUTH_SECRET=<32-char-random-string>
-
-# Also set in Convex Dashboard (Settings → Environment Variables):
-AUTH_RESEND_KEY=<your-resend-api-key>
-AUTH_SECRET=<same-as-vercel>
-SITE_URL=https://<your-vercel-url>.vercel.app
-GITHUB_PAT=<github-personal-access-token>`}
-          </pre>
-        </div>
-
-        <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 p-4">
-          <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">How to start ngrok</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Run on your VPS: <code className="rounded bg-muted px-1.5 py-0.5">nohup ngrok http 18789 &amp;</code>
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Get the URL from: <code className="rounded bg-muted px-1.5 py-0.5">curl http://localhost:4040/api/tunnels</code>
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Then update <code className="rounded bg-muted px-1.5 py-0.5">OPENCLAW_BASE_URL</code> in Vercel and Redeploy.
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <h3 className="font-medium">How to switch back to local auto-sync</h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            If the production tunnel breaks or you want to develop locally again:
-          </p>
-          <ol className="ml-4 list-decimal space-y-1 text-sm text-muted-foreground">
-            <li>In your <code className="rounded bg-muted px-1.5 py-0.5">.env.local</code>, change <code className="rounded bg-muted px-1.5 py-0.5">OPENCLAW_BASE_URL</code> back to <code className="rounded bg-muted px-1.5 py-0.5">http://127.0.0.1:18789/v1</code></li>
-            <li>Restart <code className="rounded bg-muted px-1.5 py-0.5">pnpm dev</code></li>
-            <li>Done — the webhook sync still works (it goes directly to Convex, not through OpenClaw)</li>
-          </ol>
-          <p className="mt-2 text-sm text-muted-foreground">
-            The chat agent connection and the GitHub auto-sync are independent. Sync always goes GitHub → Convex (via webhook).
-            The chat agent connection uses <code className="rounded bg-muted px-1.5 py-0.5">OPENCLAW_BASE_URL</code> only.
-          </p>
-        </div>
-      </section>
     </div>
   )
 }

@@ -1,9 +1,8 @@
 import {
   ArrowLeft,
   ArrowRight,
-  Code2,
   FileText,
-  MessageSquare,
+  GitCommit,
   PanelLeft,
 } from "lucide-react"
 import Link from "next/link"
@@ -22,16 +21,10 @@ const panels = [
     href: "/docs/feature-view/plan-viewer",
   },
   {
-    icon: MessageSquare,
-    title: "Chat",
-    desc: "Talk to your OpenClaw agent (Charizard) with full project context. Streaming, slash commands, ticket mentions, image uploads, commit cards, memory, and more.",
-    href: "/docs/feature-view/chat",
-  },
-  {
-    icon: Code2,
-    title: "Codebase",
-    desc: "Browse the connected GitHub repo without leaving the app. File tree, syntax-highlighted viewer, and automatic context bridge to the chat.",
-    href: "/docs/feature-view/codebase",
+    icon: GitCommit,
+    title: "Commit Timeline",
+    desc: "Browse the commit history for the feature branch. View diffs, filter by ticket, and track what the agent has pushed.",
+    href: "/docs/feature-view/commit-timeline",
   },
 ]
 
@@ -49,9 +42,8 @@ export default function FeatureViewDocsPage() {
         <h1 className="text-3xl font-semibold tracking-tight">Feature View</h1>
         <p className="mt-2 text-muted-foreground">
           Your command center for building a feature. Open a feature from the
-          kanban and you get a full workspace — orchestrate your AI agent through
-          the chat, control ticket progress, read plans, and browse code. All in
-          one screen, scoped to one feature.
+          kanban and you get a full workspace — control ticket progress, read
+          plans, and review commits. All in one screen, scoped to one feature.
         </p>
       </div>
 
@@ -59,17 +51,13 @@ export default function FeatureViewDocsPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">What it does</h2>
         <p className="leading-relaxed text-muted-foreground">
-          The Feature View is where the actual work happens. You talk to your AI
-          agent (Charizard) through the chat panel, and from there you can create
-          tickets, update statuses, push code, and review changes — the agent
-          executes and you orchestrate. The ticket sidebar tracks progress, the
-          plan viewer shows what&apos;s built and what&apos;s left, and the code panel
-          lets you explore the repo without switching tabs.
+          The Feature View is where the actual work happens. The ticket sidebar
+          tracks progress, the plan viewer shows what&apos;s built and what&apos;s left,
+          and the commit timeline lets you review what the agent has pushed.
         </p>
         <p className="leading-relaxed text-muted-foreground">
-          Everything is scoped to one feature (epic). The agent knows your
-          tickets, the plan, the repo, and the conversation history. You don&apos;t
-          explain context — you just work.
+          Everything is scoped to one feature (epic). Agent interaction happens
+          via Telegram — Speedy focuses on visibility and tracking.
         </p>
       </section>
 
@@ -124,15 +112,15 @@ export default function FeatureViewDocsPage() {
             </div>
             <div className="flex w-[160px] shrink-0 flex-col gap-2 bg-muted/20 p-3">
               <div className="flex items-center gap-1.5 text-xs font-medium">
-                <MessageSquare className="size-3 text-primary" />
-                Chat
+                <GitCommit className="size-3 text-primary" />
+                Commits
               </div>
               <div className="space-y-1.5 text-xs">
                 <div className="rounded bg-muted px-2 py-1 text-muted-foreground">
-                  How should I handle duplicate events?
+                  feat: add webhook endpoint
                 </div>
-                <div className="rounded bg-primary/10 px-2 py-1 text-primary">
-                  Use an idempotency key stored in your DB...
+                <div className="rounded bg-muted px-2 py-1 text-muted-foreground">
+                  fix: validate signature
                 </div>
               </div>
             </div>
@@ -146,7 +134,7 @@ export default function FeatureViewDocsPage() {
 
       {/* Panel cards */}
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold">The four panels</h2>
+        <h2 className="text-xl font-semibold">The three panels</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {panels.map((panel) => (
             <Link

@@ -3,8 +3,6 @@
 import { useState, useCallback, useRef } from "react"
 import { TicketSidebar } from "./TicketSidebar"
 import { PlanViewer } from "./PlanViewer"
-// Chat panel hidden — kept for future re-enable
-// import { ChatPanel } from "./ChatPanel"
 import { CommitTimeline } from "./CommitTimeline"
 import { ResizeHandle } from "./ResizeHandle"
 import { useLivePlan } from "../_hooks/useLivePlan"
@@ -72,7 +70,6 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
   const effectiveId = selectedTicketId || realTickets[0]?.id || ""
   const selectedTicket = epic.tickets.find((t) => t.id === effectiveId)
   const ticketData = getTicketContent(effectiveId)
-  const overviewData = getTicketContent("_context")
 
   return (
     <div className="flex h-full">
@@ -87,9 +84,6 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
         epicId={epicId}
         lastSyncAt={lastSyncAt}
         syncStatus={syncStatus}
-        overviewContent={overviewData.content}
-        overviewStatus={epic.status}
-        overviewPriority={epic.priority}
       />
 
       {/* Center panel: plan viewer */}
