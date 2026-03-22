@@ -33,13 +33,10 @@ When you click a project from the dashboard, you see a kanban board of features 
 
 ## Still needs
 
-- [ ] Wire to Convex queries (useQuery for epics grouped by status)
-- [ ] Remove mock data
+- [ ] Start/Stop buttons on feature cards (replace drag-and-drop)
+- [ ] Agent indicator in project header (name + emoji + current status)
+- [ ] Concurrency config (per-feature + global limits)
 
 ## Depends on
 
-- Feature 4 (GitHub Sync) — needs epics data in DB
-
-## Blocks
-
-- Feature 6 (Feature View) — kanban cards link to feature detail
+- Auto-sync — needs epics data in DB
