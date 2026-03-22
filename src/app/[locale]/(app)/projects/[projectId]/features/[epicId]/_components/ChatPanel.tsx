@@ -10,7 +10,9 @@ import { ThemeToggle } from "@/src/lib/components/common/ThemeToggle"
 import { Button } from "@/src/lib/components/ui/button"
 import { useCurrentUser } from "@/src/lib/hooks/useCurrentUser"
 import { useSendChat } from "../_hooks/useSendChat"
-import type { ViewMode, ActiveFile } from "./FeatureLayout"
+// Types previously imported from FeatureLayout — inlined after chat panel was hidden
+type ViewMode = "plan" | "code"
+type ActiveFile = { path: string; content: string }
 
 type ChatPanelProps = {
   width: number

@@ -9,7 +9,6 @@ import { TicketItem } from "./TicketItem"
 import { RoadmapModal } from "./RoadmapModal"
 import { OverviewModal } from "./OverviewModal"
 import { NewTicketModal } from "./NewTicketModal"
-import type { ViewMode } from "./FeatureLayout"
 
 type Ticket = {
   id: string
@@ -34,9 +33,6 @@ type TicketSidebarProps = {
   overviewContent?: string
   overviewStatus?: string
   overviewPriority?: string
-  onCreateTicket?: (message: string) => void
-  viewMode: ViewMode
-  onViewModeChange: (mode: ViewMode) => void
 }
 
 const STATUS_TABS = [
@@ -50,7 +46,7 @@ const STATUS_TABS = [
 
 type TabKey = (typeof STATUS_TABS)[number]["key"]
 
-export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId, epicId, lastSyncAt, syncStatus, overviewContent, overviewStatus, overviewPriority, onCreateTicket, viewMode, onViewModeChange }: TicketSidebarProps) {
+export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId, epicId, lastSyncAt, syncStatus, overviewContent, overviewStatus, overviewPriority }: TicketSidebarProps) {
   const isSyncing = syncStatus === "syncing"
   const syncAgo = lastSyncAt ? Math.floor((Date.now() - lastSyncAt) / 1000) : null
   const syncLabel = syncAgo === null ? null : syncAgo < 60 ? `${syncAgo}s ago` : syncAgo < 3600 ? `${Math.floor(syncAgo / 60)}m ago` : `${Math.floor(syncAgo / 3600)}h ago`
@@ -60,7 +56,6 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
 
   const activeFilter = STATUS_TABS.find((t) => t.key === activeTab)!
 
-  const contextTicket = tickets.find((t) => t.title === "_context")
   const regularTickets = tickets.filter((t) => t.title !== "_context")
 
   const filteredTickets = regularTickets
@@ -69,9 +64,7 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
     .sort((a, b) => {
       const aTime = a.updatedAt ?? 0
       const bTime = b.updatedAt ?? 0
-      // Primary: updatedAt descending (most recently touched first)
       if (aTime !== bTime) return bTime - aTime
-      // Secondary: _creationTime descending (newer tickets first when updatedAt matches)
       const aCreate = a._creationTime ?? 0
       const bCreate = b._creationTime ?? 0
       return bCreate - aCreate
@@ -98,28 +91,6 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
         </Button>
         <FileText className="size-4 text-muted-foreground" />
         <span className="text-sm font-semibold truncate">{epicTitle}</span>
-        <div className="ml-auto flex items-center rounded-md border border-border bg-muted/50 p-0.5">
-          <button
-            onClick={() => onViewModeChange("plan")}
-            className={`rounded px-2 py-0.5 text-[11px] font-medium transition-all ${
-              viewMode === "plan"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Plan
-          </button>
-          <button
-            onClick={() => onViewModeChange("code")}
-            className={`rounded px-2 py-0.5 text-[11px] font-medium transition-all ${
-              viewMode === "code"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Code
-          </button>
-        </div>
       </div>
       <div className="flex items-center justify-between px-4 pb-3">
         <div className="flex items-center gap-1.5 min-w-0">
@@ -142,7 +113,7 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
           />
         )}
         <RoadmapModal epicId={epicId} />
-        {onCreateTicket && <NewTicketModal epicId={epicId} onSubmit={onCreateTicket} />}
+        <NewTicketModal epicId={epicId} />
       </div>
       <div className="px-3 pb-3">
         <div className="relative">

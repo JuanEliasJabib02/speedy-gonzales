@@ -22,7 +22,7 @@ const PRIORITIES = [
 
 type NewTicketModalProps = {
   epicId: string
-  onSubmit: (message: string) => void
+  onSubmit?: (message: string) => void
 }
 
 export function NewTicketModal({ epicId, onSubmit }: NewTicketModalProps) {
@@ -47,7 +47,7 @@ export function NewTicketModal({ epicId, onSubmit }: NewTicketModalProps) {
       .filter(Boolean)
       .join("\n")
 
-    onSubmit(prompt)
+    onSubmit?.(prompt)
 
     setTitle("")
     setPriority("medium")

@@ -5,7 +5,7 @@ import { useQuery, useMutation, usePaginatedQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import type { PendingImage, ChatContext, HistoryMessage } from "@/src/types/chat"
-import type { ActiveFile } from "../_components/FeatureLayout"
+type ActiveFile = { path: string; content: string }
 import { useChatStreamStore } from "@/src/store/chatStreamStore"
 
 const DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000 // 24 hours
