@@ -16,7 +16,7 @@ This is the Charizard-side logic, NOT Convex. It lives in the autonomous-loop sk
 - [ ] Use Convex HTTP API to call `getActiveLoopProjects` — `POST https://{CONVEX_URL}/api/query` with function path and args
 - [ ] For each active project, call `getTodoTicketsByProject` to get the queue
 - [ ] If no active projects → log and exit (`HEARTBEAT_OK`)
-- [ ] If active projects but no todo tickets → check if all are blocked → notify Slack
+- [ ] If active projects but no todo tickets → check if all are blocked → notify Juan via Telegram
 - [ ] Store the Convex URL in the skill as a configurable reference (read from env or openclaw config)
 
 ## Files

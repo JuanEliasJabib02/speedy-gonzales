@@ -30,7 +30,7 @@ The core execution engine. Takes the ticket queue from the dependency analysis, 
 - [ ] On failure: verify git revert happened, mark blocked, trigger sync
 - [ ] Crash recovery: relaunch up to 3 times, then block with "Perro crashed 3 times"
 - [ ] Respect `maxConcurrentPerFeature` and `maxConcurrentGlobal` limits
-- [ ] Notify Slack on each ticket completion or block
+- [ ] Notify Juan via Telegram on each ticket completion or block
 
 ## Files
 
