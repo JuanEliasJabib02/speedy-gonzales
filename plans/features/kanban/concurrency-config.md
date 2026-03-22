@@ -1,6 +1,6 @@
 # Concurrency Configuration
 
-**Status:** in-progress
+**Status:** review
 **Priority:** medium
 **Agent:** Charizard 🔥
 
@@ -21,14 +21,14 @@ Add to `projects` schema:
 
 ## Checklist
 
-- [ ] Add concurrency fields to `convex/schema/projects.ts`
-- [ ] Add a "Settings" section in the project page (or a gear icon in ProjectHeader)
-- [ ] Simple form to edit maxConcurrentPerFeature and maxConcurrentGlobal
-- [ ] Mutation to update project concurrency settings
-- [ ] Display current limits somewhere visible (tooltip on agent indicator, or settings panel)
+- [x] Add concurrency fields to `convex/schema/projects.ts`
+- [x] Add a "Settings" section in the project page (gear icon in ProjectHeader)
+- [x] Simple form to edit maxConcurrentPerFeature and maxConcurrentGlobal
+- [x] Mutation to update project concurrency settings
+- [x] Display current limits somewhere visible (settings popover in header)
 
 ## Files
 
 - `convex/schema/projects.ts`
 - `convex/projects.ts` — add `updateSettings` mutation
-- New: project settings UI component (location TBD)
+- `src/app/[locale]/(app)/projects/[projectId]/_components/ConcurrencySettings.tsx`
