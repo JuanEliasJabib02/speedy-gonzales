@@ -1,6 +1,6 @@
 # Review Awaiting Badge
 
-**Status:** review
+**Status:** completed
 **Priority:** low
 **Agent:** Charizard 🔥
 

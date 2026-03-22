@@ -1,6 +1,6 @@
 # Rename mock-data.ts to kanban-config.ts
 
-**Status:** review
+**Status:** completed
 **Priority:** low
 **Agent:** Charizard 🔥
 
