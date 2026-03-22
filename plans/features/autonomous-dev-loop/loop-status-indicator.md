@@ -1,6 +1,6 @@
 # Loop Status Indicator
 
-**Status:** in-progress
+**Status:** review
 **Priority:** low
 **Agent:** Charizard 🔥
 
@@ -17,11 +17,11 @@ Show the autonomous loop status in the project header — whether it's idle, run
 
 ## Checklist
 
-- [ ] Add loop status display to `ProjectHeader.tsx` (next to agent indicator)
-- [ ] Show only when `autonomousLoop === true`
-- [ ] Format `lastLoopAt` as relative time ("2h ago", "just now")
-- [ ] Pulsing animation when `loopStatus === "running"`
-- [ ] Tooltip with error message when `loopStatus === "error"`
+- [x] Add loop status display to `ProjectHeader.tsx` (next to agent indicator)
+- [x] Show only when `autonomousLoop === true`
+- [x] Format `lastLoopAt` as relative time ("2h ago", "just now")
+- [x] Pulsing animation when `loopStatus === "running"`
+- [x] Tooltip with error message when `loopStatus === "error"`
 
 ## Files
 

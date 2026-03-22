@@ -17,6 +17,7 @@ import {
 } from "@/src/lib/components/ui/dialog"
 import { cn } from "@/src/lib/helpers/cn"
 import { ConcurrencySettings } from "./ConcurrencySettings"
+import { LoopStatusIndicator } from "./LoopStatusIndicator"
 
 type ProjectHeaderProps = {
   projectId: Id<"projects">
@@ -119,6 +120,9 @@ export function ProjectHeader({
             <span className="text-muted-foreground/60">No agent</span>
           )}
         </div>
+        {autonomousLoop && (
+          <LoopStatusIndicator loopStatus={loopStatus} lastLoopAt={lastLoopAt} />
+        )}
         <div className="ml-auto flex items-center gap-2">
           <Button
             variant={showCompleted ? "secondary" : "ghost"}
