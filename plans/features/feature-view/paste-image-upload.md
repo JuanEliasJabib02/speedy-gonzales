@@ -1,6 +1,6 @@
 # Paste Image Upload (Ctrl+V Screenshots)
 
-**Status:** todo
+**Status:** completed
 **Priority:** high
 
 ## What it does

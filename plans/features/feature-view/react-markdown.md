@@ -1,6 +1,6 @@
 # Full react-markdown + remark-gfm
 
-**Status:** todo
+**Status:** completed
 **Priority:** medium
 
 ## What it does
