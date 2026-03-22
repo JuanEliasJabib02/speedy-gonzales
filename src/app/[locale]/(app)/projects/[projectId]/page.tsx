@@ -39,8 +39,8 @@ export default function ProjectPage() {
     id: epic._id,
     title: epic.title,
     status: epic.status as "todo" | "in-progress" | "review" | "blocked" | "completed",
-    progress: epic.checklistTotal > 0
-      ? Math.round((epic.checklistCompleted / epic.checklistTotal) * 100)
+    progress: epic.ticketCount > 0
+      ? Math.round((epic.completedTicketCount / epic.ticketCount) * 100)
       : 0,
     ticketCount: epic.ticketCount,
     priority: epic.priority as "low" | "medium" | "high" | "critical",

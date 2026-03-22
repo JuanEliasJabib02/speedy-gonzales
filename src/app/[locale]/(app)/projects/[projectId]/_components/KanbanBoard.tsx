@@ -20,6 +20,7 @@ export function KanbanBoard({ features, showCompleted, projectId }: KanbanBoardP
         return (
           <KanbanColumn
             key={status}
+            status={status}
             label={config.label}
             colorClass={config.colorClass}
             features={columnFeatures}
