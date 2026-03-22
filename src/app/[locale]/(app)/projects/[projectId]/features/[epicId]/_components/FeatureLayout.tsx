@@ -18,7 +18,7 @@ type FeatureLayoutProps = {
   epicId: string
 }
 
-export type ViewMode = "chat" | "code"
+export type ViewMode = "plan" | "code"
 
 export type ActiveFile = {
   path: string
@@ -32,8 +32,10 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
 
   const storageKey = `speedy-view-mode-${epicId}`
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    if (typeof window === "undefined") return "chat"
-    return (localStorage.getItem(storageKey) as ViewMode) ?? "chat"
+    if (typeof window === "undefined") return "plan"
+    const stored = localStorage.getItem(storageKey)
+    if (stored === "code") return "code"
+    return "plan"
   })
 
   useEffect(() => {

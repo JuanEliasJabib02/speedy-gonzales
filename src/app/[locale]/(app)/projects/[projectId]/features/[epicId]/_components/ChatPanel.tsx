@@ -5,7 +5,6 @@ import { Download, ChevronDown } from "lucide-react"
 import { ChatMessage } from "./ChatMessage"
 import { ChatInput } from "./ChatInput"
 import { ContextSummaryCard } from "./ContextSummaryCard"
-import { CodeView } from "./CodeView"
 import { ThemeToggle } from "@/src/lib/components/common/ThemeToggle"
 import { Button } from "@/src/lib/components/ui/button"
 import { useCurrentUser } from "@/src/lib/hooks/useCurrentUser"
@@ -13,21 +12,17 @@ import { useSendChat } from "../_hooks/useSendChat"
 import type { ViewMode, ActiveFile } from "./FeatureLayout"
 
 type ChatPanelProps = {
-  onActiveFileChange?: (file: { path: string; content: string } | null) => void
   width: number
   projectId: string
   epicId: string
   onSendDirectReady?: (fn: (message: string) => void) => void
   viewMode: ViewMode
   onViewModeChange: (mode: ViewMode) => void
-  repoOwner?: string
-  repoName?: string
-  branch?: string
   activeFile?: ActiveFile | null
   onDismissActiveFile?: () => void
 }
 
-export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMode, onViewModeChange, repoOwner = "", repoName = "", branch = "main", activeFile, onDismissActiveFile, onActiveFileChange }: ChatPanelProps) {
+export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMode, onViewModeChange, activeFile, onDismissActiveFile }: ChatPanelProps) {
   const { initial } = useCurrentUser()
   const {
     value,
@@ -148,14 +143,14 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
       <div className="flex items-center gap-2 border-b border-border p-4">
         <div className="flex items-center rounded-md border border-border bg-muted/50 p-0.5">
           <button
-            onClick={() => onViewModeChange("chat")}
+            onClick={() => onViewModeChange("plan")}
             className={`rounded px-2.5 py-1 text-xs font-medium transition-all ${
-              viewMode === "chat"
+              viewMode === "plan"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Chat
+            Plan
           </button>
           <button
             onClick={() => onViewModeChange("code")}
