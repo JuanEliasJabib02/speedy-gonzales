@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { FileTree } from "./FileTree"
 import { FileViewer } from "./FileViewer"
+import { CommandPalette } from "./CommandPalette"
 
 type CodeViewProps = {
   projectId: string
@@ -16,16 +17,34 @@ type CodeViewProps = {
 export function CodeView({ owner, repo, defaultBranch = "main", onActiveFileChange }: CodeViewProps) {
   const [selectedFile, setSelectedFile] = useState<{ path: string; sha: string } | null>(null)
   const [branch, setBranch] = useState(defaultBranch)
+  const [files, setFiles] = useState<{ path: string; sha: string }[]>([])
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false)
 
   const handleFileSelect = (path: string, sha: string) => {
     setSelectedFile({ path, sha })
-    // content will be loaded by FileViewer; we notify with null content initially
     onActiveFileChange?.({ path, content: "" })
   }
 
   const handleFileContentLoaded = (path: string, content: string) => {
     onActiveFileChange?.({ path, content })
   }
+
+  const handleFilesLoaded = useCallback((loaded: { path: string; sha: string }[]) => {
+    setFiles(loaded)
+  }, [])
+
+  // Cmd+P / Ctrl+P to open command palette
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "p" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        setIsPaletteOpen(true)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [])
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -38,6 +57,7 @@ export function CodeView({ owner, repo, defaultBranch = "main", onActiveFileChan
           selectedFile={selectedFile?.path ?? undefined}
           onFileSelect={handleFileSelect}
           onBranchChange={setBranch}
+          onFilesLoaded={handleFilesLoaded}
         />
       </div>
 
@@ -57,6 +77,15 @@ export function CodeView({ owner, repo, defaultBranch = "main", onActiveFileChan
           </div>
         )}
       </div>
+
+      {/* Command palette */}
+      {isPaletteOpen && (
+        <CommandPalette
+          files={files}
+          onFileSelect={handleFileSelect}
+          onClose={() => setIsPaletteOpen(false)}
+        />
+      )}
     </div>
   )
 }

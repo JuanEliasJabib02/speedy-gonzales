@@ -29,6 +29,7 @@ type FileTreeProps = {
   onFileSelect: (path: string, sha: string) => void
   selectedFile?: string | null
   onBranchChange?: (branch: string) => void
+  onFilesLoaded?: (files: { path: string; sha: string }[]) => void
 }
 
 const EXT_ICONS: Record<string, string> = {
@@ -188,7 +189,7 @@ function SkeletonRows() {
   )
 }
 
-export function FileTree({ owner, repo, branch, onFileSelect, selectedFile: selectedFileProp, onBranchChange }: FileTreeProps) {
+export function FileTree({ owner, repo, branch, onFileSelect, selectedFile: selectedFileProp, onBranchChange, onFilesLoaded }: FileTreeProps) {
   const selectedFile = selectedFileProp ?? undefined
   const [tree, setTree] = useState<TreeEntry[]>([])
   const [branches, setBranches] = useState<Branch[]>([])
@@ -208,6 +209,7 @@ export function FileTree({ owner, repo, branch, onFileSelect, selectedFile: sele
         const parsed = JSON.parse(cached) as { tree: TreeEntry[]; ts: number }
         if (Date.now() - parsed.ts < 5 * 60 * 1000) {
           setTree(parsed.tree)
+          onFilesLoaded?.(parsed.tree.filter((e) => e.type === "blob").map((e) => ({ path: e.path, sha: e.sha })))
           setLoading(false)
           return
         }
@@ -225,13 +227,14 @@ export function FileTree({ owner, repo, branch, onFileSelect, selectedFile: sele
       }
       const data = await res.json()
       setTree(data.tree)
+      onFilesLoaded?.(data.tree.filter((e: TreeEntry) => e.type === "blob").map((e: TreeEntry) => ({ path: e.path, sha: e.sha })))
       sessionStorage.setItem(cacheKey, JSON.stringify({ tree: data.tree, ts: Date.now() }))
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load file tree")
     } finally {
       setLoading(false)
     }
-  }, [owner, repo])
+  }, [owner, repo, onFilesLoaded])
 
   const fetchBranches = useCallback(async (cancelledRef?: { current: boolean }) => {
     try {
