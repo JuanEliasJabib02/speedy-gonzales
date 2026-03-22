@@ -362,6 +362,12 @@ export const upsertPlans = internalMutation({
           })
         }
       }
+
+      // Recalculate completed ticket count for this epic
+      const completedTicketCount = epicData.tickets.filter(
+        (t) => t.status === "completed" || t.status === "review"
+      ).length
+      await ctx.db.patch(epicId, { completedTicketCount })
     }
 
     // Soft-delete epics no longer in repo
