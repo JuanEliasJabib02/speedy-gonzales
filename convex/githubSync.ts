@@ -145,6 +145,7 @@ export const syncRepoInternal = internalAction({
                 checklistTotal: existingTicket.checklistTotal,
                 checklistCompleted: existingTicket.checklistCompleted,
                 agentName: existingTicket.agentName,
+                blockedReason: existingTicket.blockedReason,
               },
               commits: existingTicket.commits ?? [],
               agentName: existingTicket.agentName,
@@ -196,6 +197,7 @@ export const syncRepoInternal = internalAction({
             commits: t.commits,
             sortOrder: j,
             agentName: t.agentName,
+            blockedReason: t.parsed.blockedReason,
           })),
         })),
       })
@@ -245,6 +247,7 @@ export const upsertPlans = internalMutation({
             commits: v.array(v.string()),
             sortOrder: v.number(),
             agentName: v.optional(v.string()),
+            blockedReason: v.optional(v.string()),
           }),
         ),
       }),
@@ -335,6 +338,7 @@ export const upsertPlans = internalMutation({
               isDeleted: false,
               ...(meaningfulChange ? { updatedAt: Date.now() } : {}),
               agentName: ticketData.agentName,
+              blockedReason: ticketData.blockedReason,
             })
           }
         } else {
@@ -354,6 +358,7 @@ export const upsertPlans = internalMutation({
             isDeleted: false,
             updatedAt: Date.now(),
             agentName: ticketData.agentName,
+            blockedReason: ticketData.blockedReason,
           })
         }
       }

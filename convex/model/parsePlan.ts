@@ -11,6 +11,7 @@ type ParsedPlan = {
   checklistTotal: number
   checklistCompleted: number
   agentName?: string
+  blockedReason?: string
 }
 
 export function parseTitle(content: string): string {
@@ -79,6 +80,13 @@ export function parseCommits(body: string): string[] {
   return hashes
 }
 
+export function parseBlockedReason(content: string): string | undefined {
+  const match = content.match(/## Blocked\s*\n([\s\S]*?)(?=\n## |\n*$)/)
+  if (!match) return undefined
+  const reason = match[1].trim()
+  return reason || undefined
+}
+
 export function parsePlan(content: string): ParsedPlan {
   const title = parseTitle(content)
   const rawStatus = parseField(content, "Status")
@@ -88,6 +96,7 @@ export function parsePlan(content: string): ParsedPlan {
   const agentName = parseAgent(content)
   const body = stripHeader(content)
   const checklist = parseChecklist(content)
+  const blockedReason = status === "blocked" ? parseBlockedReason(content) : undefined
 
   return {
     title,
@@ -97,5 +106,6 @@ export function parsePlan(content: string): ParsedPlan {
     checklistTotal: checklist.total,
     checklistCompleted: checklist.completed,
     agentName,
+    blockedReason,
   }
 }

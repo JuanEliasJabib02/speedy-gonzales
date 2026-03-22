@@ -124,6 +124,27 @@ Tickets use the **exact same parser** as epics. Same fields, same defaults, same
 | `high` | Important, do soon |
 | `critical` | Must be done now |
 
+## Blocked section
+
+When a ticket has `**Status:** blocked`, add a `## Blocked` section with the reason:
+
+```markdown
+# Some Ticket
+
+**Status:** blocked
+
+## Blocked
+
+Waiting for GitHub OAuth to be configured. Can't fetch private repo commits without auth token.
+
+## What it does
+...
+```
+
+The parser extracts everything between `## Blocked` and the next `##` heading (or end of file) as the `blockedReason` field. This reason is displayed as a red banner in the PlanViewer and as a tooltip in the TicketSidebar.
+
+The `## Blocked` section is only meaningful when status is `blocked`. If the status changes away from `blocked`, the section can be left in the file (it will be ignored) or removed.
+
 ## Sections convention
 
 These sections are optional but conventional. Use them when relevant:

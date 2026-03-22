@@ -141,7 +141,10 @@ export function TicketItem({ ticket, isActive, onClick }: TicketItemProps) {
         </PopoverContent>
       </Popover>
       <div className="flex flex-col min-w-0 gap-0.5">
-        <span className={cn("truncate", isBlocked && "text-status-blocked font-medium")}>
+        <span
+          className={cn("truncate", isBlocked && "text-status-blocked font-medium")}
+          title={isBlocked && ticket.blockedReason ? `Blocked: ${ticket.blockedReason}` : undefined}
+        >
           {isBlocked && "⛔ "}
           {ticket.title}
         </span>
