@@ -1,6 +1,7 @@
 # Wire Dashboard to Convex
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

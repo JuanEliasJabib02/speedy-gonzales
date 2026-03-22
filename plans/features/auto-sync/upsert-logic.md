@@ -1,6 +1,7 @@
 # Upsert Logic (Epics + Tickets)
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

@@ -1,6 +1,7 @@
 # Webhook Registration
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

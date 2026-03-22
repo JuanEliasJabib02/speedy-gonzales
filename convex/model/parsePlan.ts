@@ -1,5 +1,8 @@
 // Parses a plan .md file into structured data
 
+const VALID_STATUSES = new Set(["todo", "in-progress", "review", "completed", "blocked"])
+const VALID_PRIORITIES = new Set(["low", "medium", "high", "critical"])
+
 type ParsedPlan = {
   title: string
   status: string
@@ -70,8 +73,10 @@ export function parseCommits(body: string): string[] {
 
 export function parsePlan(content: string): ParsedPlan {
   const title = parseTitle(content)
-  const status = parseField(content, "Status") || "todo"
-  const priority = parseField(content, "Priority") || "medium"
+  const rawStatus = parseField(content, "Status")
+  const status = VALID_STATUSES.has(rawStatus) ? rawStatus : "todo"
+  const rawPriority = parseField(content, "Priority")
+  const priority = VALID_PRIORITIES.has(rawPriority) ? rawPriority : "medium"
   const body = stripHeader(content)
   const checklist = parseChecklist(content)
 

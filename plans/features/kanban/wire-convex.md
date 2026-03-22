@@ -1,6 +1,7 @@
 # Wire Kanban to Convex
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

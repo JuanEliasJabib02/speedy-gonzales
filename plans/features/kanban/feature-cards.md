@@ -1,6 +1,7 @@
 # Feature Cards
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

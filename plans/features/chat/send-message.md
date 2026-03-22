@@ -1,6 +1,7 @@
 # sendMessage Mutation
 
 **Status:** review
+**Priority:** medium
 
 ## What it does
 

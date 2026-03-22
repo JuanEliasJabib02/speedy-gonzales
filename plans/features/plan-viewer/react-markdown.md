@@ -1,6 +1,7 @@
 # Full react-markdown + remark-gfm
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

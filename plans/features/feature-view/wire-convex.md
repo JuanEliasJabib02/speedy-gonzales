@@ -1,6 +1,7 @@
 # Wire Feature View to Convex
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

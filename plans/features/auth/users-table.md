@@ -1,6 +1,7 @@
 # Users Table & getCurrentUser
 
 **Status:** todo
+**Priority:** medium
 
 ## What it does
 

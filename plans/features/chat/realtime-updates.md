@@ -1,6 +1,7 @@
 # Real-time Message Updates
 
 **Status:** review
+**Priority:** medium
 
 ## What it does
 

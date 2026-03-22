@@ -1,6 +1,7 @@
 # Agent Context Injection
 
 **Status:** completed
+**Priority:** medium
 
 ## What it does
 
