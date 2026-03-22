@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useEffect, useMemo, useCallback, useState } from "react"
-import { Download, ChevronDown, Info } from "lucide-react"
+import { Download, ChevronDown, Info, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { ChatMessage } from "./ChatMessage"
 import { ChatInput } from "./ChatInput"
@@ -215,6 +215,23 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
             </div>
           ) : (
             <>
+              {hasEarlier && (
+                <div className="flex justify-center pb-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={loadEarlier}
+                    disabled={loadingEarlier}
+                    className="text-xs gap-1.5"
+                  >
+                    {loadingEarlier ? (
+                      <><Loader2 className="h-3 w-3 animate-spin" /> Loading…</>
+                    ) : (
+                      "Load earlier messages"
+                    )}
+                  </Button>
+                </div>
+              )}
               {messages.length > 0 && epic && (
                 <ContextSummaryCard
                   epicTitle={epic.title}
