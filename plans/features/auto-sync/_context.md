@@ -1,6 +1,6 @@
 # Auto-Sync
 
-**Status:** in-progress
+**Status:** completed
 **Priority:** critical
 
 ## Overview
