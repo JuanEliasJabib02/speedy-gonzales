@@ -13,7 +13,7 @@ export function KanbanColumn({ status, label, colorClass, features, projectId }:
   const isReviewWithItems = status === "review" && features.length > 0
 
   return (
-    <div className="flex w-[280px] min-w-[280px] flex-col rounded-lg bg-card/50 p-3">
+    <div className="flex w-[280px] min-w-[280px] flex-col self-stretch rounded-lg bg-card/50 p-3">
       <div className="mb-3 flex items-center gap-2">
         <div className={`size-2 rounded-full ${colorClass}`} />
         <span className="text-sm font-medium">{label}</span>

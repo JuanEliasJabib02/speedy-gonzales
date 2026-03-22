@@ -13,7 +13,7 @@ export function KanbanBoard({ features, showCompleted, projectId }: KanbanBoardP
     : ACTIVE_COLUMNS
 
   return (
-    <div className="flex h-full gap-4 overflow-x-auto pb-4 scrollbar-thin">
+    <div className="flex h-full items-stretch gap-4 overflow-x-auto pb-4 scrollbar-thin">
       {columns.map((status) => {
         const config = STATUS_CONFIG[status]
         const columnFeatures = features.filter((f) => f.status === status)
