@@ -42,11 +42,8 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
 
   // Code mode state
   const [selectedFile, setSelectedFile] = useState<{ path: string; sha: string } | null>(null)
-  const [branch, setBranch] = useState(epic?.branch ?? "main")
-  // Sync branch from epic after load
-  useEffect(() => {
-    if (epic?.branch) setBranch(epic.branch)
-  }, [epic?.branch])
+  // TODO: use epic?.branch when branch-per-feature workflow is implemented
+  const [branch] = useState("main")
 
   // Context bridge: track the active file being viewed
   const [activeFile, setActiveFile] = useState<ActiveFile | null>(null)
@@ -128,7 +125,7 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
       ) : (
         <TicketSidebar
           epicTitle={epic.title}
-          branch={epic.branch}
+          branch="main"
           tickets={epic.tickets}
           selectedId={effectiveId}
           onSelect={setSelectedTicketId}
