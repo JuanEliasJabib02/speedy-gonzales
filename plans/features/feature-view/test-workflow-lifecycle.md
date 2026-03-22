@@ -1,6 +1,6 @@
 # Test Workflow Lifecycle
 
-**Status:** in-progress
+**Status:** review
 **Priority:** low
 
 ## What it does
@@ -11,5 +11,5 @@ Delete after testing.
 ## Checklist
 
 - [x] Move to in_progress
-- [ ] Wait 1 minute
-- [ ] Move to review
+- [x] Wait 1 minute
+- [x] Move to review
