@@ -7,14 +7,16 @@ type UseCommitTimelineParams = {
   owner: string | undefined
   repo: string | undefined
   branch: string
+  fallbackBranch?: string
 }
 
-export function useCommitTimeline({ owner, repo, branch }: UseCommitTimelineParams) {
+export function useCommitTimeline({ owner, repo, branch, fallbackBranch = "main" }: UseCommitTimelineParams) {
   const [commits, setCommits] = useState<BranchCommit[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
+  const [activeBranch, setActiveBranch] = useState(branch)
 
   const fetchCommits = useCallback(async (pageNum: number, append: boolean) => {
     if (!owner || !repo) return
@@ -27,6 +29,7 @@ export function useCommitTimeline({ owner, repo, branch }: UseCommitTimelinePara
         owner,
         repo,
         branch,
+        fallback_branch: fallbackBranch,
         per_page: "30",
         page: String(pageNum),
       })
@@ -37,7 +40,9 @@ export function useCommitTimeline({ owner, repo, branch }: UseCommitTimelinePara
         throw new Error(body.error || `Failed to fetch commits (${res.status})`)
       }
 
-      const data: { commits: BranchCommit[] } = await res.json()
+      const data: { commits: BranchCommit[]; branch: string } = await res.json()
+
+      setActiveBranch(data.branch)
 
       if (data.commits.length < 30) {
         setHasMore(false)
@@ -49,14 +54,15 @@ export function useCommitTimeline({ owner, repo, branch }: UseCommitTimelinePara
     } finally {
       setLoading(false)
     }
-  }, [owner, repo, branch])
+  }, [owner, repo, branch, fallbackBranch])
 
   useEffect(() => {
     setCommits([])
     setPage(1)
     setHasMore(true)
+    setActiveBranch(branch)
     fetchCommits(1, false)
-  }, [fetchCommits])
+  }, [fetchCommits, branch])
 
   const loadMore = useCallback(() => {
     if (loading || !hasMore) return
@@ -72,5 +78,5 @@ export function useCommitTimeline({ owner, repo, branch }: UseCommitTimelinePara
     fetchCommits(1, false)
   }, [fetchCommits])
 
-  return { commits, loading, error, hasMore, loadMore, refresh }
+  return { commits, loading, error, hasMore, loadMore, refresh, activeBranch }
 }

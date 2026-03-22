@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { GitCommitHorizontal, RefreshCw, ChevronDown, Plus, Minus, Code2, Loader2, GitBranch, Tag } from "lucide-react"
+import { GitCommitHorizontal, RefreshCw, ChevronDown, Plus, Minus, Code2, Loader2, GitBranch, Tag, ExternalLink } from "lucide-react"
 import { cn } from "@/src/lib/helpers/cn"
 import { CommitDiffPanel } from "./CommitDiffPanel"
 import { matchCommitToTickets } from "../_helpers/matchCommitToTickets"
@@ -31,11 +31,16 @@ function CommitCard({
   commit,
   linkedTickets,
   onViewDiff,
+  repoOwner,
+  repoName,
 }: {
   commit: BranchCommit
   linkedTickets: { id: string; title: string }[]
   onViewDiff: (sha: string) => void
+  repoOwner: string
+  repoName: string
 }) {
+  const commitUrl = `https://github.com/${repoOwner}/${repoName}/commit/${commit.sha}`
   return (
     <div className="relative pl-6">
       {/* Timeline dot */}
@@ -48,9 +53,15 @@ function CommitCard({
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-foreground truncate">{commit.message}</p>
             <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px]">
+              <a
+                href={commitUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded bg-muted px-1 py-0.5 font-mono text-[11px] hover:bg-accent hover:text-accent-foreground transition-colors"
+              >
                 {commit.sha.slice(0, 7)}
-              </code>
+                <ExternalLink className="size-2.5" />
+              </a>
               <span>{commit.author}</span>
               {commit.timestamp && <span>{timeAgo(commit.timestamp)}</span>}
             </div>
@@ -162,7 +173,15 @@ export function CommitTimeline({
       {/* Branch label */}
       <div className="flex items-center gap-1.5 border-b border-border px-3 py-1.5">
         <GitBranch className="size-3 text-muted-foreground" />
-        <span className="text-xs font-mono text-muted-foreground truncate">{branch}</span>
+        <a
+          href={`https://github.com/${repoOwner}/${repoName}/tree/${branch}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 text-xs font-mono text-muted-foreground truncate hover:text-foreground transition-colors"
+        >
+          {branch}
+          <ExternalLink className="size-2.5 shrink-0" />
+        </a>
       </div>
 
       {/* Filter by ticket */}
@@ -213,6 +232,8 @@ export function CommitTimeline({
                 commit={commit}
                 linkedTickets={commitTicketMap.get(commit.sha) ?? []}
                 onViewDiff={setDiffTarget}
+                repoOwner={repoOwner}
+                repoName={repoName}
               />
             ))}
           </div>

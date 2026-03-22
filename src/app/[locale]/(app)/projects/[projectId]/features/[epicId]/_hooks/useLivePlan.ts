@@ -20,7 +20,7 @@ export function useLivePlan(epicId: string, projectId?: string) {
         title: epic.title,
         status: epic.status as "todo" | "in-progress" | "review" | "completed",
         priority: epic.priority,
-        branch: `feat/${epic.path.split("/").pop()}`,
+        branch: `feature/${epic.path.split("/").pop()}`,
         tickets: [
           { id: "_context", title: "Overview", status: epic.status as "todo" | "in-progress" | "review" | "completed", blockedReason: undefined },
           ...(tickets ?? []).map((t) => ({
@@ -69,5 +69,6 @@ export function useLivePlan(epicId: string, projectId?: string) {
     syncStatus: project?.syncStatus,
     repoOwner: project?.repoOwner,
     repoName: project?.repoName,
+    projectBranch: project?.branch,
   }
 }

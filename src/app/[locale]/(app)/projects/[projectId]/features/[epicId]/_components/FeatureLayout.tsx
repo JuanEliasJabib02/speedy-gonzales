@@ -20,15 +20,16 @@ type FeatureLayoutProps = {
 }
 
 export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
-  const { plan: epic, isLoading, getTicketContent, lastSyncAt, syncStatus, repoOwner, repoName } = useLivePlan(epicId, projectId)
+  const { plan: epic, isLoading, getTicketContent, lastSyncAt, syncStatus, repoOwner, repoName, projectBranch } = useLivePlan(epicId, projectId)
   const [selectedTicketId, setSelectedTicketId] = useState("")
   const [timelineWidth, setTimelineWidth] = useState(TIMELINE_DEFAULT_WIDTH)
   const [ticketFilter, setTicketFilter] = useState<string | null>(null)
 
-  const { commits, loading: commitsLoading, error: commitsError, hasMore, loadMore, refresh } = useCommitTimeline({
+  const { commits, loading: commitsLoading, error: commitsError, hasMore, loadMore, refresh, activeBranch } = useCommitTimeline({
     owner: repoOwner,
     repo: repoName,
     branch: epic?.branch ?? "",
+    fallbackBranch: projectBranch ?? "main",
   })
 
   const isDragging = useRef(false)
@@ -116,7 +117,7 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
           loading={commitsLoading}
           error={commitsError}
           hasMore={hasMore}
-          branch={epic.branch}
+          branch={activeBranch}
           repoOwner={repoOwner ?? ""}
           repoName={repoName ?? ""}
           onLoadMore={loadMore}

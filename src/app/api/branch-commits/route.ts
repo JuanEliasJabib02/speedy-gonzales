@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
   const owner = req.nextUrl.searchParams.get("owner")
   const repo = req.nextUrl.searchParams.get("repo")
   const branch = req.nextUrl.searchParams.get("branch")
+  const fallbackBranch = req.nextUrl.searchParams.get("fallback_branch") ?? "main"
   const perPage = req.nextUrl.searchParams.get("per_page") ?? "30"
   const page = req.nextUrl.searchParams.get("page") ?? "1"
 
@@ -51,19 +52,30 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  try {
+  const fetchCommitsForBranch = async (sha: string) => {
     const url = new URL(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/commits`)
-    url.searchParams.set("sha", branch)
+    url.searchParams.set("sha", sha)
     url.searchParams.set("per_page", perPage)
     url.searchParams.set("page", page)
 
-    const res = await fetch(url.toString(), {
+    return fetch(url.toString(), {
       headers: {
         Authorization: `Bearer ${githubPat}`,
         Accept: "application/vnd.github.v3+json",
       },
       signal: AbortSignal.timeout(15000),
     })
+  }
+
+  try {
+    let res = await fetchCommitsForBranch(branch)
+    let usedBranch = branch
+
+    // Fallback to main if the feature branch doesn't exist (404)
+    if (res.status === 404 && branch !== fallbackBranch) {
+      res = await fetchCommitsForBranch(fallbackBranch)
+      usedBranch = fallbackBranch
+    }
 
     if (!res.ok) {
       const text = await res.text().catch(() => "")
@@ -86,7 +98,7 @@ export async function GET(req: NextRequest) {
       deletions: c.stats?.deletions ?? 0,
     }))
 
-    return NextResponse.json({ commits }, {
+    return NextResponse.json({ commits, branch: usedBranch }, {
       headers: {
         "Cache-Control": "public, max-age=60, stale-while-revalidate=120",
       },
