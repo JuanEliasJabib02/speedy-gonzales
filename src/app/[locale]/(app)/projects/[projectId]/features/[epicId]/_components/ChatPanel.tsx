@@ -225,7 +225,7 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
                 {formatTokens(totalTokens)} / {formatTokens(MAX_TOKENS)} tokens
               </span>
               <Link
-                href="/docs/context-window"
+                href="/docs/feature-view#context-window"
                 target="_blank"
                 title="How does the context window work?"
                 className="text-muted-foreground/50 hover:text-muted-foreground transition-colors"

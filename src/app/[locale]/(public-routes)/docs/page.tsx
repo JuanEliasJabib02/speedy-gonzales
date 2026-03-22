@@ -1,4 +1,4 @@
-import { Activity, ArrowRight, BookOpen, Brain, CheckCircle, Circle, Clock, Code, FolderTree, GitBranch, Heart, MessageSquare, Rocket, Zap } from "lucide-react"
+import { Activity, ArrowRight, BookOpen, Brain, CheckCircle, Circle, Clock, Code, FolderTree, GitBranch, Heart, Layout, Rocket, Zap } from "lucide-react"
 import Link from "next/link"
 
 const guides = [
@@ -34,18 +34,18 @@ const guides = [
 
 const features = [
   {
+    title: "Feature View",
+    description:
+      "Your command center for building a feature. Orchestrate your AI agent, control tickets, read plans, and browse code — all in one screen.",
+    href: "/docs/feature-view",
+    icon: Layout,
+  },
+  {
     title: "GitHub Auto-Sync",
     description:
       "Push your plans to GitHub and Speedy updates in real time. Webhook-powered, zero config after setup.",
     href: "/docs/sync",
     icon: GitBranch,
-  },
-  {
-    title: "OpenClaw Chat",
-    description:
-      "The super-chat wired to your AI agent. Context injection, streaming, memory, agent actions, slash commands, ticket mentions, image uploads, and more — all in one panel.",
-    href: "/docs/chat",
-    icon: MessageSquare,
   },
   {
     title: "AI Development Workflow",
