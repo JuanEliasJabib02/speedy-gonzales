@@ -1,6 +1,6 @@
 # Kanban
 
-**Status:** completed
+**Status:** in-progress
 **Priority:** high
 
 ## Overview
