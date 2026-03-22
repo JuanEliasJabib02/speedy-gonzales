@@ -15,10 +15,12 @@ The chat loads only the last N messages on mount, scroll to bottom automatically
 - `loadingEarlier`: true while `allMessages` is still undefined after toggling
 - Scroll to bottom on mount: `bottomRef.scrollIntoView({ behavior: "instant" })` in `ChatPanel`
 - Auto-scroll when near bottom: checks `distanceFromBottom < 200` on each update
+- `handleLoadEarlier` in ChatPanel: saves `scrollHeight` before triggering load
+- `useLayoutEffect` (sync, before paint) restores scroll position after messages load — no jump
 
 ## Convex queries used
 
-- `chat.getRecentMessages` — returns last N messages (order desc + take)
+- `chat.getRecentMessages` — returns last 30 messages using `.order("desc").take(30).reverse()` (efficient)
 - `chat.getMessages` — returns all messages for epic
 - `chat.getMessageCount` — returns total count for `hasEarlier` calculation
 
@@ -29,6 +31,6 @@ The chat loads only the last N messages on mount, scroll to bottom automatically
 - [x] `hasEarlier` flag available when more messages exist
 - [x] `loadEarlier()` triggers full message load
 - [x] `loadingEarlier` state available for spinner UI
-- [ ] "Load earlier messages" button rendered in ChatPanel (UI integration pending review)
-- [ ] Loading spinner shown while fetching earlier batch
-- [ ] Scroll position preserved after loading earlier messages
+- [x] "Load earlier messages" button rendered in ChatPanel
+- [x] Loading spinner shown while fetching earlier batch
+- [x] Scroll position preserved after loading earlier messages (useLayoutEffect, no visual jump)

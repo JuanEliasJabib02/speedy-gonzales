@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useEffect, useMemo, useCallback, useState } from "react"
+import { useRef, useEffect, useLayoutEffect, useMemo, useCallback, useState } from "react"
 import { Download, ChevronDown, Info, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { ChatMessage } from "./ChatMessage"
@@ -84,7 +84,24 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
         : "bg-green-500"
 
   const scrollRef = useRef<HTMLDivElement>(null)
+  const scrollHeightBeforeRef = useRef<number>(0)
   const [showScrollButton, setShowScrollButton] = useState(false)
+
+  const handleLoadEarlier = useCallback(() => {
+    if (scrollRef.current) {
+      scrollHeightBeforeRef.current = scrollRef.current.scrollHeight
+    }
+    loadEarlier()
+  }, [loadEarlier])
+
+  // Preserve scroll position when earlier messages are loaded (useLayoutEffect = sync before paint, no jump)
+  useLayoutEffect(() => {
+    if (scrollRef.current && scrollHeightBeforeRef.current > 0) {
+      const newScrollHeight = scrollRef.current.scrollHeight
+      scrollRef.current.scrollTop = newScrollHeight - scrollHeightBeforeRef.current
+      scrollHeightBeforeRef.current = 0
+    }
+  }, [messages?.length])
 
   useEffect(() => {
     const el = scrollRef.current
@@ -220,7 +237,7 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={loadEarlier}
+                    onClick={handleLoadEarlier}
                     disabled={loadingEarlier}
                     className="text-xs gap-1.5"
                   >

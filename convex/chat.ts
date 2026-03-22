@@ -1,4 +1,5 @@
 import { v } from "convex/values"
+import { paginationOptsValidator } from "convex/server"
 import { query, mutation } from "./_generated/server"
 import { requireAuth } from "./helpers"
 
@@ -17,11 +18,24 @@ export const getRecentMessages = query({
   args: { epicId: v.id("epics") },
   handler: async (ctx, { epicId }) => {
     await requireAuth(ctx)
-    const all = await ctx.db
+    const recent = await ctx.db
       .query("chatMessages")
       .withIndex("by_epic", (q) => q.eq("epicId", epicId))
-      .collect()
-    return all.slice(-30)
+      .order("desc")
+      .take(30)
+    return recent.reverse()
+  },
+})
+
+export const getMessagesPaginated = query({
+  args: { epicId: v.id("epics"), paginationOpts: paginationOptsValidator },
+  handler: async (ctx, { epicId, paginationOpts }) => {
+    await requireAuth(ctx)
+    return ctx.db
+      .query("chatMessages")
+      .withIndex("by_epic", (q) => q.eq("epicId", epicId))
+      .order("desc")
+      .paginate(paginationOpts)
   },
 })
 
