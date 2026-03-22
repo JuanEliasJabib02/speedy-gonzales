@@ -150,7 +150,6 @@ export function TicketItem({ ticket, isActive, onClick }: TicketItemProps) {
         </span>
         {(ticket.agentName || ticket.updatedAt) && (
           <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-            {ticket.agentName && <span className="truncate">{ticket.agentName}</span>}
             {ticket.updatedAt && <span className="shrink-0">{formatTimeAgo(ticket.updatedAt)}</span>}
           </div>
         )}
