@@ -1,73 +1,61 @@
 # AGENTS.md — Speedy Gonzales
 
-This file is read automatically by Claude Code and other AI agents working in this repo.
+## Project
 
-## Plan Files — MANDATORY RULES
+- **Name:** Speedy Gonzales
+- **Stack:** Next.js 15 (App Router) + Convex + Tailwind + shadcn/ui
+- **Repo:** github.com/JuanEliasJabib02/speedy-gonzales
+- **Hosting:** Vercel (auto-deploys from `main`)
 
-Before creating or editing any file in `plans/features/`, read `plans/SPEC.md`.
+## Git Workflow
 
-### Format
+- **Production branch:** `main`
+- **Base branch:** `main` (all feature branches fork from here)
+- **PR target:** `main`
+- **Branch naming:** `feat/<ticket-slug>` (e.g. `feat/chat-pagination`)
+- **Never push directly to:** `main`
 
-Every plan file MUST start with:
-```markdown
-# Title
+### Rules for AI agents (Perro salchicha)
 
-**Status:** todo
-**Priority:** medium
+1. Always create a feature branch from `main`: `git checkout main && git pull && git checkout -b feat/<ticket-slug>`
+2. Work on the feature branch — commit freely with conventional commits
+3. Push the feature branch: `git push -u origin feat/<ticket-slug>`
+4. **Create a PR** to `main` — never merge it. Juan reviews and merges.
+5. After pushing, trigger Convex sync so tickets update in the dashboard
+
+### Commit conventions
+
+- `feat(<scope>): description` — new features
+- `fix(<scope>): description` — bug fixes
+- `docs(<scope>): description` — documentation, plan updates
+- `refactor(<scope>): description` — code restructuring
+- `chore(<scope>): description` — tooling, config, deps
+
+Scope is usually the ticket slug or feature area (e.g. `feat(chat-pagination): add infinite scroll`).
+
+## Plan Files
+
+- Location: `plans/features/<epic-slug>/<ticket-slug>.md`
+- Format: Speedy Gonzales spec (see `plans/SPEC.md`)
+- Valid statuses: `todo`, `in-progress`, `review`, `completed`, `blocked`
+- Valid priorities: `low`, `medium`, `high`, `critical`
+- Agent workflow: move to `review` when done, never to `completed`
+
+## Convex Sync
+
+After pushing changes that modify plan files, trigger sync:
+
+```bash
+curl -s -X POST "https://necessary-fish-66.convex.site/github-webhook" \
+  -H "Content-Type: application/json" \
+  -H "x-github-event: push" \
+  -d '{"repository": {"owner": {"login": "JuanEliasJabib02"}, "name": "speedy-gonzales"}, "commits": [{"modified": ["plans/features/chat/_context.md"]}]}'
 ```
 
-### Valid values (ONLY these — nothing else)
+## Key Rules
 
-- **Status:** `todo` | `in-progress` | `review` | `completed` | `blocked`
-- **Priority:** `low` | `medium` | `high` | `critical`
-
-❌ NEVER use: `planned`, `done`, `wip`, `pending`, `in_progress`, or any other value.
-
-### Defaults for new files
-
-- Status: `todo`
-- Priority: `medium`
-
-### Directory structure
-
-```
-plans/features/<epic-slug>/
-├── _context.md       ← Required (epic overview)
-└── <ticket-slug>.md  ← One per ticket
-```
-
-- kebab-case for all directory and file names
-- Only 2 levels deep — no nested subdirectories
-- Every epic directory MUST have `_context.md`
-
-## When finishing a ticket
-
-Include the branch name and commits in the ticket file:
-
-```markdown
-## Branch
-
-feature/ticket-slug
-
-## Commits
-
-- `abc1234` feat(feature): description of what was done
-```
-
-This allows Speedy to show the preview URL and commit history in the review flow.
-
-## Commit message conventions
-
-- `feat(plans):` — new ticket created
-- `docs(plans):` — ticket updated (status change, checklist)
-- `fix(plans):` — correcting a ticket description
-
-## Stack reference
-
-- **Frontend:** Next.js 15 + Tailwind + shadcn/ui
-- **DB/Realtime:** Convex
-- **Auth:** Convex Auth (magic link)
-- **AI:** Vercel AI SDK + OpenClaw API
-- **Deployment:** Vercel
-
-When in doubt, check `plans/SPEC.md` for the canonical format.
+- Components are pure UI — all logic in hooks
+- Use Convex for all data access (no REST APIs for app data)
+- Follow the architecture in `.claude/claude.md`
+- Read `.claude/rules/` before making changes
+- Use English for all code, comments, and docs
