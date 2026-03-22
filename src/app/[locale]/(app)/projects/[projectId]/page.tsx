@@ -56,6 +56,10 @@ export default function ProjectPage() {
         completedCount={completedCount}
         syncStatus={project.syncStatus}
         lastSyncAt={project.lastSyncAt}
+        agentName={project.agentName}
+        agentEmoji={project.agentEmoji}
+        agentStatus={project.agentStatus}
+        agentCurrentFeature={project.agentCurrentFeature}
       />
       <KanbanBoard features={features} showCompleted={showCompleted} projectId={projectId} />
     </div>

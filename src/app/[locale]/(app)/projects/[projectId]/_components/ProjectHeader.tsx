@@ -25,6 +25,10 @@ type ProjectHeaderProps = {
   completedCount: number
   syncStatus: string
   lastSyncAt?: number
+  agentName?: string
+  agentEmoji?: string
+  agentStatus?: string
+  agentCurrentFeature?: string
 }
 
 function useSyncTimer(lastSyncAt?: number) {
@@ -56,6 +60,10 @@ export function ProjectHeader({
   completedCount,
   syncStatus,
   lastSyncAt,
+  agentName,
+  agentEmoji,
+  agentStatus,
+  agentCurrentFeature,
 }: ProjectHeaderProps) {
   const router = useRouter()
   const forceResync = useMutation(api.githubSync.forceResync)
@@ -75,6 +83,23 @@ export function ProjectHeader({
           <ArrowLeft className="size-4" />
         </Button>
         <h1 className="text-2xl font-semibold">{projectName}</h1>
+        {agentName && (
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <span className="text-muted-foreground/40">·</span>
+            <span className={cn(agentStatus === "working" && "animate-pulse")}>
+              {agentEmoji}
+            </span>
+            <span>{agentName}</span>
+            <span className="text-muted-foreground/40">·</span>
+            {agentStatus === "working" && agentCurrentFeature ? (
+              <span className="text-status-in-progress">
+                working on {agentCurrentFeature}
+              </span>
+            ) : (
+              <span className="text-muted-foreground/60">idle</span>
+            )}
+          </div>
+        )}
         <div className="ml-auto flex items-center gap-2">
           <Button
             variant={showCompleted ? "secondary" : "ghost"}

@@ -16,6 +16,10 @@ export const projects = defineTable({
   lastSyncAt: v.optional(v.number()),
   syncStatus: v.string(), // "idle" | "syncing" | "error"
   syncError: v.optional(v.string()),
+  agentName: v.optional(v.string()),
+  agentEmoji: v.optional(v.string()),
+  agentStatus: v.optional(v.string()), // "idle" | "working"
+  agentCurrentFeature: v.optional(v.string()),
   createdAt: v.number(),
   updatedAt: v.number(),
 })
