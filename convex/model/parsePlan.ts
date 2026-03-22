@@ -10,6 +10,7 @@ type ParsedPlan = {
   body: string
   checklistTotal: number
   checklistCompleted: number
+  agentName?: string
 }
 
 export function parseTitle(content: string): string {
@@ -23,6 +24,12 @@ export function parseField(content: string, field: string): string {
   const pattern = new RegExp(`\\*\\*${field}:\\*\\*\\s*([^\\n\\r]+)`, "i")
   const match = content.match(pattern)
   return match ? match[1].trim().toLowerCase() : ""
+}
+
+export function parseAgent(content: string): string | undefined {
+  const pattern = /\*\*Agent:\*\*\s*([^\n\r]+)/i
+  const match = content.match(pattern)
+  return match ? match[1].trim() : undefined
 }
 
 export function parseChecklist(content: string): { completed: number; total: number } {
@@ -47,6 +54,7 @@ export function stripHeader(content: string): string {
     if (
       line.startsWith("**Status:**") ||
       line.startsWith("**Priority:**") ||
+      line.startsWith("**Agent:**") ||
       line.startsWith("**Phase:**") ||
       line === ""
     ) {
@@ -77,6 +85,7 @@ export function parsePlan(content: string): ParsedPlan {
   const status = VALID_STATUSES.has(rawStatus) ? rawStatus : "todo"
   const rawPriority = parseField(content, "Priority")
   const priority = VALID_PRIORITIES.has(rawPriority) ? rawPriority : "medium"
+  const agentName = parseAgent(content)
   const body = stripHeader(content)
   const checklist = parseChecklist(content)
 
@@ -87,5 +96,6 @@ export function parsePlan(content: string): ParsedPlan {
     body,
     checklistTotal: checklist.total,
     checklistCompleted: checklist.completed,
+    agentName,
   }
 }

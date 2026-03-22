@@ -29,6 +29,8 @@ export function useLivePlan(epicId: string, projectId?: string) {
             status: t.status as "todo" | "in-progress" | "review" | "completed" | "blocked",
             blockedReason: t.blockedReason,
             commits: t.commits ?? [],
+            updatedAt: t.updatedAt,
+            agentName: t.agentName,
           })),
         ],
         planContent: epic.content,

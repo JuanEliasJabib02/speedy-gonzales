@@ -16,7 +16,10 @@ export const tickets = defineTable({
   commits: v.optional(v.array(v.string())),
   sortOrder: v.number(),
   isDeleted: v.boolean(),
+  updatedAt: v.optional(v.number()),
+  agentName: v.optional(v.string()),
 })
   .index("by_epic", ["epicId"])
   .index("by_project", ["projectId"])
   .index("by_project_path", ["projectId", "path"])
+  .index("by_epic_updated", ["epicId", "updatedAt"])

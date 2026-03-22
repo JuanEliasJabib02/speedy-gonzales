@@ -35,8 +35,19 @@ const STATUS_OPTIONS = [
   { value: "completed", label: "Done" },
 ] as const
 
+function formatTimeAgo(timestamp: number): string {
+  const seconds = Math.floor((Date.now() - timestamp) / 1000)
+  if (seconds < 60) return `${seconds}s ago`
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  return `${days}d ago`
+}
+
 type TicketItemProps = {
-  ticket: { id: string; title: string; status: string; blockedReason?: string }
+  ticket: { id: string; title: string; status: string; blockedReason?: string; updatedAt?: number; agentName?: string }
   isActive: boolean
   onClick: () => void
 }
@@ -129,10 +140,18 @@ export function TicketItem({ ticket, isActive, onClick }: TicketItemProps) {
           </div>
         </PopoverContent>
       </Popover>
-      <span className={cn("truncate", isBlocked && "text-status-blocked font-medium")}>
-        {isBlocked && "⛔ "}
-        {ticket.title}
-      </span>
+      <div className="flex flex-col min-w-0 gap-0.5">
+        <span className={cn("truncate", isBlocked && "text-status-blocked font-medium")}>
+          {isBlocked && "⛔ "}
+          {ticket.title}
+        </span>
+        {(ticket.agentName || ticket.updatedAt) && (
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            {ticket.agentName && <span className="truncate">{ticket.agentName}</span>}
+            {ticket.updatedAt && <span className="shrink-0">{formatTimeAgo(ticket.updatedAt)}</span>}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
