@@ -96,9 +96,9 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
         <span className="text-sm font-semibold truncate">{epicTitle}</span>
         <div className="ml-auto flex items-center rounded-md border border-border bg-muted/50 p-0.5">
           <button
-            onClick={() => onViewModeChange("chat")}
+            onClick={() => onViewModeChange("plan")}
             className={`rounded px-2 py-0.5 text-[11px] font-medium transition-all ${
-              viewMode === "chat"
+              viewMode === "plan"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             }`}

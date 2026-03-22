@@ -18,7 +18,7 @@ type FeatureLayoutProps = {
   epicId: string
 }
 
-export type ViewMode = "chat" | "code"
+export type ViewMode = "plan" | "code"
 
 export type ActiveFile = {
   path: string
@@ -32,8 +32,9 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
 
   const storageKey = `speedy-view-mode-${epicId}`
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    if (typeof window === "undefined") return "chat"
-    return (localStorage.getItem(storageKey) as ViewMode) ?? "chat"
+    if (typeof window === "undefined") return "plan"
+    const stored = localStorage.getItem(storageKey)
+    return (stored === "plan" || stored === "code") ? stored : "plan"
   })
 
   useEffect(() => {
@@ -111,53 +112,52 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
 
   return (
     <div className="flex h-full">
-      {/* Left panel: TicketSidebar in Chat mode, FileTree in Code mode */}
-      {viewMode === "code" ? (
-        <div className="flex w-[280px] shrink-0 flex-col border-r border-border bg-card overflow-hidden">
-          <FileTree
-            owner={repoOwner ?? ""}
-            repo={repoName ?? ""}
-            branch={branch}
-            selectedFile={selectedFile?.path ?? undefined}
-            onFileSelect={(path, sha) => setSelectedFile({ path, sha })}
-          />
-        </div>
-      ) : (
-        <TicketSidebar
-          epicTitle={epic.title}
-          branch="main"
-          tickets={epic.tickets}
-          selectedId={effectiveId}
-          onSelect={setSelectedTicketId}
-          projectId={projectId}
-          epicId={epicId}
-          lastSyncAt={lastSyncAt}
-          syncStatus={syncStatus}
-          overviewContent={overviewData.content}
-          overviewStatus={epic.status}
-          overviewPriority={epic.priority}
-          onCreateTicket={handleCreateTicket}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-        />
-      )}
+      {/* Left panel: TicketSidebar always visible */}
+      <TicketSidebar
+        epicTitle={epic.title}
+        branch="main"
+        tickets={epic.tickets}
+        selectedId={effectiveId}
+        onSelect={setSelectedTicketId}
+        projectId={projectId}
+        epicId={epicId}
+        lastSyncAt={lastSyncAt}
+        syncStatus={syncStatus}
+        overviewContent={overviewData.content}
+        overviewStatus={epic.status}
+        overviewPriority={epic.priority}
+        onCreateTicket={handleCreateTicket}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+      />
 
-      {/* Center panel: PlanViewer in Chat mode, FileViewer in Code mode */}
+      {/* Center panel: PlanViewer in Plan mode, FileTree + FileViewer in Code mode */}
       {viewMode === "code" ? (
-        <div className="relative flex flex-1 overflow-hidden">
-          {selectedFile ? (
-            <FileViewer
+        <div className="flex flex-1 overflow-hidden">
+          <div className="flex w-[240px] shrink-0 flex-col border-r border-border bg-card overflow-hidden">
+            <FileTree
               owner={repoOwner ?? ""}
               repo={repoName ?? ""}
-              path={selectedFile.path}
-              ref={branch}
-              onContentLoaded={handleFileContentLoaded}
+              branch={branch}
+              selectedFile={selectedFile?.path ?? undefined}
+              onFileSelect={(path, sha) => setSelectedFile({ path, sha })}
             />
-          ) : (
-            <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-              Select a file to view
-            </div>
-          )}
+          </div>
+          <div className="relative flex flex-1 overflow-hidden">
+            {selectedFile ? (
+              <FileViewer
+                owner={repoOwner ?? ""}
+                repo={repoName ?? ""}
+                path={selectedFile.path}
+                ref={branch}
+                onContentLoaded={handleFileContentLoaded}
+              />
+            ) : (
+              <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+                Select a file to view
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <PlanViewer
