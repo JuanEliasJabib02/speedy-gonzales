@@ -1,20 +1,29 @@
 import { FeatureCard } from "./FeatureCard"
-import type { Feature } from "../_constants/kanban-config"
+import type { Feature, FeatureStatus } from "../_constants/kanban-config"
 
 type KanbanColumnProps = {
+  status: FeatureStatus
   label: string
   colorClass: string
   features: Feature[]
   projectId: string
 }
 
-export function KanbanColumn({ label, colorClass, features, projectId }: KanbanColumnProps) {
+export function KanbanColumn({ status, label, colorClass, features, projectId }: KanbanColumnProps) {
+  const isReviewWithItems = status === "review" && features.length > 0
+
   return (
     <div className="flex min-w-[260px] flex-col rounded-lg bg-card/50 p-3">
       <div className="mb-3 flex items-center gap-2">
         <div className={`size-2 rounded-full ${colorClass}`} />
         <span className="text-sm font-medium">{label}</span>
-        <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+        <span
+          className={`rounded-md px-1.5 py-0.5 text-xs ${
+            isReviewWithItems
+              ? "bg-status-review/15 text-status-review font-semibold"
+              : "bg-muted text-muted-foreground"
+          }`}
+        >
           {features.length}
         </span>
       </div>

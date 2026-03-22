@@ -1,6 +1,6 @@
 # Review Awaiting Badge
 
-**Status:** in-progress
+**Status:** review
 **Priority:** low
 **Agent:** Charizard 🔥
 
@@ -12,10 +12,10 @@ Example: a subtle badge or banner like "3 features awaiting review" near the top
 
 ## Checklist
 
-- [ ] Count features with status `review`
-- [ ] If count > 0, show a badge or banner (location TBD — could be in ProjectHeader or above the board)
-- [ ] Use `text-status-review` color for visual consistency
-- [ ] Hide when count is 0
+- [x] Count features with status `review`
+- [x] If count > 0, show a highlighted badge on the Review column header
+- [x] Use `text-status-review` color for visual consistency
+- [x] Hide highlight when count is 0 (falls back to default muted badge)
 
 ## Files
 
