@@ -56,7 +56,7 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
 
   const activeFilter = STATUS_TABS.find((t) => t.key === activeTab)!
 
-  const regularTickets = tickets.filter((t) => t.title !== "_context")
+  const regularTickets = tickets.filter((t) => t.id !== "_context")
 
   const filteredTickets = regularTickets
     .filter((t) => activeFilter.match(t.status))
