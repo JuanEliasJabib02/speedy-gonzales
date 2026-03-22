@@ -1,6 +1,6 @@
 # Dependency Analysis + Queue Builder
 
-**Status:** todo
+**Status:** review
 **Priority:** high
 **Agent:** Charizard 🔥
 
@@ -21,12 +21,12 @@ Before dispatching tickets, Charizard analyzes which files each ticket is likely
 
 ## Checklist
 
-- [ ] Parse `## Files` section from ticket markdown — extract file paths
-- [ ] Infer likely files from title/description when `## Files` is missing (best effort, can be approximate)
-- [ ] Build dependency graph: map each ticket to its file set
-- [ ] Detect conflicts: any shared file between two tickets = sequential constraint
-- [ ] Build execution queue respecting constraints and priority ordering
-- [ ] Return the queue as an ordered list with parallel groups marked
+- [x] Parse `## Files` section from ticket markdown — extract file paths
+- [x] Infer likely files from title/description when `## Files` is missing (best effort, can be approximate)
+- [x] Build dependency graph: map each ticket to its file set
+- [x] Detect conflicts: any shared file between two tickets = sequential constraint
+- [x] Build execution queue respecting constraints and priority ordering
+- [x] Return the queue as an ordered list with parallel groups marked
 
 ## Files
 

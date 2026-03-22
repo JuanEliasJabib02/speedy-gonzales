@@ -1,6 +1,6 @@
 # Dispatch + Monitor + Crash Recovery
 
-**Status:** todo
+**Status:** review
 **Priority:** high
 **Agent:** Charizard 🔥
 
@@ -22,15 +22,15 @@ The core execution engine. Takes the ticket queue from the dependency analysis, 
 
 ## Checklist
 
-- [ ] Move ticket to in-progress before dispatch (edit .md → commit → push)
-- [ ] Build Perro's prompt: include ticket plan, project conventions, git identity
-- [ ] Spawn Claude Code via `exec` with `--permission-mode bypassPermissions --print`
-- [ ] Monitor with `process(action=poll)` — detect completion or crash
-- [ ] On success: verify ticket moved to review, trigger Convex sync
-- [ ] On failure: verify git revert happened, mark blocked, trigger sync
-- [ ] Crash recovery: relaunch up to 3 times, then block with "Perro crashed 3 times"
-- [ ] Respect `maxConcurrentPerFeature` and `maxConcurrentGlobal` limits
-- [ ] Notify Juan via Telegram on each ticket completion or block
+- [x] Move ticket to in-progress before dispatch (edit .md → commit → push)
+- [x] Build Perro's prompt: include ticket plan, project conventions, git identity
+- [x] Spawn Claude Code via `exec` with `--permission-mode bypassPermissions --print`
+- [x] Monitor with `process(action=poll)` — detect completion or crash
+- [x] On success: verify ticket moved to review, trigger Convex sync
+- [x] On failure: verify git revert happened, mark blocked, trigger sync
+- [x] Crash recovery: relaunch up to 3 times, then block with "Perro crashed 3 times"
+- [x] Respect `maxConcurrentPerFeature` and `maxConcurrentGlobal` limits
+- [x] Notify Juan via Telegram on each ticket completion or block
 
 ## Files
 

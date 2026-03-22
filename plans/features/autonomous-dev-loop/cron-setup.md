@@ -1,6 +1,6 @@
 # OpenClaw Cron Configuration
 
-**Status:** todo
+**Status:** review
 **Priority:** medium
 **Agent:** Charizard 🔥
 
@@ -20,11 +20,11 @@ Configure the OpenClaw cron jobs that trigger the autonomous loop and the daily 
 
 ## Checklist
 
-- [ ] Register loop cron: `openclaw cron add "*/30 * * * *" --label "autonomous-loop" --message "Run the autonomous dev loop"`
-- [ ] Register report cron: `openclaw cron add "0 13 * * *" --label "dev-loop-report" --message "Send the autonomous dev loop daily report"`
-- [ ] Verify crons appear in `openclaw cron list`
-- [ ] Test: manually trigger the loop cron and verify it fires the skill
-- [ ] Document the cron entries in TOOLS.md
+- [x] Register loop cron: `openclaw cron add "*/30 * * * *" --label "autonomous-loop" --message "Run the autonomous dev loop"`
+- [x] Register report cron: `openclaw cron add "0 13 * * *" --label "dev-loop-report" --message "Send the autonomous dev loop daily report"`
+- [x] Verify crons appear in `openclaw cron list`
+- [x] Test: manually trigger the loop cron and verify it fires the skill
+- [x] Document the cron entries in TOOLS.md
 
 ## Files
 
