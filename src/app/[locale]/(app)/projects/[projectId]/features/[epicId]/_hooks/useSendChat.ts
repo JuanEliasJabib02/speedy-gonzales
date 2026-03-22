@@ -300,7 +300,7 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
     setOptimisticMessage(content)
 
     try {
-      await sendMessage({ epicId: typedEpicId, content })
+      await sendMessage({ epicId: typedEpicId, content, tokenCount: Math.max(1, Math.round(content.length / 4)) })
       setOptimisticMessage(null)
       await streamResponse(content)
     } catch (error) {
@@ -325,7 +325,7 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
         setIsSending(true)
         setOptimisticMessage(queued)
         try {
-          await sendMessage({ epicId: typedEpicId, content: queued })
+          await sendMessage({ epicId: typedEpicId, content: queued, tokenCount: Math.max(1, Math.round(queued.length / 4)) })
           setOptimisticMessage(null)
           await streamResponse(queued)
         } catch (qError) {
@@ -414,7 +414,7 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
     setIsSending(true)
     setOptimisticMessage(content)
     try {
-      await sendMessage({ epicId: typedEpicId, content })
+      await sendMessage({ epicId: typedEpicId, content, tokenCount: Math.max(1, Math.round(content.length / 4)) })
       setOptimisticMessage(null)
       await streamResponse(content)
     } catch (error) {

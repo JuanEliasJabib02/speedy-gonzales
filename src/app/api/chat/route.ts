@@ -356,6 +356,10 @@ export async function POST(request: Request) {
                 if (parsed.usage?.total_tokens) {
                   totalTokens = parsed.usage.total_tokens
                 }
+                // Also accept prompt_tokens + completion_tokens separately
+                if (!totalTokens && parsed.usage?.prompt_tokens) {
+                  totalTokens = (parsed.usage.prompt_tokens ?? 0) + (parsed.usage.completion_tokens ?? 0)
+                }
               } catch {
                 // skip malformed
               }
@@ -379,11 +383,16 @@ export async function POST(request: Request) {
               ...(await enrichCommits(fullContent, context)),
               ...(actions ? { actions } : {}),
             }
+            // Fallback: estimate tokens from content length if backend didn't return usage
+            const estimatedTokens = totalTokens > 0
+              ? totalTokens
+              : Math.max(1, Math.round(cleanContent.length / 4))
+
             await convex.mutation(api.chat.finalizeStreamingMessage, {
               messageId: streamingMessageId,
               content: cleanContent || "",
               metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
-              tokenCount: totalTokens,
+              tokenCount: estimatedTokens,
             })
           } catch (saveError) {
             console.error("[chat] Failed to finalize message:", saveError)
