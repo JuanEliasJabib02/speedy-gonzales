@@ -1,6 +1,6 @@
 # Project Stats Query
 
-**Status:** in-progress
+**Status:** review
 **Priority:** high
 **Agent:** Charizard 🔥
 
@@ -12,10 +12,10 @@ The query joins projects → epics → tickets and returns counts per status (to
 
 ## Checklist
 
-- [ ] Create `getProjectStats` query in `convex/projects.ts` — takes `projectId`, returns `{ todo: number, inProgress: number, review: number, completed: number, blocked: number, total: number }`
-- [ ] Query must use indexes: `epics.by_project` → `tickets.by_epic`, then count by status in memory
-- [ ] Create `getProjectsWithStats` query that returns all user projects with their stats in a single query (avoids N+1 from dashboard calling getProjectStats per project)
-- [ ] Add return type to the query so the frontend gets typed data
+- [x] Create `getProjectStats` query in `convex/projects.ts` — takes `projectId`, returns `{ todo: number, inProgress: number, review: number, completed: number, blocked: number, total: number }`
+- [x] Query must use indexes: `epics.by_project` → `tickets.by_epic`, then count by status in memory
+- [x] Create `getProjectsWithStats` query that returns all user projects with their stats in a single query (avoids N+1 from dashboard calling getProjectStats per project)
+- [x] Add return type to the query so the frontend gets typed data
 
 ## Files
 
