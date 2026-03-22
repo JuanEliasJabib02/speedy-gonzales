@@ -151,6 +151,25 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
     bottomRef.current?.scrollIntoView({ behavior: "instant" })
   }, [])
 
+  // Auto-load earlier messages when scrolling to top
+  const topSentinelRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const sentinel = topSentinelRef.current
+    const root = scrollRef.current
+    if (!sentinel || !root) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && hasEarlier && !loadingEarlier) {
+          handleLoadEarlier()
+        }
+      },
+      { root },
+    )
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [hasEarlier, loadingEarlier, handleLoadEarlier])
+
   // Auto-scroll only when user is near the bottom
   const isStreaming = streamingContent !== null
   useEffect(() => {
@@ -226,6 +245,7 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
       </div>
       <div className="relative flex flex-1 flex-col overflow-hidden">
         <div ref={scrollRef} className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 scrollbar-thin">
+          <div ref={topSentinelRef} />
           {messages.length === 0 && streamingContent === null && optimisticMessage === null ? (
             <div className="flex flex-1 items-center justify-center">
               <span className="text-xs text-muted-foreground">No messages yet. Start the conversation.</span>
@@ -314,6 +334,7 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
               )}
             </>
           )}
+          <div ref={bottomRef} />
         </div>
         {showScrollButton && (
           <button
