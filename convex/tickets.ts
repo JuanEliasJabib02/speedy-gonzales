@@ -76,6 +76,26 @@ export const getTicketInternal = internalQuery({
   },
 })
 
+const PRIORITY_ORDER: Record<string, number> = {
+  critical: 0,
+  high: 1,
+  medium: 2,
+  low: 3,
+}
+
+export const getTodoTicketsByProject = internalQuery({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, { projectId }) => {
+    const tickets = await ctx.db
+      .query("tickets")
+      .withIndex("by_project", (q) => q.eq("projectId", projectId))
+      .collect()
+    return tickets
+      .filter((t) => t.status === "todo" && !t.isDeleted)
+      .sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 4) - (PRIORITY_ORDER[b.priority] ?? 4))
+  },
+})
+
 export const getByProjectInternal = internalQuery({
   args: { projectId: v.id("projects") },
   handler: async (ctx, { projectId }) => {

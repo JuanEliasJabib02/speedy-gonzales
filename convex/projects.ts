@@ -132,6 +132,16 @@ export const getProjectInternal = internalQuery({
   },
 })
 
+export const getActiveLoopProjects = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const allProjects = await ctx.db.query("projects").collect()
+    return allProjects.filter(
+      (p) => p.autonomousLoop === true && !!p.localPath
+    )
+  },
+})
+
 export const getByRepo = internalQuery({
   args: { owner: v.string(), name: v.string() },
   handler: async (ctx, { owner, name }) => {

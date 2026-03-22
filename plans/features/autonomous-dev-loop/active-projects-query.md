@@ -1,6 +1,6 @@
 # Active Projects Query
 
-**Status:** in-progress
+**Status:** review
 **Priority:** critical
 **Agent:** Charizard 🔥
 
@@ -10,9 +10,9 @@ Create a Convex query that returns all projects eligible for the autonomous loop
 
 ## Checklist
 
-- [ ] Create `getActiveLoopProjects` internalQuery in `convex/projects.ts` — returns projects where `autonomousLoop === true` and `localPath` is not undefined/empty
-- [ ] Create `getTodoTicketsByProject` internalQuery in `convex/tickets.ts` — returns tickets where `status === "todo"` for a given projectId, sorted by priority (critical → high → medium → low)
-- [ ] Add priority sort helper: map priority string to number for ordering (critical=0, high=1, medium=2, low=3)
+- [x] Create `getActiveLoopProjects` internalQuery in `convex/projects.ts` — returns projects where `autonomousLoop === true` and `localPath` is not undefined/empty
+- [x] Create `getTodoTicketsByProject` internalQuery in `convex/tickets.ts` — returns tickets where `status === "todo"` for a given projectId, sorted by priority (critical → high → medium → low)
+- [x] Add priority sort helper: map priority string to number for ordering (critical=0, high=1, medium=2, low=3)
 
 ## Files
 
