@@ -1,6 +1,6 @@
 # Command Palette — File Search (Cmd+P)
 
-**Status:** todo
+**Status:** review
 **Priority:** high
 
 ## Overview
@@ -11,32 +11,34 @@ When the user is in Code View, pressing Cmd+P (or Ctrl+P) opens a Command Palett
 
 - **Trigger:** Cmd+P / Ctrl+P when in Code View
 - **Opens:** Modal overlay with a fuzzy search input
-- **Data source:** File tree already loaded (no extra fetch needed)
-- **Search:** Fuzzy match on file path/name, highlights the match
+- **Data source:** File tree already loaded via `onFilesLoaded` callback (no extra fetch)
+- **Search:** `string.includes` fuzzy match on file path/name, highlights the match with yellow
 - **Select:** Enter or click → opens file in FileViewer
 - **Dismiss:** Esc or click outside
 
 ## Implementation
 
 ### Components
-- `CommandPalette.tsx` — modal with input + filtered file list
-- Fuzzy search: use `fuse.js` (already a common dep) or simple `string.includes` if no extra dep desired
-- Keyboard listener: capture Cmd+P / Ctrl+P, prevent browser default (print dialog)
+- `CommandPalette.tsx` ✅ — modal with input + filtered file list, keyboard nav (↑↓ Enter Esc)
+- `CodeView.tsx` ✅ — captures Cmd+P / Ctrl+P, prevents browser print dialog, manages `isPaletteOpen` state
+- `FileTree.tsx` ✅ — fires `onFilesLoaded(blobs)` when tree is fetched (used to populate palette)
 
 ### Integration
-- Mount in `CodeView` or `FeatureView` when `viewMode === "code"`
-- Pass file list from existing FileTree data
-- On file select → call same handler as FileTree click
+- Mounted directly in `CodeView` — always available in code view
+- File list sourced from `FileTree.onFilesLoaded` callback → stored in `files` state in CodeView
+- On file select → calls same `handleFileSelect` as FileTree click → opens in FileViewer
 
 ## Acceptance Criteria
 
-- [ ] Cmd+P opens palette in Code View
-- [ ] Ctrl+P works as well (Windows/Linux users)
-- [ ] Input auto-focused when palette opens
-- [ ] Fuzzy search filters files in real-time
-- [ ] File path shown with match highlighted
-- [ ] Enter selects top result and opens file
-- [ ] Esc closes palette
-- [ ] Click outside closes palette
-- [ ] Does not trigger browser print dialog
-- [ ] Works on both Mac and Windows keyboards
+- [x] Cmd+P opens palette in Code View
+- [x] Ctrl+P works as well (Windows/Linux users)
+- [x] Input auto-focused when palette opens
+- [x] Search filters files in real-time (string.includes, case-insensitive)
+- [x] File path shown with match highlighted (yellow bg)
+- [x] Enter selects active result and opens file
+- [x] ↑↓ navigate results
+- [x] Esc closes palette
+- [x] Click outside closes palette
+- [x] Does not trigger browser print dialog
+- [x] Max 8 results shown at once
+- [x] Footer hint shows keyboard shortcuts

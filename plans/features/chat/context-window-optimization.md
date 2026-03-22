@@ -5,25 +5,23 @@
 
 ## Overview
 
-Optimize token usage in each chat request to avoid hitting context limits and reduce cost. Currently every request sends ~1000 tokens of static instructions + up to 20 full messages with no length cap.
+Optimize token usage in each chat request to avoid hitting context limits and reduce cost.
 
-## Problems
+## What's built (from commit a41dfcd)
 
-- Static instructions (Plan File Format, ticket creation guide, Structured Actions examples) repeated on every request (~800-1000 tokens wasted)
-- History: `messages.slice(-20)` with no per-message length cap — long code/response messages bloat context fast
-- Ticket content sent for all tickets including `completed` ones (irrelevant)
-- Active file (code view) injected with no size limit
+- History window reduced: 20 → 12 messages
+- Per-message truncation: messages capped at ~600 chars with `[...truncated]` suffix
+- Static instructions condensed in system message
+- Active file injection capped at 3000 chars
+- Completed tickets filtered to title+status only (non-completed tickets get full content)
 
-## Tasks
+## Remaining / to validate
 
-- [ ] Truncate history messages to max ~600 chars each, append `[...truncated]` if exceeded
-- [ ] Reduce history window from 20 to 12 messages
-- [ ] Condense static instructions block to ~1/3 current size (model already knows markdown/JSON)
-- [ ] Only include full content for tickets in `todo`, `in-progress`, `review` — completed tickets: title + status only
-- [ ] Cap active file injection to 3000 chars max
-- [ ] Add token budget comment in `route.ts` so future devs understand the budget
+- [ ] Verify `route.ts` has token budget comment for future devs
+- [ ] Measure actual token reduction vs previous baseline
+- [ ] Confirm completed ticket filtering is working correctly in production
 
-## Files to touch
+## Files touched
 
 - `app/api/chat/route.ts` — system message construction + history slice
-- `hooks/useSendChat.ts` — where history is assembled before sending
+- `hooks/useSendChat.ts` — history assembly before sending
