@@ -42,7 +42,7 @@ export default function ChatMemoryDocsPage() {
             { icon: FolderTree, label: "Epic plan", desc: "The full _context.md with overview, status, and dependencies" },
             { icon: Database, label: "Ticket state", desc: "All tickets with their status, priority, and content (truncated)" },
             { icon: RefreshCw, label: "Project info", desc: "Repository, branch, owner — so the agent knows where to push" },
-            { icon: MessageSquare, label: "Chat history", desc: "Last 20 messages — the agent remembers previous conversations" },
+            { icon: MessageSquare, label: "Chat history", desc: "Last 12 messages — the agent remembers the recent conversation window" },
           ].map((item) => (
             <div key={item.label} className="flex items-start gap-3 rounded-md bg-muted/50 px-4 py-3">
               <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary/10">
@@ -81,8 +81,8 @@ export default function ChatMemoryDocsPage() {
         <h2 className="text-xl font-semibold">Persistence across sessions</h2>
         <p className="leading-relaxed text-muted-foreground">
           Chat history is stored in a Convex <code className="rounded bg-muted px-1.5 py-0.5 text-sm">chat_messages</code> table,
-          scoped per epic. When you return to a feature days later, the agent sees the full conversation
-          history. Combined with the always-fresh plan data from auto-sync, the agent never loses context.
+          scoped per epic. When you return to a feature days later, the agent sees the last 12 messages
+          as its active history window, combined with the always-fresh plan data from auto-sync.
         </p>
       </section>
 
