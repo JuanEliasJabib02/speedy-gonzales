@@ -12,6 +12,7 @@ export const epics = defineTable({
   checklistTotal: v.number(),
   checklistCompleted: v.number(),
   ticketCount: v.number(),
+  completedTicketCount: v.optional(v.number()),
   sortOrder: v.number(),
   isDeleted: v.boolean(),
 })

@@ -12,23 +12,10 @@ export const getByProject = query({
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect()
     const activeEpics = epics.filter((e) => !e.isDeleted)
-
-    // Enrich with completed ticket count for progress calculation
-    const enriched = await Promise.all(
-      activeEpics.map(async (epic) => {
-        const tickets = await ctx.db
-          .query("tickets")
-          .withIndex("by_epic", (q) => q.eq("epicId", epic._id))
-          .collect()
-        const activeTickets = tickets.filter((t) => !t.isDeleted)
-        const completedTickets = activeTickets.filter((t) => t.status === "completed" || t.status === "review")
-        return {
-          ...epic,
-          completedTicketCount: completedTickets.length,
-        }
-      }),
-    )
-    return enriched
+    return activeEpics.map((epic) => ({
+      ...epic,
+      completedTicketCount: epic.completedTicketCount ?? 0,
+    }))
   },
 })
 

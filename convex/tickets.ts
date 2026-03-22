@@ -37,21 +37,25 @@ export const updateStatus = mutation({
       newStatus: status,
     })
 
-    // Auto-promote epic to review when all tickets are completed
-    if (status === "completed") {
-      const ticket = await ctx.db.get(ticketId)
-      if (ticket) {
-        const allTickets = await ctx.db
-          .query("tickets")
-          .withIndex("by_epic", (q) => q.eq("epicId", ticket.epicId))
-          .collect()
-        const activeTickets = allTickets.filter((t) => !t.isDeleted)
+    // Update denormalized completed ticket count + auto-promote epic
+    const ticket = await ctx.db.get(ticketId)
+    if (ticket) {
+      const allTickets = await ctx.db
+        .query("tickets")
+        .withIndex("by_epic", (q) => q.eq("epicId", ticket.epicId))
+        .collect()
+      const activeTickets = allTickets.filter((t) => !t.isDeleted)
+      const completedCount = activeTickets.filter((t) => t.status === "completed" || t.status === "review").length
+
+      const epicPatch: Record<string, unknown> = { completedTicketCount: completedCount }
+
+      // Auto-promote epic to review when all tickets are completed
+      if (status === "completed") {
         const allCompleted = activeTickets.every((t) => t.status === "completed")
         if (allCompleted && activeTickets.length > 0) {
           const epic = await ctx.db.get(ticket.epicId)
           if (epic && epic.status !== "review" && epic.status !== "completed") {
-            await ctx.db.patch(ticket.epicId, { status: "review" })
-            // Push epic status change to GitHub
+            epicPatch.status = "review"
             await ctx.scheduler.runAfter(0, internal.githubSync.pushEpicStatusToGitHub, {
               epicId: ticket.epicId,
               newStatus: "review",
@@ -59,6 +63,8 @@ export const updateStatus = mutation({
           }
         }
       }
+
+      await ctx.db.patch(ticket.epicId, epicPatch)
     }
   },
 })
