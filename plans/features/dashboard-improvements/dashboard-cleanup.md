@@ -1,6 +1,6 @@
 # Dashboard Cleanup
 
-**Status:** todo
+**Status:** review
 **Priority:** medium
 **Agent:** Charizard 🔥
 
@@ -12,11 +12,11 @@ Removes dead code and refactors the dashboard page to follow the project's archi
 
 ## Checklist
 
-- [ ] Delete `src/app/[locale]/(app)/dashboard/_constants/mock-data.ts`
-- [ ] Delete the `_constants/` directory if empty after removal
-- [ ] Create `src/app/[locale]/(app)/dashboard/_hooks/useDashboard.ts` — composer hook that wraps `useQuery(api.projects.getProjectsWithStats)` (from ticket project-stats-query) and `useState` for dialog state
-- [ ] Update `page.tsx` to use `useDashboard()` instead of inline hooks — page should only compose hooks + components
-- [ ] Ensure no imports reference the deleted mock-data file anywhere in the codebase
+- [x] Delete `src/app/[locale]/(app)/dashboard/_constants/mock-data.ts`
+- [x] Delete the `_constants/` directory if empty after removal
+- [x] Create `src/app/[locale]/(app)/dashboard/_hooks/useDashboard.ts` — composer hook that wraps `useQuery(api.projects.getProjectsWithStats)` (from ticket project-stats-query) and `useState` for dialog state
+- [x] Update `page.tsx` to use `useDashboard()` instead of inline hooks — page should only compose hooks + components
+- [x] Ensure no imports reference the deleted mock-data file anywhere in the codebase
 
 ## Files
 
