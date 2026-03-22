@@ -1,6 +1,6 @@
 # Loop Schema Fields
 
-**Status:** in-progress
+**Status:** review
 **Priority:** critical
 **Agent:** Charizard 🔥
 
@@ -10,12 +10,12 @@ Add the autonomous loop configuration fields to the projects schema in Convex so
 
 ## Checklist
 
-- [ ] Add `autonomousLoop: v.optional(v.boolean())` to `convex/schema/projects.ts`
-- [ ] Add `localPath: v.optional(v.string())` to `convex/schema/projects.ts`
-- [ ] Add `slackChannel: v.optional(v.string())` to `convex/schema/projects.ts`
-- [ ] Add `loopStatus: v.optional(v.string())` to `convex/schema/projects.ts` — values: "idle" | "running" | "error"
-- [ ] Add `lastLoopAt: v.optional(v.number())` to `convex/schema/projects.ts`
-- [ ] Update `createProject` mutation defaults: `autonomousLoop: false`, `loopStatus: "idle"`
+- [x] Add `autonomousLoop: v.optional(v.boolean())` to `convex/schema/projects.ts`
+- [x] Add `localPath: v.optional(v.string())` to `convex/schema/projects.ts`
+- [x] Add `slackChannel: v.optional(v.string())` to `convex/schema/projects.ts`
+- [x] Add `loopStatus: v.optional(v.string())` to `convex/schema/projects.ts` — values: "idle" | "running" | "error"
+- [x] Add `lastLoopAt: v.optional(v.number())` to `convex/schema/projects.ts`
+- [x] Update `createProject` mutation defaults: `autonomousLoop: false`, `loopStatus: "idle"`
 
 ## Files
 

@@ -22,6 +22,11 @@ export const projects = defineTable({
   agentCurrentFeature: v.optional(v.string()),
   maxConcurrentPerFeature: v.optional(v.number()), // default: 3
   maxConcurrentGlobal: v.optional(v.number()), // default: 5
+  autonomousLoop: v.optional(v.boolean()), // opt-in to autonomous dev loop
+  localPath: v.optional(v.string()), // absolute path to local repo clone
+  slackChannel: v.optional(v.string()), // Slack channel for loop notifications
+  loopStatus: v.optional(v.string()), // "idle" | "running" | "error"
+  lastLoopAt: v.optional(v.number()), // timestamp of last loop execution
   createdAt: v.number(),
   updatedAt: v.number(),
 })

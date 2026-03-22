@@ -50,6 +50,8 @@ export const createProject = mutation({
       branch: args.branch ?? "main",
       gitProvider: "github",
       syncStatus: "idle",
+      autonomousLoop: false,
+      loopStatus: "idle",
       agentName: "Charizard",
       agentEmoji: "🔥",
       agentStatus: "idle",
