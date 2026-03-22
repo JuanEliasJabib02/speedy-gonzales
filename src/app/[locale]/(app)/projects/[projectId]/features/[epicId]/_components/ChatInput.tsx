@@ -121,7 +121,7 @@ export function ChatInput({
     if (mentionQuery === null) return []
     const q = mentionQuery.toLowerCase()
     return ticketOptions.filter(
-      (t) => t.slug.toLowerCase().includes(q) || t.title.toLowerCase().includes(q),
+      (t) => t.title.toLowerCase().includes(q) || t.slug.toLowerCase().includes(q),
     ).slice(0, 8)
   }, [mentionQuery, ticketOptions])
 
@@ -319,8 +319,8 @@ export function ChatInput({
               }}
             >
               <Hash className="size-3 shrink-0 text-muted-foreground" />
-              <span className="truncate font-medium">{ticket.slug}</span>
-              <span className="truncate text-xs text-muted-foreground">{ticket.title}</span>
+              <span className="truncate font-medium">{ticket.title}</span>
+              <span className="truncate text-xs text-muted-foreground font-mono">#{ticket.slug}</span>
             </button>
           ))}
         </div>
