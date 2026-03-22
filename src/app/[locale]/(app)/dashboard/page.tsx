@@ -1,16 +1,13 @@
 "use client"
 
-import { useState } from "react"
-import { useQuery } from "convex/react"
-import { api } from "@/convex/_generated/api"
 import { DashboardHeader } from "./_components/DashboardHeader"
 import { ProjectCard } from "./_components/ProjectCard"
 import { CreateProjectDialog } from "./_components/CreateProjectDialog"
 import { EmptyState } from "./_components/EmptyState"
+import { useDashboard } from "./_hooks/useDashboard"
 
 export default function DashboardPage() {
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const projects = useQuery(api.projects.getProjects)
+  const { projects, dialogOpen, setDialogOpen } = useDashboard()
 
   if (projects === undefined) {
     return (

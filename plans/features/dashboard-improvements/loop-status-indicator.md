@@ -1,6 +1,6 @@
 # Loop and Agent Status Indicator
 
-**Status:** todo
+**Status:** review
 **Priority:** high
 **Agent:** Charizard 🔥
 
@@ -15,11 +15,11 @@ This ticket adds a compact status row to ProjectCard showing:
 
 ## Checklist
 
-- [ ] Update `ProjectCard.tsx` — add a status row below the existing repo/sync info
-- [ ] Show loop status: green dot + "Loop active" when `autonomousLoop === true`, muted "Loop off" otherwise
-- [ ] Show agent badge: `{agentEmoji} {agentName}` with status text from `agentStatus`. If `agentCurrentFeature` is set, show it
-- [ ] Show last sync time: relative format ("2 min ago", "1 hour ago") using `lastSyncAt`. Use a small helper function, no external date library
-- [ ] All styles use design system tokens (CSS variables, Tailwind utilities, no hardcoded colors)
+- [x] Update `ProjectCard.tsx` — add a status row below the existing repo/sync info
+- [x] Show loop status: green dot + "Loop active" when `autonomousLoop === true`, muted "Loop off" otherwise
+- [x] Show agent badge: `{agentEmoji} {agentName}` with status text from `agentStatus`. If `agentCurrentFeature` is set, show it
+- [x] Show last sync time: relative format ("2 min ago", "1 hour ago") using `lastSyncAt`. Use a small helper function, no external date library
+- [x] All styles use design system tokens (CSS variables, Tailwind utilities, no hardcoded colors)
 
 ## Files
 

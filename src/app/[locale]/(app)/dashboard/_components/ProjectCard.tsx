@@ -2,6 +2,7 @@
 
 import { Link } from "@/src/i18n/routing"
 import type { Doc } from "@/convex/_generated/dataModel"
+import { formatRelativeTime } from "../_helpers/formatRelativeTime"
 
 type ProjectCardProps = {
   project: Doc<"projects">
@@ -24,6 +25,33 @@ export function ProjectCard({ project }: ProjectCardProps) {
           )}
           {project.syncStatus === "error" && (
             <span className="text-xs text-status-blocked">Sync error</span>
+          )}
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          {project.autonomousLoop ? (
+            <span className="flex items-center gap-1">
+              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+              Loop active
+            </span>
+          ) : (
+            <span className="flex items-center gap-1">
+              <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/40" />
+              Loop off
+            </span>
+          )}
+
+          {project.agentName && (
+            <span>
+              {project.agentEmoji} {project.agentName}
+              {project.agentStatus && project.agentStatus !== "idle" && (
+                <> — {project.agentCurrentFeature ?? project.agentStatus}</>
+              )}
+            </span>
+          )}
+
+          {project.lastSyncAt && (
+            <span>Synced {formatRelativeTime(project.lastSyncAt)}</span>
           )}
         </div>
       </div>

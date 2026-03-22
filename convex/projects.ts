@@ -164,3 +164,94 @@ export const getByRepo = internalQuery({
       .first()
   },
 })
+
+export const getProjectStats = query({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, { projectId }): Promise<{
+    todo: number
+    inProgress: number
+    review: number
+    completed: number
+    blocked: number
+    total: number
+  }> => {
+    const userId = await requireAuth(ctx)
+    const project = await ctx.db.get(projectId)
+    if (!project || project.userId !== userId) return throwError(ErrorCodes.NOT_FOUND)
+
+    const epics = await ctx.db
+      .query("epics")
+      .withIndex("by_project", (q) => q.eq("projectId", projectId))
+      .collect()
+
+    const counts = { todo: 0, inProgress: 0, review: 0, completed: 0, blocked: 0, total: 0 }
+
+    for (const epic of epics) {
+      if (epic.isDeleted) continue
+      const tickets = await ctx.db
+        .query("tickets")
+        .withIndex("by_epic", (q) => q.eq("epicId", epic._id))
+        .collect()
+
+      for (const ticket of tickets) {
+        if (ticket.isDeleted) continue
+        counts.total++
+        switch (ticket.status) {
+          case "todo": counts.todo++; break
+          case "in-progress": counts.inProgress++; break
+          case "review": counts.review++; break
+          case "completed": counts.completed++; break
+          case "blocked": counts.blocked++; break
+        }
+      }
+    }
+
+    return counts
+  },
+})
+
+export const getProjectsWithStats = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await requireAuth(ctx)
+    const projects = await ctx.db
+      .query("projects")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect()
+
+    const results = await Promise.all(
+      projects.map(async (project) => {
+        const epics = await ctx.db
+          .query("epics")
+          .withIndex("by_project", (q) => q.eq("projectId", project._id))
+          .collect()
+
+        const counts = { todo: 0, inProgress: 0, review: 0, completed: 0, blocked: 0, total: 0 }
+
+        for (const epic of epics) {
+          if (epic.isDeleted) continue
+          const tickets = await ctx.db
+            .query("tickets")
+            .withIndex("by_epic", (q) => q.eq("epicId", epic._id))
+            .collect()
+
+          for (const ticket of tickets) {
+            if (ticket.isDeleted) continue
+            counts.total++
+            switch (ticket.status) {
+              case "todo": counts.todo++; break
+              case "in-progress": counts.inProgress++; break
+              case "review": counts.review++; break
+              case "completed": counts.completed++; break
+              case "blocked": counts.blocked++; break
+            }
+          }
+        }
+
+        return { ...project, stats: counts }
+      })
+    )
+
+    return results
+  },
+})
