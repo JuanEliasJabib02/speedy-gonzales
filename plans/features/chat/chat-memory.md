@@ -1,53 +1,31 @@
 # Chat Memory (Cross-Session Context)
 
-**Status:** review
+**Status:** completed
 **Priority:** medium
 
 ## What it does
 
-The agent remembers context from past conversations — not just the last 20 messages in the current session, but key decisions, preferences, and context from previous sessions on the same feature.
+The agent (Charizard) remembers context from past conversations across sessions — not just the current window, but key decisions, preferences, and context built up over time on the same project.
 
-## Current behavior
+## How it works (implemented)
 
-Each chat session sends the last 20 messages as history. When the user comes back days later, that history is gone — the agent starts fresh (though it can see the plan files).
-
-## Two approaches
-
-### Option A — Convex-based summary (recommended for MVP)
-After each session ends (or every N messages), generate a short summary of key decisions and save it as `metadata.summary` on the epic in Convex. Inject this summary at the start of the system prompt.
+Uses **Option B — OpenClaw native memory**. Each time Charizard chats via Speedy, it reads and writes to a per-project memory file on the VPS:
 
 ```
-## Previous session context
-- Decided to use Tailwind for styling (2026-03-15)
-- Rejected Redux in favor of Convex reactive queries
-- Auth will use magic link (no passwords)
+~/.openclaw/workspace/memory/speedy-{projectId}.md
 ```
 
-### Option B — OpenClaw native memory
-OpenClaw already has a `MEMORY.md` system. When Charizard chats via Speedy, it could read/write to a per-project memory file on the VPS. This requires no Convex changes but ties memory to the VPS filesystem.
+The system prompt in `route.ts` tells Charizard to consult and update this file. No Convex changes needed. Zero infrastructure overhead.
+
+This is not a separate feature — it's a core capability of the super-chat. Memory persists across page reloads, browser sessions, and days between conversations.
 
 ## Checklist
 
-### Option A (Convex summary)
-- [ ] Add `sessionSummary` field to epics table in Convex schema
-- [ ] After N messages or on session end, call an API route to generate summary
-- [ ] Summary generation: POST to OpenClaw with recent messages → ask for bullet-point summary
-- [ ] Store summary in Convex `epics.sessionSummary`
-- [ ] Inject summary into system prompt in route.ts (before tickets context)
-- [ ] UI: show "Memory" indicator in chat header when summary exists
-
-### Option B (OpenClaw MEMORY.md)
 - [x] Create per-project memory file: `~/.openclaw/workspace/memory/speedy-{projectId}.md`
 - [x] Update system prompt to tell Charizard to read/update this file
 - [x] No Convex changes needed
 
-## Recommendation
-
-Start with Option B — zero infrastructure, leverages existing OpenClaw memory system.
-Upgrade to Option A later when you want memory visible/editable in the Speedy UI.
-
 ## Files
 
-- `src/app/api/chat/route.ts` — inject memory into system prompt
-- `convex/schema.ts` — (Option A only) add sessionSummary field
-- `convex/epics.ts` — (Option A only) mutation to update summary
+- `src/app/api/chat/route.ts` — injects memory context into system prompt
+- `~/.openclaw/workspace/memory/speedy-speedy-gonzales.md` — active memory file for this project
