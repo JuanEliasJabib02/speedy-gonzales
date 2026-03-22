@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback, useRef, useEffect } from "react"
-import { useQuery, useMutation } from "convex/react"
+import { useQuery, useMutation, usePaginatedQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import type { PendingImage, ChatContext, HistoryMessage } from "@/src/types/chat"
@@ -74,7 +74,8 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
   const [hasQueued, setHasQueued] = useState(false)
   const [queueLength, setQueueLength] = useState(0)
   const [optimisticMessage, setOptimisticMessage] = useState<string | null>(null)
-  const [showAll, setShowAll] = useState(false)
+
+  const INITIAL_PAGE_SIZE = 20
 
   const typedEpicId = epicId as Id<"epics">
   const typedProjectId = projectId as Id<"projects">
@@ -82,13 +83,22 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
   const project = useQuery(api.projects.getProject, { projectId: typedProjectId })
   const epic = useQuery(api.epics.getEpic, { epicId: typedEpicId })
   const tickets = useQuery(api.tickets.getByEpic, { epicId: typedEpicId })
-  const recentMessages = useQuery(api.chat.getRecentMessages, !showAll ? { epicId: typedEpicId } : "skip")
-  const allMessages = useQuery(api.chat.getMessages, showAll ? { epicId: typedEpicId } : "skip")
-  const messages = showAll ? allMessages : recentMessages
-  const totalCount = useQuery(api.chat.getMessageCount, { epicId: typedEpicId })
-  const hasEarlier = !showAll && totalCount !== undefined && (totalCount > (messages?.length ?? 0))
-  const loadEarlier = () => setShowAll(true)
-  const loadingEarlier = showAll && !allMessages
+
+  const {
+    results: paginatedMessages,
+    status: paginationStatus,
+    loadMore,
+  } = usePaginatedQuery(
+    api.chat.getMessagesPaginated,
+    { epicId: typedEpicId },
+    { initialNumItems: INITIAL_PAGE_SIZE }
+  )
+
+  // Messages come in desc order (newest first), reverse for display
+  const messages = [...(paginatedMessages ?? [])].reverse()
+  const hasEarlier = paginationStatus === "CanLoadMore"
+  const loadEarlier = () => loadMore(20)
+  const loadingEarlier = paginationStatus === "LoadingMore"
   const sendMessage = useMutation(api.chat.sendMessage)
   const deleteMessage = useMutation(api.chat.deleteMessage)
   const markInterrupted = useMutation(api.chat.markMessageInterrupted)
@@ -441,7 +451,7 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
     handleKeyDown,
     hasQueued,
     queueLength,
-    messages: (messages ?? []).filter((m) => m.isStreaming !== true),
+    messages: messages.filter((m) => m.isStreaming !== true),
     epic,
     tickets: tickets ?? [],
     optimisticMessage,
