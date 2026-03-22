@@ -1,6 +1,6 @@
 # Project Stats Query
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** high
 **Agent:** Charizard 🔥
 
