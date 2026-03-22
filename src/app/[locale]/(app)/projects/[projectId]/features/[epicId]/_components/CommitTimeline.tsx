@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
-import { GitCommitHorizontal, RefreshCw, ChevronDown, Plus, Minus, Code2, Loader2, GitBranch } from "lucide-react"
+import { useState, useMemo } from "react"
+import { GitCommitHorizontal, RefreshCw, ChevronDown, Plus, Minus, Code2, Loader2, GitBranch, Tag } from "lucide-react"
 import { cn } from "@/src/lib/helpers/cn"
 import { CommitDiffPanel } from "./CommitDiffPanel"
+import { matchCommitToTickets } from "../_helpers/matchCommitToTickets"
 import type { BranchCommit } from "@/src/app/api/branch-commits/route"
 
 function timeAgo(dateStr: string): string {
@@ -17,11 +18,22 @@ function timeAgo(dateStr: string): string {
   return `${days}d ago`
 }
 
+function TicketPill({ title }: { title: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-medium">
+      <Tag className="size-2.5" />
+      {title}
+    </span>
+  )
+}
+
 function CommitCard({
   commit,
+  linkedTickets,
   onViewDiff,
 }: {
   commit: BranchCommit
+  linkedTickets: { id: string; title: string }[]
   onViewDiff: (sha: string) => void
 }) {
   return (
@@ -44,6 +56,14 @@ function CommitCard({
             </div>
           </div>
         </div>
+
+        {linkedTickets.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {linkedTickets.map((t) => (
+              <TicketPill key={t.id} title={t.title} />
+            ))}
+          </div>
+        )}
 
         {(commit.additions > 0 || commit.deletions > 0) && (
           <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
@@ -106,11 +126,18 @@ export function CommitTimeline({
 }: CommitTimelineProps) {
   const [diffTarget, setDiffTarget] = useState<string | null>(null)
 
+  const commitTicketMap = useMemo(() => {
+    const map = new Map<string, { id: string; title: string }[]>()
+    for (const commit of commits) {
+      map.set(commit.sha, matchCommitToTickets(commit.message, tickets))
+    }
+    return map
+  }, [commits, tickets])
+
   const filteredCommits = ticketFilter
     ? commits.filter((c) => {
-        const msg = c.message.toLowerCase()
-        const slug = ticketFilter.toLowerCase()
-        return msg.includes(slug)
+        const linked = commitTicketMap.get(c.sha) ?? []
+        return linked.some((t) => t.title === ticketFilter)
       })
     : commits
 
@@ -184,6 +211,7 @@ export function CommitTimeline({
               <CommitCard
                 key={commit.sha}
                 commit={commit}
+                linkedTickets={commitTicketMap.get(commit.sha) ?? []}
                 onViewDiff={setDiffTarget}
               />
             ))}

@@ -1,6 +1,6 @@
 # Commit-Ticket Linking
 
-**Status:** in-progress
+**Status:** review
 **Priority:** medium
 
 ## What it does
@@ -9,8 +9,8 @@ Automatically link commits to their tickets based on commit message patterns. Wh
 
 ## Checklist
 
-- [ ] Parse commit messages for ticket references (e.g. `feat(plans): create ticket dark-mode` → links to `dark-mode.md`)
-- [ ] Match commit message keywords to ticket slugs in the feature
-- [ ] In CommitTimeline: show ticket pill/badge on each commit card
-- [ ] In PlanViewer: show linked commits section below the plan content (already partially built in ticket-commit-history)
-- [ ] Store commit-ticket links in Convex for fast queries
+- [x] Parse commit messages for ticket references (e.g. `feat(plans): create ticket dark-mode` → links to `dark-mode.md`)
+- [x] Match commit message keywords to ticket slugs in the feature
+- [x] In CommitTimeline: show ticket pill/badge on each commit card
+- [x] In PlanViewer: show linked commits section below the plan content (already built in CommitsSection)
+- [x] Store commit-ticket links in Convex for fast queries (commits field on tickets schema, populated during sync)
