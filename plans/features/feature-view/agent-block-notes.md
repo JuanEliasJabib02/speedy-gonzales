@@ -1,6 +1,6 @@
 # Agent Block Notes
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** medium
 
 ## What it does
