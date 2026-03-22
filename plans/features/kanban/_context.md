@@ -33,9 +33,11 @@ When you click a project from the dashboard, you see a kanban board of features 
 
 ## Still needs
 
-- [ ] Start/Stop buttons on feature cards (replace drag-and-drop)
-- [ ] Agent indicator in project header (name + emoji + current status)
-- [ ] Concurrency config (per-feature + global limits)
+- [x] Start/Stop buttons on feature cards
+- [x] Agent indicator in project header
+- [x] Concurrency config (per-feature + global limits)
+- [ ] Rename mock-data.ts to kanban-config.ts
+- [ ] Review awaiting badge (count of features in review)
 
 ## Depends on
 
