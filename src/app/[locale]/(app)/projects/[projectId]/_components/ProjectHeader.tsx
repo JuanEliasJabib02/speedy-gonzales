@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { AlertTriangle, ArrowLeft, CheckCircle2, ExternalLink, Github, RefreshCw } from "lucide-react"
+import { AlertTriangle, ArrowLeft, Bot, CheckCircle2, ExternalLink, Github, RefreshCw } from "lucide-react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
@@ -88,23 +88,27 @@ export function ProjectHeader({
           <ArrowLeft className="size-4" />
         </Button>
         <h1 className="text-2xl font-semibold">{projectName}</h1>
-        {agentName && (
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <span className="text-muted-foreground/40">·</span>
-            <span className={cn(agentStatus === "working" && "animate-pulse")}>
-              {agentEmoji}
-            </span>
-            <span>{agentName}</span>
-            <span className="text-muted-foreground/40">·</span>
-            {agentStatus === "working" && agentCurrentFeature ? (
-              <span className="text-status-in-progress">
-                working on {agentCurrentFeature}
+        <div className="flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/30 px-2.5 py-1 text-sm">
+          <Bot className="size-3.5 text-muted-foreground" />
+          {agentName ? (
+            <>
+              <span className={cn(agentStatus === "working" && "animate-pulse")}>
+                {agentEmoji}
               </span>
-            ) : (
-              <span className="text-muted-foreground/60">idle</span>
-            )}
-          </div>
-        )}
+              <span className="font-medium">{agentName}</span>
+              {agentStatus === "working" && agentCurrentFeature && (
+                <>
+                  <span className="text-muted-foreground/40">·</span>
+                  <span className="text-status-in-progress">
+                    {agentCurrentFeature}
+                  </span>
+                </>
+              )}
+            </>
+          ) : (
+            <span className="text-muted-foreground/60">No agent</span>
+          )}
+        </div>
         <div className="ml-auto flex items-center gap-2">
           <Button
             variant={showCompleted ? "secondary" : "ghost"}
