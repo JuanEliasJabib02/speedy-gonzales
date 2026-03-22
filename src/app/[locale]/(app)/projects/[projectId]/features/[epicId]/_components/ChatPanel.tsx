@@ -145,11 +145,15 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
     URL.revokeObjectURL(url)
   }, [messages, epic])
 
-  // Scroll to bottom on mount
+  // Scroll to bottom on initial load (once messages arrive from Convex)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const hasScrolledInitialRef = useRef(false)
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "instant" })
-  }, [])
+    if (!hasScrolledInitialRef.current && messages.length > 0) {
+      hasScrolledInitialRef.current = true
+      bottomRef.current?.scrollIntoView({ behavior: "instant" })
+    }
+  }, [messages.length])
 
   // Auto-load earlier messages when scrolling to top
   const topSentinelRef = useRef<HTMLDivElement>(null)
@@ -339,10 +343,10 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
         {showScrollButton && (
           <button
             onClick={scrollToBottom}
-            className="absolute bottom-20 right-4 z-10 flex size-8 items-center justify-center rounded-full bg-background/80 shadow-md ring-1 ring-border/50 backdrop-blur-sm transition-opacity hover:bg-background"
+            className="absolute bottom-20 right-4 z-10 flex size-10 items-center justify-center rounded-full bg-background/80 shadow-md ring-1 ring-border/50 backdrop-blur-sm transition-opacity hover:bg-background"
             aria-label="Scroll to bottom"
           >
-            <ChevronDown className="size-4 text-muted-foreground" />
+            <ChevronDown className="size-5 text-muted-foreground" />
           </button>
         )}
         <ChatInput
