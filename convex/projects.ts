@@ -50,6 +50,11 @@ export const createProject = mutation({
       branch: args.branch ?? "main",
       gitProvider: "github",
       syncStatus: "idle",
+      agentName: "Charizard",
+      agentEmoji: "🔥",
+      agentStatus: "idle",
+      maxConcurrentPerFeature: 3,
+      maxConcurrentGlobal: 5,
       createdAt: now,
       updatedAt: now,
     })
