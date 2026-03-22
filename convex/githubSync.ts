@@ -1,6 +1,7 @@
 import { v } from "convex/values"
-import { action, internalAction, internalMutation } from "./_generated/server"
+import { action, mutation, internalAction, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
+import { requireAuth } from "./helpers"
 import type { Id } from "./_generated/dataModel"
 import { getGitProvider } from "./model/providers"
 import { groupFilesIntoEpics } from "./model/groupFiles"
@@ -10,6 +11,16 @@ import type { GitProviderConfig, GitProviderType } from "./model/gitProvider"
 export const syncProject = action({
   args: { projectId: v.id("projects") },
   handler: async (ctx, { projectId }) => {
+    await ctx.scheduler.runAfter(0, internal.githubSync.syncRepoInternal, { projectId })
+  },
+})
+
+// Force-reset a stuck sync and re-trigger
+export const forceResync = mutation({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, { projectId }) => {
+    await requireAuth(ctx)
+    await ctx.db.patch(projectId, { syncStatus: "idle", updatedAt: Date.now() })
     await ctx.scheduler.runAfter(0, internal.githubSync.syncRepoInternal, { projectId })
   },
 })
