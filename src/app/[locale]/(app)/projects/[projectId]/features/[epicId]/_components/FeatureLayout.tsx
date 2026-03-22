@@ -1,6 +1,9 @@
 "use client"
 
 import { useState, useCallback, useRef, useEffect } from "react"
+import { ArrowLeft, FileText } from "lucide-react"
+import { useRouter } from "@/src/i18n/routing"
+import { Button } from "@/src/lib/components/ui/button"
 import { TicketSidebar } from "./TicketSidebar"
 import { PlanViewer } from "./PlanViewer"
 import { ChatPanel } from "./ChatPanel"
@@ -49,6 +52,7 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
   // Context bridge: track the active file being viewed
   const [activeFile, setActiveFile] = useState<ActiveFile | null>(null)
 
+  const router = useRouter()
   const isDragging = useRef(false)
   const sendDirectRef = useRef<((message: string) => void) | null>(null)
 
@@ -112,52 +116,80 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
 
   return (
     <div className="flex h-full">
-      {/* Left panel: TicketSidebar always visible */}
-      <TicketSidebar
-        epicTitle={epic.title}
-        branch="main"
-        tickets={epic.tickets}
-        selectedId={effectiveId}
-        onSelect={setSelectedTicketId}
-        projectId={projectId}
-        epicId={epicId}
-        lastSyncAt={lastSyncAt}
-        syncStatus={syncStatus}
-        overviewContent={overviewData.content}
-        overviewStatus={epic.status}
-        overviewPriority={epic.priority}
-        onCreateTicket={handleCreateTicket}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-      />
+      {/* Left panel: TicketSidebar in Plan mode, slim header in Code mode */}
+      {viewMode === "plan" ? (
+        <TicketSidebar
+          epicTitle={epic.title}
+          branch="main"
+          tickets={epic.tickets}
+          selectedId={effectiveId}
+          onSelect={setSelectedTicketId}
+          projectId={projectId}
+          epicId={epicId}
+          lastSyncAt={lastSyncAt}
+          syncStatus={syncStatus}
+          overviewContent={overviewData.content}
+          overviewStatus={epic.status}
+          overviewPriority={epic.priority}
+          onCreateTicket={handleCreateTicket}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
+      ) : (
+        /* Code mode: slim top bar with back + title + toggle */
+        <div className="flex w-[240px] shrink-0 flex-col border-r border-border bg-card overflow-hidden">
+          <div className="flex items-center gap-2 px-3 py-3 border-b border-border">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 shrink-0"
+              onClick={() => router.push(`/projects/${projectId}`)}
+            >
+              <ArrowLeft className="size-4" />
+            </Button>
+            <FileText className="size-4 text-muted-foreground shrink-0" />
+            <span className="text-sm font-semibold truncate flex-1">{epic.title}</span>
+            <div className="flex items-center rounded-md border border-border bg-muted/50 p-0.5">
+              <button
+                onClick={() => setViewMode("plan")}
+                className="rounded px-2 py-0.5 text-[11px] font-medium transition-all text-muted-foreground hover:text-foreground"
+              >
+                Plan
+              </button>
+              <button
+                onClick={() => setViewMode("code")}
+                className="rounded px-2 py-0.5 text-[11px] font-medium transition-all bg-background text-foreground shadow-sm"
+              >
+                Code
+              </button>
+            </div>
+          </div>
+          <FileTree
+            owner={repoOwner ?? ""}
+            repo={repoName ?? ""}
+            branch={branch}
+            selectedFile={selectedFile?.path ?? undefined}
+            onFileSelect={(path, sha) => setSelectedFile({ path, sha })}
+          />
+        </div>
+      )}
 
-      {/* Center panel: PlanViewer in Plan mode, FileTree + FileViewer in Code mode */}
+      {/* Center panel: PlanViewer in Plan mode, FileViewer in Code mode */}
       {viewMode === "code" ? (
-        <div className="flex flex-1 overflow-hidden">
-          <div className="flex w-[240px] shrink-0 flex-col border-r border-border bg-card overflow-hidden">
-            <FileTree
+        <div className="relative flex flex-1 overflow-hidden">
+          {selectedFile ? (
+            <FileViewer
               owner={repoOwner ?? ""}
               repo={repoName ?? ""}
-              branch={branch}
-              selectedFile={selectedFile?.path ?? undefined}
-              onFileSelect={(path, sha) => setSelectedFile({ path, sha })}
+              path={selectedFile.path}
+              ref={branch}
+              onContentLoaded={handleFileContentLoaded}
             />
-          </div>
-          <div className="relative flex flex-1 overflow-hidden">
-            {selectedFile ? (
-              <FileViewer
-                owner={repoOwner ?? ""}
-                repo={repoName ?? ""}
-                path={selectedFile.path}
-                ref={branch}
-                onContentLoaded={handleFileContentLoaded}
-              />
-            ) : (
-              <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-                Select a file to view
-              </div>
-            )}
-          </div>
+          ) : (
+            <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+              Select a file to view
+            </div>
+          )}
         </div>
       ) : (
         <PlanViewer
