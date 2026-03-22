@@ -86,6 +86,7 @@ export const syncRepoInternal = internalAction({
           content: string
           parsed: ReturnType<typeof parsePlan>
           commits: string[]
+          agentName?: string
         }>
       }
 
@@ -143,8 +144,10 @@ export const syncRepoInternal = internalAction({
                 body: existingTicket.content,
                 checklistTotal: existingTicket.checklistTotal,
                 checklistCompleted: existingTicket.checklistCompleted,
+                agentName: existingTicket.agentName,
               },
               commits: existingTicket.commits ?? [],
+              agentName: existingTicket.agentName,
             })
           } else {
             const content = await provider.fetchFileContent(config, ticketFile.path)
@@ -157,6 +160,7 @@ export const syncRepoInternal = internalAction({
               content,
               parsed,
               commits,
+              agentName: parsed.agentName,
             })
           }
           ticketOrder++
@@ -191,6 +195,7 @@ export const syncRepoInternal = internalAction({
             checklistCompleted: t.parsed.checklistCompleted,
             commits: t.commits,
             sortOrder: j,
+            agentName: t.agentName,
           })),
         })),
       })
@@ -239,6 +244,7 @@ export const upsertPlans = internalMutation({
             checklistCompleted: v.number(),
             commits: v.array(v.string()),
             sortOrder: v.number(),
+            agentName: v.optional(v.string()),
           }),
         ),
       }),
@@ -326,6 +332,8 @@ export const upsertPlans = internalMutation({
               commits: ticketData.commits.length > 0 ? ticketData.commits : undefined,
               sortOrder: ticketData.sortOrder,
               isDeleted: false,
+              updatedAt: Date.now(),
+              agentName: ticketData.agentName,
             })
           }
         } else {
@@ -343,6 +351,8 @@ export const upsertPlans = internalMutation({
             commits: ticketData.commits.length > 0 ? ticketData.commits : undefined,
             sortOrder: ticketData.sortOrder,
             isDeleted: false,
+            updatedAt: Date.now(),
+            agentName: ticketData.agentName,
           })
         }
       }

@@ -16,6 +16,8 @@ type Ticket = {
   title: string
   status: string
   blockedReason?: string
+  updatedAt?: number
+  agentName?: string
 }
 
 type TicketSidebarProps = {
@@ -60,18 +62,14 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
   const contextTicket = tickets.find((t) => t.title === "_context")
   const regularTickets = tickets.filter((t) => t.title !== "_context")
 
-  const STATUS_ORDER: Record<string, number> = {
-    "blocked": 0,
-    "review": 1,
-    "in-progress": 2,
-    "todo": 3,
-    "completed": 4,
-  }
-
   const filteredTickets = regularTickets
     .filter((t) => activeFilter.match(t.status))
     .filter((t) => !search || t.title.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => (STATUS_ORDER[a.status] ?? 5) - (STATUS_ORDER[b.status] ?? 5))
+    .sort((a, b) => {
+      const aTime = a.updatedAt ?? 0
+      const bTime = b.updatedAt ?? 0
+      return bTime - aTime
+    })
 
   const counts = STATUS_TABS.reduce(
     (acc, tab) => {

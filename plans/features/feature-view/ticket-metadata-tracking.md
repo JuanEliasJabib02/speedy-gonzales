@@ -1,7 +1,8 @@
 # Ticket Metadata Tracking (updatedAt + agentName)
 
-**Status:** todo
+**Status:** completed
 **Priority:** high
+**Agent:** Charizard 🔥
 
 ## What it does
 
@@ -77,13 +78,13 @@ This ensures Juan can always see in real-time what's being worked on. A ticket s
 
 ## Checklist
 
-- [ ] Add `updatedAt` and `agentName` to tickets schema
-- [ ] Add `by_epic_updated` index
-- [ ] Update webhook sync to set `updatedAt` on every upsert
-- [ ] Map git commit email → agent name in sync logic
-- [ ] Update ticket sidebar query to sort by `updatedAt` desc
-- [ ] Show "updated X ago" on ticket cards
-- [ ] Show agent emoji + name on ticket cards
+- [x] Add `updatedAt` and `agentName` to tickets schema
+- [x] Add `by_epic_updated` index
+- [x] Update webhook sync to set `updatedAt` on every upsert
+- [x] Map git commit email → agent name in sync logic
+- [x] Update ticket sidebar query to sort by `updatedAt` desc
+- [x] Show "updated X ago" on ticket cards
+- [x] Show agent emoji + name on ticket cards
 
 ## Files
 
