@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useEffect, useMemo, useCallback, useState } from "react"
-import { Download, ChevronDown } from "lucide-react"
+import { Download, ChevronDown, Info } from "lucide-react"
 import { ChatMessage } from "./ChatMessage"
 import { ChatInput } from "./ChatInput"
 import { ContextSummaryCard } from "./ContextSummaryCard"
@@ -183,6 +183,15 @@ export function ChatPanel({ width, projectId, epicId, onSendDirectReady, viewMod
               <span className="text-xs text-muted-foreground">
                 {formatTokens(totalTokens)} / {formatTokens(MAX_TOKENS)} tokens
               </span>
+              <a
+                href="https://github.com/JuanEliasJabib02/speedy-gonzales/blob/main/docs/context-window.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="How does the context window work?"
+                className="text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+              >
+                <Info className="size-3" />
+              </a>
             </div>
           )}
           <Button
