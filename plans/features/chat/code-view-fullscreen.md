@@ -1,6 +1,6 @@
 # Code View Fullscreen Layout
 
-**Status:** in-progress
+**Status:** completed
 **Priority:** high
 
 ## Overview
