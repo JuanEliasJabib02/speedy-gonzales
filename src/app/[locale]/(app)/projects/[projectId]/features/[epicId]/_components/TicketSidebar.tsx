@@ -9,6 +9,7 @@ import { TicketItem } from "./TicketItem"
 import { RoadmapModal } from "./RoadmapModal"
 import { OverviewModal } from "./OverviewModal"
 import { NewTicketModal } from "./NewTicketModal"
+import type { ViewMode } from "./FeatureLayout"
 
 type Ticket = {
   id: string
@@ -31,6 +32,8 @@ type TicketSidebarProps = {
   overviewStatus?: string
   overviewPriority?: string
   onCreateTicket?: (message: string) => void
+  viewMode: ViewMode
+  onViewModeChange: (mode: ViewMode) => void
 }
 
 const STATUS_TABS = [
@@ -44,7 +47,7 @@ const STATUS_TABS = [
 
 type TabKey = (typeof STATUS_TABS)[number]["key"]
 
-export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId, epicId, lastSyncAt, syncStatus, overviewContent, overviewStatus, overviewPriority, onCreateTicket }: TicketSidebarProps) {
+export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId, epicId, lastSyncAt, syncStatus, overviewContent, overviewStatus, overviewPriority, onCreateTicket, viewMode, onViewModeChange }: TicketSidebarProps) {
   const isSyncing = syncStatus === "syncing"
   const syncAgo = lastSyncAt ? Math.floor((Date.now() - lastSyncAt) / 1000) : null
   const syncLabel = syncAgo === null ? null : syncAgo < 60 ? `${syncAgo}s ago` : syncAgo < 3600 ? `${Math.floor(syncAgo / 60)}m ago` : `${Math.floor(syncAgo / 3600)}h ago`
@@ -90,7 +93,29 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
           <ArrowLeft className="size-4" />
         </Button>
         <FileText className="size-4 text-muted-foreground" />
-        <span className="text-sm font-semibold">{epicTitle}</span>
+        <span className="text-sm font-semibold truncate">{epicTitle}</span>
+        <div className="ml-auto flex items-center rounded-md border border-border bg-muted/50 p-0.5">
+          <button
+            onClick={() => onViewModeChange("chat")}
+            className={`rounded px-2 py-0.5 text-[11px] font-medium transition-all ${
+              viewMode === "chat"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Plan
+          </button>
+          <button
+            onClick={() => onViewModeChange("code")}
+            className={`rounded px-2 py-0.5 text-[11px] font-medium transition-all ${
+              viewMode === "code"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Code
+          </button>
+        </div>
       </div>
       <div className="flex items-center justify-between px-4 pb-3">
         <div className="flex items-center gap-1.5 min-w-0">
