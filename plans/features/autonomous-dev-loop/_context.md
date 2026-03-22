@@ -1,6 +1,6 @@
 # Autonomous Dev Loop
 
-**Status:** planned
+**Status:** todo
 **Priority:** critical
 
 ## Overview
