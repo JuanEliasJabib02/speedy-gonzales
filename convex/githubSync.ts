@@ -25,6 +25,19 @@ export const forceResync = mutation({
   },
 })
 
+export const syncAllProjects = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    const projects = await ctx.runQuery(internal.projects.getAllActiveProjects)
+    console.log(`[cron-sync] Found ${projects.length} active projects`)
+
+    for (const project of projects) {
+      await ctx.scheduler.runAfter(0, internal.githubSync.syncRepoInternal, { projectId: project._id })
+      console.log(`[cron-sync] Scheduled sync for ${project.repoOwner}/${project.repoName}`)
+    }
+  },
+})
+
 export const syncRepoInternal = internalAction({
   args: { projectId: v.id("projects") },
   handler: async (ctx, { projectId }) => {

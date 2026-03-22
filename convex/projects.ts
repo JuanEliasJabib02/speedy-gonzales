@@ -148,6 +148,13 @@ export const getActiveLoopProjects = internalQuery({
   },
 })
 
+export const getAllActiveProjects = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    return ctx.db.query("projects").collect()
+  },
+})
+
 export const getByRepo = internalQuery({
   args: { owner: v.string(), name: v.string() },
   handler: async (ctx, { owner, name }) => {
