@@ -1,6 +1,6 @@
 # Chat Input Persistence
 
-**Status:** review
+**Status:** completed
 **Priority:** medium
 
 ## What it does

@@ -1,6 +1,6 @@
 # Chat Bug Fixes (BUG-01, BUG-02, BUG-08, LEAK-01, PERF-03, PERF-05)
 
-**Status:** review
+**Status:** completed
 **Priority:** high
 
 ## Bugs to fix

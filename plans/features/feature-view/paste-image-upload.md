@@ -1,6 +1,6 @@
 # Paste Image Upload (Ctrl+V Screenshots)
 
-**Status:** review
+**Status:** todo
 **Priority:** high
 
 ## What it does

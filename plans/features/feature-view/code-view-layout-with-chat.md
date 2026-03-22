@@ -1,6 +1,6 @@
 # Code View Layout With Chat
 
-**Status:** review
+**Status:** completed
 **Priority:** high
 
 ## Overview

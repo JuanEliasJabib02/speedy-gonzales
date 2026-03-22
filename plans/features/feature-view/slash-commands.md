@@ -1,6 +1,6 @@
 # Slash Commands
 
-**Status:** review
+**Status:** completed
 **Priority:** medium
 
 ## What it does

@@ -1,6 +1,6 @@
 # Scroll to Bottom Button
 
-**Status:** review
+**Status:** completed
 **Priority:** medium
 
 ## Overview

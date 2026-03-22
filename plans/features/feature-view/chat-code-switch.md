@@ -1,6 +1,6 @@
 # Chat ↔ Code Switch
 
-**Status:** review
+**Status:** completed
 **Priority:** medium
 
 ## What it does

@@ -1,6 +1,6 @@
 # Overview as Modal (not PlanViewer)
 
-**Status:** review
+**Status:** completed
 **Priority:** high
 
 ## Problem

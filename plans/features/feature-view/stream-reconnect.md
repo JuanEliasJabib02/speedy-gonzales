@@ -1,6 +1,6 @@
 # Stream Reconnect on Page Reload
 
-**Status:** review
+**Status:** completed
 **Priority:** high
 
 ## Bug Description

@@ -1,6 +1,6 @@
 # Chat Context Summary Card on Entry
 
-**Status:** review
+**Status:** todo
 **Priority:** medium
 
 ## What it does

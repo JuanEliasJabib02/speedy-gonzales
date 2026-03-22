@@ -1,6 +1,6 @@
 # Render Clickable Links in Chat Messages
 
-**Status:** review
+**Status:** completed
 **Priority:** medium
 
 ## What it does

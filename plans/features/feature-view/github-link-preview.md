@@ -1,6 +1,6 @@
 # GitHub Link Preview in Chat
 
-**Status:** review
+**Status:** completed
 **Priority:** medium
 
 ## What it does
