@@ -407,7 +407,7 @@ export async function POST(request: Request) {
               ...(actions ? { actions } : {}),
             }
             // Fallback: estimate tokens from content length if backend didn't return usage
-            const estimatedTokens = totalTokens > 0
+            const estimatedTokens = (totalTokens ?? 0) > 0
               ? totalTokens
               : Math.max(1, Math.round(cleanContent.length / 4))
 

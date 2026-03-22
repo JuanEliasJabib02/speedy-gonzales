@@ -6,6 +6,7 @@ import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import type { PendingImage, ChatContext, HistoryMessage } from "@/src/types/chat"
 import type { ActiveFile } from "../_components/FeatureLayout"
+import { useChatStreamStore } from "@/src/store/chatStreamStore"
 
 const DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000 // 24 hours
 const MAX_IMAGES = 4
@@ -52,9 +53,15 @@ function clearDraft(epicId: string) {
 export function useSendChat(projectId: string, epicId: string, activeFile: ActiveFile | null = null) {
   const [value, setValue] = useState(() => loadDraft(epicId))
   const [isSending, setIsSending] = useState(false)
-  const [streamingContent, setStreamingContent] = useState<string | null>(null)
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([])
   const pendingImagesRef = useRef<PendingImage[]>([])
+
+  // Streaming state lives in Zustand (survives navigation)
+  const storeEpicId = useChatStreamStore((s) => s.epicId)
+  const storeIsStreaming = useChatStreamStore((s) => s.isStreaming)
+  const storeContent = useChatStreamStore((s) => s.streamingContent)
+  const streamingContent = storeEpicId === epicId && storeIsStreaming ? storeContent : null
+
   // Debounced draft persistence
   const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
@@ -67,7 +74,6 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
     }
   }, [value, epicId])
 
-  const abortControllerRef = useRef<AbortController | null>(null)
   const streamingContentRef = useRef<string>("")
   const streamingMessageIdRef = useRef<string | null>(null)
   const queuedMessageRef = useRef<string | null>(null)
@@ -115,13 +121,16 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
   }, [])
 
   // On mount: check for orphaned streaming messages left by a previous page load
+  // Skip if the store says a stream is still active for this epic
   const hasCheckedOrphansRef = useRef(false)
   useEffect(() => {
     if (!messages || hasCheckedOrphansRef.current) return
     hasCheckedOrphansRef.current = true
+    const { epicId: storeEpicId, isStreaming: storeIsStreaming } = useChatStreamStore.getState()
+    if (storeEpicId === epicId && storeIsStreaming) return
     const orphans = messages.filter((m) => m.isStreaming === true)
     orphans.forEach((o) => markInterrupted({ messageId: o._id }))
-  }, [messages, markInterrupted])
+  }, [messages, markInterrupted, epicId])
 
   const handlePasteImage = useCallback(async (file: File) => {
     if (pendingImagesRef.current.length >= MAX_IMAGES) return
@@ -232,9 +241,8 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
     const history = buildHistory()
     const enrichedMessage = enrichWithMentions(content)
 
-    setStreamingContent("")
     const controller = new AbortController()
-    abortControllerRef.current = controller
+    useChatStreamStore.getState().startStream(epicId, controller)
 
     const res = await fetch("/api/chat", {
       method: "POST",
@@ -253,7 +261,7 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
     if (!res.ok || !res.body) {
       const errorText = await res.text().catch(() => "No body")
       console.error("Chat API error:", res.status, errorText)
-      setStreamingContent(null)
+      useChatStreamStore.getState().reset()
       return
     }
 
@@ -262,7 +270,6 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
 
     const reader = res.body.getReader()
     const decoder = new TextDecoder()
-    let accumulated = ""
     streamingContentRef.current = ""
 
     while (true) {
@@ -270,9 +277,8 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
       if (done) break
 
       const text = decoder.decode(chunk, { stream: true })
-      accumulated += text
-      streamingContentRef.current = accumulated
-      setStreamingContent(accumulated)
+      streamingContentRef.current += text
+      useChatStreamStore.getState().appendChunk(text)
     }
   }, [epicId, projectId, buildContext, buildHistory, enrichWithMentions, activeFile])
 
@@ -320,9 +326,8 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
         console.error("Failed to send message:", error)
       }
     } finally {
-      abortControllerRef.current = null
+      useChatStreamStore.getState().reset()
       streamingMessageIdRef.current = null
-      setStreamingContent(null)
       setOptimisticMessage(null)
       setIsSending(false)
 
@@ -343,9 +348,8 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
             console.error("Failed to send queued message:", qError)
           }
         } finally {
-          abortControllerRef.current = null
+          useChatStreamStore.getState().reset()
           streamingMessageIdRef.current = null
-          setStreamingContent(null)
           setOptimisticMessage(null)
           setIsSending(false)
         }
@@ -378,18 +382,14 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
         console.error("Failed to retry message:", error)
       }
     } finally {
-      abortControllerRef.current = null
+      useChatStreamStore.getState().reset()
       streamingMessageIdRef.current = null
-      setStreamingContent(null)
       setIsSending(false)
     }
   }, [isSending, messages, deleteMessage, streamResponse])
 
   const handleStop = useCallback(async () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort()
-      abortControllerRef.current = null
-    }
+    useChatStreamStore.getState().stopStreaming()
     // Mark the server-created message as interrupted (server error handler also does this — idempotent)
     const messageId = streamingMessageIdRef.current
     if (messageId) {
@@ -432,9 +432,8 @@ export function useSendChat(projectId: string, epicId: string, activeFile: Activ
         console.error("Failed to send message:", error)
       }
     } finally {
-      abortControllerRef.current = null
+      useChatStreamStore.getState().reset()
       streamingMessageIdRef.current = null
-      setStreamingContent(null)
       setOptimisticMessage(null)
       setIsSending(false)
     }
