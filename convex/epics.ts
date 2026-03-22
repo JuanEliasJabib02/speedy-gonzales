@@ -46,6 +46,7 @@ const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   todo: ["in-progress"],
   blocked: ["in-progress"],
   "in-progress": ["todo"],
+  review: ["completed"],
 }
 
 export const updateStatus = mutation({

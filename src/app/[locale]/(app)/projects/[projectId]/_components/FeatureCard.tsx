@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Play, Square, Loader2 } from "lucide-react"
+import { Check, Play, Square, Loader2 } from "lucide-react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
@@ -27,6 +27,7 @@ export function FeatureCard({ feature, projectId }: FeatureCardProps) {
 
   const showStart = feature.status === "todo" || feature.status === "blocked"
   const showStop = feature.status === "in-progress"
+  const showApprove = feature.status === "review"
 
   const handleStatusChange = async (
     e: React.MouseEvent,
@@ -77,6 +78,21 @@ export function FeatureCard({ feature, projectId }: FeatureCardProps) {
                 <Loader2 className="size-3.5 animate-spin" />
               ) : (
                 <Square className="size-3.5" />
+              )}
+            </Button>
+          )}
+          {showApprove && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 shrink-0 text-status-completed hover:bg-status-completed/15"
+              disabled={isUpdating}
+              onClick={(e) => handleStatusChange(e, "completed")}
+            >
+              {isUpdating ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Check className="size-3.5" />
               )}
             </Button>
           )}
