@@ -1,6 +1,6 @@
 # Chat Streaming Persistence (Zustand Global Store)
 
-**Status:** todo
+**Status:** review
 **Priority:** high
 
 ## Problem
@@ -78,15 +78,15 @@ Any state that must survive navigation goes to Zustand. Component state is only 
 
 ## Checklist
 
-- [ ] Install zustand
-- [ ] Create `store/chatStreamStore.ts`
-- [ ] Refactor `useSendChat` — replace local streaming state with store
-- [ ] Refactor `ChatPanel` — read streaming state from store
-- [ ] Orphan cleanup: skip if store says stream is active for this epic
-- [ ] Stop button wired to `store.stopStreaming()`
+- [x] Install zustand
+- [x] Create `store/chatStreamStore.ts`
+- [x] Refactor `useSendChat` — replace local streaming state with store
+- [x] Refactor `ChatPanel` — read streaming state from store
+- [x] Orphan cleanup: skip if store says stream is active for this epic
+- [x] Stop button wired to `store.stopStreaming()`
 - [ ] Test: navigate away mid-stream, return, content is still rendering
 - [ ] Test: stop button still works after navigation
-- [ ] Add rule in `.cursor/rules/` or `RULES.md`: global streaming state goes to Zustand
+- [x] Add rule in `.cursor/rules/` or `RULES.md`: global streaming state goes to Zustand (already existed at `.claude/rules/global-ui-state.md`)
 
 ## Files to touch
 
