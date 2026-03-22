@@ -1,6 +1,6 @@
 # Loop Status Indicator
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** low
 **Agent:** Charizard 🔥
 
