@@ -89,4 +89,52 @@ function getAllChangedPaths(payload: {
   return Array.from(paths)
 }
 
+// Autonomous loop endpoint — returns active projects + todo tickets
+http.route({
+  path: "/autonomous-loop/status",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    // Simple API key auth
+    const authHeader = request.headers.get("authorization")
+    const expectedKey = process.env.LOOP_API_KEY
+    if (expectedKey && authHeader !== `Bearer ${expectedKey}`) {
+      return new Response("Unauthorized", { status: 401 })
+    }
+
+    const projects = await ctx.runQuery(internal.projects.getActiveLoopProjects, {})
+
+    const result = await Promise.all(
+      projects.map(async (project) => {
+        const todoTickets = await ctx.runQuery(internal.tickets.getTodoTicketsByProject, {
+          projectId: project._id,
+        })
+        return {
+          projectId: project._id,
+          name: project.name,
+          localPath: project.localPath,
+          repoOwner: project.repoOwner,
+          repoName: project.repoName,
+          branch: project.branch,
+          maxConcurrentPerFeature: project.maxConcurrentPerFeature ?? 3,
+          maxConcurrentGlobal: project.maxConcurrentGlobal ?? 5,
+          notificationEnabled: project.notificationEnabled ?? true,
+          todoTickets: todoTickets.map((t) => ({
+            id: t._id,
+            title: t.title,
+            path: t.path,
+            epicId: t.epicId,
+            priority: t.priority,
+            content: t.content,
+          })),
+        }
+      })
+    )
+
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    })
+  }),
+})
+
 export default http
