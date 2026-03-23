@@ -1,6 +1,6 @@
 # Security: Ownership Checks
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** critical
 
 ## Overview

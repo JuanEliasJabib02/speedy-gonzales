@@ -1,6 +1,6 @@
 # Add Ownership Check to Ticket Mutations
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** critical
 **Agent:** Perro salchicha 🌭
 
