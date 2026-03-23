@@ -219,7 +219,7 @@ export function PlanViewer({ title, status, priority, content, checklist, ticket
   const [marking, setMarking] = useState(false)
   const [diffTarget, setDiffTarget] = useState<string | null>(null)
 
-  const handleStatusChange = (newStatus: "todo" | "in-progress" | "review" | "completed" | "blocked") => {
+  const handleStatusChange = (newStatus: "backlog" | "todo" | "in-progress" | "review" | "completed" | "blocked") => {
     if (!ticketId) return
     if (newStatus === "blocked") {
       setReasonText("")
