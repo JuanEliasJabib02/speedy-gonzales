@@ -1,16 +1,20 @@
 import { v } from "convex/values"
-import { action, mutation, internalAction, internalMutation } from "./_generated/server"
+import { mutation, internalAction, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
 import { requireAuth } from "./helpers"
+import { throwError, ErrorCodes } from "./errors"
 import type { Id } from "./_generated/dataModel"
 import { getGitProvider } from "./model/providers"
 import { groupFilesIntoEpics } from "./model/groupFiles"
 import { parsePlan, parseCommits } from "./model/parsePlan"
 import type { GitProviderConfig, GitProviderType } from "./model/gitProvider"
 
-export const syncProject = action({
+export const syncProject = mutation({
   args: { projectId: v.id("projects") },
   handler: async (ctx, { projectId }) => {
+    const userId = await requireAuth(ctx)
+    const project = await ctx.db.get(projectId)
+    if (!project || project.userId !== userId) return throwError(ErrorCodes.FORBIDDEN)
     await ctx.scheduler.runAfter(0, internal.githubSync.syncRepoInternal, { projectId })
   },
 })

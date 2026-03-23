@@ -1,6 +1,6 @@
 # Add Auth + Ownership Check to syncProject
 
-**Status:** in-progress
+**Status:** review
 **Priority:** critical
 **Agent:** Perro salchicha 🌭
 
@@ -10,10 +10,10 @@ The `syncProject` action currently allows any authenticated user to trigger a sy
 
 ## Checklist
 
-- [ ] Add `requireAuth` call to `syncProject` action
-- [ ] Fetch the project and verify `project.userId === userId`
-- [ ] Throw `ConvexError` with code `FORBIDDEN` if the user doesn't own the project
-- [ ] Ensure internal sync calls (`syncRepoInternal`) remain unaffected — they bypass auth by design
+- [x] Add `requireAuth` call to `syncProject` action
+- [x] Fetch the project and verify `project.userId === userId`
+- [x] Throw `ConvexError` with code `FORBIDDEN` if the user doesn't own the project
+- [x] Ensure internal sync calls (`syncRepoInternal`) remain unaffected — they bypass auth by design
 
 ## Files
 
