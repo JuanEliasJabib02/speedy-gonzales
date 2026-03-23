@@ -7,13 +7,7 @@ import { api } from "@/convex/_generated/api"
 import { Link } from "@/src/i18n/routing"
 import { Button } from "@/src/lib/components/ui/button"
 import type { Feature } from "../_constants/kanban-config"
-
-const PRIORITY_STYLES: Record<string, string> = {
-  low: "bg-muted text-muted-foreground",
-  medium: "bg-status-in-progress/15 text-status-in-progress",
-  high: "bg-status-review/15 text-status-review",
-  critical: "bg-status-blocked/15 text-status-blocked",
-}
+import { PRIORITY_STYLES } from "@/src/lib/constants/status-styles"
 
 type FeatureCardProps = {
   feature: Feature

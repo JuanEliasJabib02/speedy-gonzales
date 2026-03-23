@@ -6,6 +6,7 @@ import { v } from "convex/values"
 
 // ── Shared union validators ──────────────────────────────────────────
 export const statusValidator = v.union(
+  v.literal("backlog"),
   v.literal("todo"),
   v.literal("in-progress"),
   v.literal("review"),
@@ -44,7 +45,7 @@ export const loopStatusValidator = v.union(
 )
 
 // Arrays for runtime validation (used by parsePlan, etc.)
-export const VALID_STATUSES = ["todo", "in-progress", "review", "completed", "blocked"] as const
+export const VALID_STATUSES = ["backlog", "todo", "in-progress", "review", "completed", "blocked"] as const
 export const VALID_PRIORITIES = ["low", "medium", "high", "critical"] as const
 
 // TypeScript types derived from the arrays

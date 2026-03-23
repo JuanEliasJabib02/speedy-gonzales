@@ -18,14 +18,8 @@ import {
 } from "@/src/lib/components/ui/popover"
 import { Button } from "@/src/lib/components/ui/button"
 import { Input } from "@/src/lib/components/ui/input"
-
-const STATUS_COLORS: Record<string, string> = {
-  "blocked": "bg-status-blocked",
-  "todo": "bg-status-todo",
-  "in-progress": "bg-status-in-progress",
-  "review": "bg-status-review",
-  "completed": "bg-status-completed",
-}
+import { STATUS_DOT } from "@/src/lib/constants/status-styles"
+import { timeAgo } from "@/src/lib/helpers/timeAgo"
 
 const STATUS_OPTIONS = [
   { value: "todo", label: "Todo" },
@@ -34,17 +28,6 @@ const STATUS_OPTIONS = [
   { value: "review", label: "Review" },
   { value: "completed", label: "Done" },
 ] as const
-
-function formatTimeAgo(timestamp: number): string {
-  const seconds = Math.floor((Date.now() - timestamp) / 1000)
-  if (seconds < 60) return `${seconds}s ago`
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  return `${days}d ago`
-}
 
 type TicketItemProps = {
   ticket: { id: string; title: string; status: string; blockedReason?: string; updatedAt?: number; agentName?: string }
@@ -97,7 +80,7 @@ export function TicketItem({ ticket, isActive, onClick }: TicketItemProps) {
               type="button"
               className="shrink-0 flex items-center justify-center w-[44px] h-[44px] rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 hover:bg-muted/50 transition-colors"
             >
-              <div className={cn("size-2.5 rounded-full", STATUS_COLORS[ticket.status] ?? "bg-status-todo")} />
+              <div className={cn("size-2.5 rounded-full", STATUS_DOT[ticket.status] ?? "bg-status-todo")} />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="min-w-[140px]" onClick={(e) => e.stopPropagation()}>
@@ -107,7 +90,7 @@ export function TicketItem({ ticket, isActive, onClick }: TicketItemProps) {
                 onClick={() => handleStatusChange(option.value)}
                 className="gap-2 text-xs"
               >
-                <div className={cn("size-2 rounded-full", STATUS_COLORS[option.value])} />
+                <div className={cn("size-2 rounded-full", STATUS_DOT[option.value])} />
                 {option.label}
               </DropdownMenuItem>
             ))}
@@ -150,7 +133,7 @@ export function TicketItem({ ticket, isActive, onClick }: TicketItemProps) {
         </span>
         {(ticket.agentName || ticket.updatedAt) && (
           <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-            {ticket.updatedAt && <span className="shrink-0">{formatTimeAgo(ticket.updatedAt)}</span>}
+            {ticket.updatedAt && <span className="shrink-0">{timeAgo(ticket.updatedAt)}</span>}
           </div>
         )}
       </div>

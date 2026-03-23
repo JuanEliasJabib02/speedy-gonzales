@@ -1,6 +1,6 @@
 # Unify pushStatusToGitHub Functions
 
-**Status:** in-progress
+**Status:** review
 **Priority:** medium
 **Agent:** Perro salchicha 🌭
 
@@ -10,12 +10,15 @@
 
 ## Checklist
 
-- [ ] Create `pushStatusToGitHub(ctx, { projectId, filePath, newStatus, commitMessage })` helper
-- [ ] Refactor `pushTicketStatusToGitHub` to use the shared helper
-- [ ] Refactor `pushEpicStatusToGitHub` to use the shared helper
-- [ ] Replace deprecated `btoa(unescape(encodeURIComponent(...)))` with `TextEncoder` + proper base64 encoding
-- [ ] Replace deprecated `atob` decoding with `TextDecoder` approach
+- [x] Create `pushStatusToGitHub(ctx, { projectId, filePath, newStatus, commitMessage })` helper
+- [x] Refactor `pushTicketStatusToGitHub` to use the shared helper
+- [x] Refactor `pushEpicStatusToGitHub` to use the shared helper
+- [x] Replace deprecated `btoa(unescape(encodeURIComponent(...)))` with `TextEncoder` + proper base64 encoding
+- [x] Replace deprecated `atob` decoding with `TextDecoder` approach
 
 ## Files
 
 - `convex/githubSync.ts`
+
+## Commits
+- `c2c1329873da490f04afe28ef78d0259d88b1104`

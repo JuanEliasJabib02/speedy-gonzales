@@ -1,6 +1,6 @@
 # Add Self-Verification Before Review
 
-**Status:** todo
+**Status:** review
 **Priority:** low
 **Agent:** Perro salchicha 🌭
 
@@ -10,12 +10,12 @@ After coding, before marking the ticket as review, Perro runs a verification pas
 
 ## Checklist
 
-- [ ] Add a "Verify before committing" section to the dispatch prompt
-- [ ] Perro re-reads the ticket checklist and confirms each item is done
-- [ ] Perro runs `npx tsc --noEmit` (or equivalent type check) if the project supports it
-- [ ] If any checklist item is NOT addressed, Perro fixes it before committing
-- [ ] If type check fails, Perro fixes errors before committing
-- [ ] Only after verification passes does Perro commit and push
+- [x] Add a "Verify before committing" section to the dispatch prompt
+- [x] Perro re-reads the ticket checklist and confirms each item is done
+- [x] Perro runs `npx tsc --noEmit` (or equivalent type check) if the project supports it
+- [x] If any checklist item is NOT addressed, Perro fixes it before committing
+- [x] If type check fails, Perro fixes errors before committing
+- [x] Only after verification passes does Perro commit and push
 
 ## Files
 

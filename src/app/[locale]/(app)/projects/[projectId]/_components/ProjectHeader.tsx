@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { AlertTriangle, ArrowLeft, Bot, CheckCircle2, ExternalLink, Github, RefreshCw } from "lucide-react"
+import { AlertTriangle, Archive, ArrowLeft, Bot, CheckCircle2, ExternalLink, Github, RefreshCw } from "lucide-react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
@@ -22,6 +22,9 @@ import { LoopStatusIndicator } from "./LoopStatusIndicator"
 type ProjectHeaderProps = {
   projectId: Id<"projects">
   projectName: string
+  showBacklog: boolean
+  onToggleBacklog: () => void
+  backlogCount: number
   showCompleted: boolean
   onToggleCompleted: () => void
   completedCount: number
@@ -64,6 +67,9 @@ function formatSyncAge(seconds: number): string {
 export function ProjectHeader({
   projectId,
   projectName,
+  showBacklog,
+  onToggleBacklog,
+  backlogCount,
   showCompleted,
   onToggleCompleted,
   completedCount,
@@ -124,6 +130,15 @@ export function ProjectHeader({
           <LoopStatusIndicator loopStatus={loopStatus} lastLoopAt={lastLoopAt} />
         )}
         <div className="ml-auto flex items-center gap-2">
+          <Button
+            variant={showBacklog ? "secondary" : "ghost"}
+            size="sm"
+            onClick={onToggleBacklog}
+            className={cn("gap-2", showBacklog && "text-status-backlog")}
+          >
+            <Archive className="size-4" />
+            Backlog ({backlogCount})
+          </Button>
           <Button
             variant={showCompleted ? "secondary" : "ghost"}
             size="sm"
