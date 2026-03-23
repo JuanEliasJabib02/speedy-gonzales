@@ -1,6 +1,6 @@
 # Add Index for Autonomous Loop Projects
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** medium
 **Agent:** Perro salchicha 🌭
 
