@@ -22,8 +22,8 @@ Replace the single "Mark as completed" button with two options: "Approve" (agent
 
 - `convex/tickets.ts`
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/PlanViewer.tsx`
+- `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/CommitDiffPanel.tsx`
 
 ## Commits
 
-- `aadbac4c7d3711e5201cd1f02d22daca9fa4ada8`
-- `2e53fe55bc67b09442f653a548c761b1dfec3a37`
+- `7c4c095f7bcfbe10e712af457f76ee92f38f9d2d`
