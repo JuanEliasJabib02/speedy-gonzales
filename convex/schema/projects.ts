@@ -15,6 +15,7 @@ export const projects = defineTable({
   webhookSecret: v.optional(v.string()),
   lastSyncAt: v.optional(v.number()),
   syncStatus: v.string(), // "idle" | "syncing" | "error"
+  syncStartedAt: v.optional(v.number()), // timestamp when sync started (for stale lock detection)
   syncError: v.optional(v.string()),
   agentName: v.optional(v.string()),
   agentEmoji: v.optional(v.string()),
@@ -27,6 +28,7 @@ export const projects = defineTable({
   notificationEnabled: v.optional(v.boolean()), // Whether to notify on loop events (via agent's connected channel)
   loopStatus: v.optional(v.string()), // "idle" | "running" | "error"
   lastLoopAt: v.optional(v.number()), // timestamp of last loop execution
+  deletionStatus: v.optional(v.string()), // "pending" | "deleting" — set before async cleanup
   createdAt: v.number(),
   updatedAt: v.number(),
 })

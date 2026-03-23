@@ -71,6 +71,7 @@ const planMarkdownComponents: Components = {
 }
 
 const STATUS_OPTIONS = [
+  { value: "backlog", label: "Backlog" },
   { value: "todo", label: "Todo" },
   { value: "in-progress", label: "In Progress" },
   { value: "blocked", label: "Blocked" },

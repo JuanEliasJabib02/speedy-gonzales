@@ -7,7 +7,7 @@ export const epics = defineTable({
   path: v.string(), // e.g. "plans/features/auth"
   content: v.string(),
   contentHash: v.string(),
-  status: v.string(), // "todo" | "in-progress" | "review" | "completed" | "blocked"
+  status: v.string(), // "backlog" | "todo" | "in-progress" | "review" | "completed" | "blocked"
   priority: v.string(), // "low" | "medium" | "high" | "critical"
   checklistTotal: v.number(),
   checklistCompleted: v.number(),
