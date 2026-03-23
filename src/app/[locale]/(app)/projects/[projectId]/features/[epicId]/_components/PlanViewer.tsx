@@ -70,6 +70,7 @@ const planMarkdownComponents: Components = {
 }
 
 const STATUS_PILL: Record<string, string> = {
+  "backlog": "bg-status-backlog/15 text-status-backlog",
   "blocked": "bg-status-blocked/15 text-status-blocked",
   "todo": "bg-status-todo/15 text-status-todo",
   "in-progress": "bg-status-in-progress/15 text-status-in-progress",
@@ -78,6 +79,7 @@ const STATUS_PILL: Record<string, string> = {
 }
 
 const STATUS_DOT: Record<string, string> = {
+  "backlog": "bg-status-backlog",
   "blocked": "bg-status-blocked",
   "todo": "bg-status-todo",
   "in-progress": "bg-status-in-progress",
@@ -86,6 +88,7 @@ const STATUS_DOT: Record<string, string> = {
 }
 
 const STATUS_OPTIONS = [
+  { value: "backlog", label: "Backlog" },
   { value: "todo", label: "Todo" },
   { value: "in-progress", label: "In Progress" },
   { value: "blocked", label: "Blocked" },

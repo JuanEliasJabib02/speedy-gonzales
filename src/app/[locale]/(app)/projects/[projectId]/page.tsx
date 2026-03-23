@@ -38,7 +38,7 @@ export default function ProjectPage() {
   const features = epics.map((epic) => ({
     id: epic._id,
     title: epic.title,
-    status: epic.status as "todo" | "in-progress" | "review" | "blocked" | "completed",
+    status: epic.status as "backlog" | "todo" | "in-progress" | "review" | "blocked" | "completed",
     progress: epic.ticketCount > 0
       ? Math.round((epic.completedTicketCount / epic.ticketCount) * 100)
       : 0,
