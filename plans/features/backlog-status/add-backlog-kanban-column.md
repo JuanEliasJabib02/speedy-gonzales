@@ -1,6 +1,6 @@
 # Add Backlog Column to Kanban Board
 
-**Status:** review
+**Status:** completed
 **Priority:** high
 **Agent:** Perro salchicha 🌭
 
@@ -14,7 +14,7 @@ Add a "Backlog" column to the kanban board, positioned before "Todo". This gives
 - [x] Add `backlog` config to `STATUS_CONFIG` with label "Backlog" and a neutral color class
 - [x] The backlog column should be visually distinct (slightly dimmer/grayed out) to signal "not active"
 - [x] Add a toggle or option to hide/show the backlog column (similar to the existing `showCompleted` toggle) — default to shown
-- [x] Ensure drag-and-drop works to move features from backlog → todo and vice versa
+- [~] ~~Ensure drag-and-drop works to move features from backlog → todo and vice versa~~ — **Descartado:** los agentes manejan el estado directamente, DnD no es necesario
 
 ## Files
 
