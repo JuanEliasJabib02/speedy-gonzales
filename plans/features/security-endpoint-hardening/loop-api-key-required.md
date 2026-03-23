@@ -1,6 +1,6 @@
 # Require LOOP_API_KEY on Autonomous Loop Endpoints
 
-**Status:** in-progress
+**Status:** review
 **Priority:** high
 **Agent:** Perro salchicha 🌭
 
@@ -10,10 +10,10 @@
 
 ## Checklist
 
-- [ ] In both endpoint handlers: if `LOOP_API_KEY` is not set in env, return 500 with "LOOP_API_KEY not configured"
-- [ ] If set but request doesn't match: return 401 "Unauthorized"
-- [ ] Add a clear error message so devs know they need to set the env var
-- [ ] Verify the autonomous-loop skill sends the Bearer token in requests
+- [x] In both endpoint handlers: if `LOOP_API_KEY` is not set in env, return 500 with "LOOP_API_KEY not configured"
+- [x] If set but request doesn't match: return 401 "Unauthorized"
+- [x] Add a clear error message so devs know they need to set the env var
+- [x] Verify the autonomous-loop skill sends the Bearer token in requests
 
 ## Files
 

@@ -102,10 +102,13 @@ http.route({
   path: "/autonomous-loop/status",
   method: "GET",
   handler: httpAction(async (ctx, request) => {
-    // Simple API key auth
-    const authHeader = request.headers.get("authorization")
+    // API key auth — always required
     const expectedKey = process.env.LOOP_API_KEY
-    if (expectedKey && authHeader !== `Bearer ${expectedKey}`) {
+    if (!expectedKey) {
+      return new Response("LOOP_API_KEY not configured", { status: 500, headers: corsHeaders })
+    }
+    const authHeader = request.headers.get("authorization")
+    if (authHeader !== `Bearer ${expectedKey}`) {
       return new Response("Unauthorized", { status: 401, headers: corsHeaders })
     }
 
@@ -150,10 +153,16 @@ http.route({
   path: "/update-ticket-status",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
-    // API key auth
-    const authHeader = request.headers.get("authorization")
+    // API key auth — always required
     const expectedKey = process.env.LOOP_API_KEY
-    if (expectedKey && authHeader !== `Bearer ${expectedKey}`) {
+    if (!expectedKey) {
+      return new Response(JSON.stringify({ ok: false, error: "LOOP_API_KEY not configured" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      })
+    }
+    const authHeader = request.headers.get("authorization")
+    if (authHeader !== `Bearer ${expectedKey}`) {
       return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json", ...corsHeaders },
