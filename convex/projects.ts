@@ -168,6 +168,7 @@ export const getByRepo = internalQuery({
 export const getProjectStats = query({
   args: { projectId: v.id("projects") },
   handler: async (ctx, { projectId }): Promise<{
+    backlog: number
     todo: number
     inProgress: number
     review: number
@@ -184,7 +185,7 @@ export const getProjectStats = query({
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect()
 
-    const counts = { todo: 0, inProgress: 0, review: 0, completed: 0, blocked: 0, total: 0 }
+    const counts = { backlog: 0, todo: 0, inProgress: 0, review: 0, completed: 0, blocked: 0, total: 0 }
 
     for (const epic of epics) {
       if (epic.isDeleted) continue
@@ -197,6 +198,7 @@ export const getProjectStats = query({
         if (ticket.isDeleted) continue
         counts.total++
         switch (ticket.status) {
+          case "backlog": counts.backlog++; break
           case "todo": counts.todo++; break
           case "in-progress": counts.inProgress++; break
           case "review": counts.review++; break
@@ -226,7 +228,7 @@ export const getProjectsWithStats = query({
           .withIndex("by_project", (q) => q.eq("projectId", project._id))
           .collect()
 
-        const counts = { todo: 0, inProgress: 0, review: 0, completed: 0, blocked: 0, total: 0 }
+        const counts = { backlog: 0, todo: 0, inProgress: 0, review: 0, completed: 0, blocked: 0, total: 0 }
 
         for (const epic of epics) {
           if (epic.isDeleted) continue

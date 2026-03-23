@@ -195,7 +195,7 @@ http.route({
       )
     }
 
-    const validStatuses = ["todo", "in-progress", "review", "completed", "blocked"]
+    const validStatuses = ["backlog", "todo", "in-progress", "review", "completed", "blocked"]
     if (!validStatuses.includes(status)) {
       return new Response(
         JSON.stringify({ ok: false, error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` }),

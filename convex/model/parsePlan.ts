@@ -1,6 +1,6 @@
 // Parses a plan .md file into structured data
 
-const VALID_STATUSES = new Set(["todo", "in-progress", "review", "completed", "blocked"])
+const VALID_STATUSES = new Set(["backlog", "todo", "in-progress", "review", "completed", "blocked"])
 const VALID_PRIORITIES = new Set(["low", "medium", "high", "critical"])
 
 type ParsedPlan = {
