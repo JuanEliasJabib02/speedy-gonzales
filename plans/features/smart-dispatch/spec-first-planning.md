@@ -1,6 +1,6 @@
 # Add Spec-First Planning Step
 
-**Status:** todo
+**Status:** review
 **Priority:** low
 **Agent:** Perro salchicha 🌭
 
@@ -10,11 +10,11 @@ Before writing any code, Perro generates a mini implementation plan: which files
 
 ## Checklist
 
-- [ ] Update the autonomous-loop skill dispatch prompt to include a "Plan first" instruction
-- [ ] Perro writes a `## Implementation Plan` to a temp file before coding
-- [ ] Plan includes: files to modify, approach per file, expected behavior after changes
-- [ ] Plan is validated against the ticket checklist — every checklist item should map to at least one planned change
-- [ ] Only after plan validation does Perro start coding
+- [x] Update the autonomous-loop skill dispatch prompt to include a "Plan first" instruction
+- [x] Perro writes a `## Implementation Plan` to a temp file before coding
+- [x] Plan includes: files to modify, approach per file, expected behavior after changes
+- [x] Plan is validated against the ticket checklist — every checklist item should map to at least one planned change
+- [x] Only after plan validation does Perro start coding
 
 ## Files
 
