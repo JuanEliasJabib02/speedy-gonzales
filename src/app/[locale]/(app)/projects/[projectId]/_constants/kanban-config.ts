@@ -1,8 +1,10 @@
+import type { Id } from "@/convex/_generated/dataModel"
+
 export type FeatureStatus = "backlog" | "todo" | "in-progress" | "review" | "blocked" | "completed"
 export type Priority = "low" | "medium" | "high" | "critical"
 
 export type Feature = {
-  id: string
+  id: Id<"epics">
   title: string
   status: FeatureStatus
   progress: number

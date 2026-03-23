@@ -3,20 +3,10 @@
 import { useState, useMemo } from "react"
 import { GitCommitHorizontal, RefreshCw, ChevronDown, Plus, Minus, Code2, Loader2, GitBranch, Tag, ExternalLink } from "lucide-react"
 import { cn } from "@/src/lib/helpers/cn"
+import { timeAgo } from "@/src/lib/helpers/timeAgo"
 import { CommitDiffPanel } from "./CommitDiffPanel"
 import { matchCommitToTickets } from "../_helpers/matchCommitToTickets"
 import type { BranchCommit } from "@/src/app/api/branch-commits/route"
-
-function timeAgo(dateStr: string): string {
-  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
-  if (seconds < 60) return `${seconds}s ago`
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  return `${days}d ago`
-}
 
 function TicketPill({ title }: { title: string }) {
   return (

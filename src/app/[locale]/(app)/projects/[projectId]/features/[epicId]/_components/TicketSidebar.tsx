@@ -7,6 +7,7 @@ import { Button } from "@/src/lib/components/ui/button"
 import { Input } from "@/src/lib/components/ui/input"
 import { TicketItem } from "./TicketItem"
 import { NewTicketModal } from "./NewTicketModal"
+import { timeAgo } from "@/src/lib/helpers/timeAgo"
 
 type Ticket = {
   id: string
@@ -28,6 +29,7 @@ type TicketSidebarProps = {
   epicId: string
   lastSyncAt?: number
   syncStatus?: string
+  onCreateTicket?: (args: { title: string; priority: string; description: string }) => Promise<void>
 }
 
 const STATUS_TABS = [
@@ -41,10 +43,9 @@ const STATUS_TABS = [
 
 type TabKey = (typeof STATUS_TABS)[number]["key"]
 
-export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId, epicId, lastSyncAt, syncStatus }: TicketSidebarProps) {
+export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId, epicId, lastSyncAt, syncStatus, onCreateTicket }: TicketSidebarProps) {
   const isSyncing = syncStatus === "syncing"
-  const syncAgo = lastSyncAt ? Math.floor((Date.now() - lastSyncAt) / 1000) : null
-  const syncLabel = syncAgo === null ? null : syncAgo < 60 ? `${syncAgo}s ago` : syncAgo < 3600 ? `${Math.floor(syncAgo / 60)}m ago` : `${Math.floor(syncAgo / 3600)}h ago`
+  const syncLabel = lastSyncAt ? timeAgo(lastSyncAt) : null
   const router = useRouter()
   const [search, setSearch] = useState("")
   const [activeTab, setActiveTab] = useState<TabKey>("all")
@@ -99,7 +100,7 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
         )}
       </div>
       <div className="flex gap-2 px-3 pb-3">
-        <NewTicketModal epicId={epicId} />
+        <NewTicketModal epicId={epicId} onSubmit={onCreateTicket} />
       </div>
       <div className="px-3 pb-3">
         <div className="relative">

@@ -71,6 +71,7 @@ export default function ProjectPage() {
         autonomousLoop={project.autonomousLoop}
         localPath={project.localPath}
         notificationEnabled={project.notificationEnabled}
+        branchPrefix={project.branchPrefix}
         loopStatus={project.loopStatus}
         lastLoopAt={project.lastLoopAt}
       />

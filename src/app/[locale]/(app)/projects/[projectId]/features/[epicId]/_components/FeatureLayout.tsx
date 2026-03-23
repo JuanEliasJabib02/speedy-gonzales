@@ -1,6 +1,9 @@
 "use client"
 
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
+import { useAction } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import type { Id } from "@/convex/_generated/dataModel"
 import { TicketSidebar } from "./TicketSidebar"
 import { PlanViewer } from "./PlanViewer"
 import { CommitTimeline } from "./CommitTimeline"
@@ -19,6 +22,7 @@ type FeatureLayoutProps = {
 
 export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
   const { plan: epic, isLoading, getTicketContent, lastSyncAt, syncStatus, repoOwner, repoName, projectBranch } = useLivePlan(epicId, projectId)
+  const createTicketAction = useAction(api.githubSync.createTicketOnGitHub)
   const [selectedTicketId, setSelectedTicketId] = useState("")
   const [timelineWidth, setTimelineWidth] = useState(TIMELINE_DEFAULT_WIDTH)
   const [ticketFilter, setTicketFilter] = useState<string | null>(null)
@@ -31,6 +35,30 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
   })
 
   const isDragging = useRef(false)
+  const mouseMoveRef = useRef<((e: MouseEvent) => void) | null>(null)
+  const mouseUpRef = useRef<(() => void) | null>(null)
+
+  const cleanupDrag = useCallback(() => {
+    if (mouseMoveRef.current) {
+      document.removeEventListener("mousemove", mouseMoveRef.current)
+      mouseMoveRef.current = null
+    }
+    if (mouseUpRef.current) {
+      document.removeEventListener("mouseup", mouseUpRef.current)
+      mouseUpRef.current = null
+    }
+    if (isDragging.current) {
+      isDragging.current = false
+      document.body.style.cursor = ""
+      document.body.style.userSelect = ""
+    }
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      cleanupDrag()
+    }
+  }, [cleanupDrag])
 
   const handleDragStart = useCallback(() => {
     isDragging.current = true
@@ -43,17 +71,35 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
 
     const handleMouseUp = () => {
       isDragging.current = false
+      mouseMoveRef.current = null
+      mouseUpRef.current = null
       document.removeEventListener("mousemove", handleMouseMove)
       document.removeEventListener("mouseup", handleMouseUp)
       document.body.style.cursor = ""
       document.body.style.userSelect = ""
     }
 
+    mouseMoveRef.current = handleMouseMove
+    mouseUpRef.current = handleMouseUp
+
     document.body.style.cursor = "col-resize"
     document.body.style.userSelect = "none"
     document.addEventListener("mousemove", handleMouseMove)
     document.addEventListener("mouseup", handleMouseUp)
   }, [])
+
+  const handleCreateTicket = useCallback(
+    async (args: { title: string; priority: string; description: string }) => {
+      await createTicketAction({
+        projectId: projectId as Id<"projects">,
+        epicId: epicId as Id<"epics">,
+        title: args.title,
+        priority: args.priority,
+        description: args.description || undefined,
+      })
+    },
+    [createTicketAction, projectId, epicId],
+  )
 
   if (isLoading || !epic) {
     return (
@@ -84,6 +130,7 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
         epicId={epicId}
         lastSyncAt={lastSyncAt}
         syncStatus={syncStatus}
+        onCreateTicket={handleCreateTicket}
       />
 
       {/* Center panel: plan viewer */}

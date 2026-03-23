@@ -1,7 +1,8 @@
 import { v } from "convex/values"
 import { query, mutation, internalQuery, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
-import { requireAuth } from "./helpers"
+import type { Doc } from "./_generated/dataModel"
+import { requireAuth, assertValidStatus, statusValidator } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
 
 export const getByEpic = query({
@@ -23,11 +24,12 @@ export const getByEpic = query({
 export const updateStatus = mutation({
   args: {
     ticketId: v.id("tickets"),
-    status: v.string(),
+    status: statusValidator,
     blockedReason: v.optional(v.string()),
     completionType: v.optional(v.union(v.literal("clean"), v.literal("with-fixes"))),
   },
   handler: async (ctx, { ticketId, status, blockedReason, completionType }) => {
+    assertValidStatus(status)
     const userId = await requireAuth(ctx)
     const ticket = await ctx.db.get(ticketId)
     if (!ticket) return throwError(ErrorCodes.NOT_FOUND) as never
@@ -65,7 +67,7 @@ export const updateStatus = mutation({
       const activeTickets = allTickets.filter((t) => !t.isDeleted)
       const completedCount = activeTickets.filter((t) => t.status === "completed" || t.status === "review").length
 
-      const epicPatch: Record<string, unknown> = { completedTicketCount: completedCount }
+      const epicPatch: Partial<Doc<"epics">> = { completedTicketCount: completedCount }
 
       // Auto-promote epic to review when all tickets are done (completed or review)
       if (status === "completed" || status === "review") {
@@ -137,10 +139,11 @@ export const getByProjectPath = internalQuery({
 export const updateStatusInternal = internalMutation({
   args: {
     ticketId: v.id("tickets"),
-    status: v.string(),
+    status: statusValidator,
     blockedReason: v.optional(v.string()),
   },
   handler: async (ctx, { ticketId, status, blockedReason }) => {
+    assertValidStatus(status)
     const ticket = await ctx.db.get(ticketId)
     if (!ticket) throw new Error("Ticket not found")
 
@@ -175,7 +178,7 @@ export const updateStatusInternal = internalMutation({
       (t) => t.status === "completed" || t.status === "review"
     ).length
 
-    const epicPatch: Record<string, unknown> = { completedTicketCount: completedCount }
+    const epicPatch: Partial<Doc<"epics">> = { completedTicketCount: completedCount }
 
     if (status === "completed" || status === "review") {
       const allDone = activeTickets.every((t) => t.status === "completed" || t.status === "review")

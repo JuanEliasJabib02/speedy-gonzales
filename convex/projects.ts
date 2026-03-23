@@ -1,7 +1,8 @@
 import { v } from "convex/values"
 import { query, mutation, internalQuery, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
-import { requireAuth } from "./helpers"
+import type { Doc } from "./_generated/dataModel"
+import { requireAuth, agentStatusValidator } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
 import { parseRepoUrl } from "./model/parseRepoUrl"
 
@@ -157,18 +158,19 @@ export const updateSettings = mutation({
     maxConcurrentGlobal: v.optional(v.number()),
     agentName: v.optional(v.string()),
     agentEmoji: v.optional(v.string()),
-    agentStatus: v.optional(v.string()),
+    agentStatus: v.optional(agentStatusValidator),
     agentCurrentFeature: v.optional(v.string()),
     autonomousLoop: v.optional(v.boolean()),
     localPath: v.optional(v.string()),
     notificationEnabled: v.optional(v.boolean()),
+    branchPrefix: v.optional(v.string()),
   },
   handler: async (ctx, { projectId, ...updates }) => {
     const userId = await requireAuth(ctx)
     const project = await ctx.db.get(projectId)
     if (!project || project.userId !== userId) return throwError(ErrorCodes.NOT_FOUND)
 
-    const patch: Record<string, unknown> = { updatedAt: Date.now() }
+    const patch: Partial<Doc<"projects">> = { updatedAt: Date.now() }
     if (updates.maxConcurrentPerFeature !== undefined) patch.maxConcurrentPerFeature = updates.maxConcurrentPerFeature
     if (updates.maxConcurrentGlobal !== undefined) patch.maxConcurrentGlobal = updates.maxConcurrentGlobal
     if (updates.agentName !== undefined) patch.agentName = updates.agentName
@@ -178,6 +180,7 @@ export const updateSettings = mutation({
     if (updates.autonomousLoop !== undefined) patch.autonomousLoop = updates.autonomousLoop
     if (updates.localPath !== undefined) patch.localPath = updates.localPath
     if (updates.notificationEnabled !== undefined) patch.notificationEnabled = updates.notificationEnabled
+    if (updates.branchPrefix !== undefined) patch.branchPrefix = updates.branchPrefix
 
     await ctx.db.patch(projectId, patch)
   },
@@ -194,10 +197,11 @@ export const getProjectInternal = internalQuery({
 export const getActiveLoopProjects = internalQuery({
   args: {},
   handler: async (ctx) => {
-    const allProjects = await ctx.db.query("projects").collect()
-    return allProjects.filter(
-      (p) => p.autonomousLoop === true && !!p.localPath && !p.deletionStatus
-    )
+    const projects = await ctx.db
+      .query("projects")
+      .withIndex("by_autonomous_loop", (q) => q.eq("autonomousLoop", true))
+      .collect()
+    return projects.filter((p) => !!p.localPath && !p.deletionStatus)
   },
 })
 
