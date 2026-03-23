@@ -1,13 +1,15 @@
 import { v } from "convex/values"
 import { mutation, internalAction, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
-import { requireAuth } from "./helpers"
+import { requireAuth, statusValidator, priorityValidator, syncStatusValidator } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
 import type { Id } from "./_generated/dataModel"
 import { getGitProvider } from "./model/providers"
 import { groupFilesIntoEpics } from "./model/groupFiles"
 import { parsePlan, parseCommits } from "./model/parsePlan"
 import type { GitProviderConfig, GitProviderType } from "./model/gitProvider"
+
+const UPSERT_BATCH_THRESHOLD = 50 // max epics+tickets per mutation batch
 
 export const syncProject = mutation({
   args: { projectId: v.id("projects") },
@@ -24,18 +26,23 @@ export const forceResync = mutation({
   args: { projectId: v.id("projects") },
   handler: async (ctx, { projectId }) => {
     await requireAuth(ctx)
-    await ctx.db.patch(projectId, { syncStatus: "idle", updatedAt: Date.now() })
+    await ctx.db.patch(projectId, { syncStatus: "idle", syncStartedAt: undefined, updatedAt: Date.now() })
     await ctx.scheduler.runAfter(0, internal.githubSync.syncRepoInternal, { projectId })
   },
 })
+
+const CRON_COOLDOWN_MS = 15 * 60 * 1000 // 15 minutes
 
 export const syncAllProjects = internalAction({
   args: {},
   handler: async (ctx) => {
     const projects = await ctx.runQuery(internal.projects.getAllActiveProjects)
-    console.log(`[cron-sync] Found ${projects.length} active projects`)
+    const now = Date.now()
 
-    for (const project of projects) {
+    const stale = projects.filter((p) => !p.lastSyncAt || now - p.lastSyncAt >= CRON_COOLDOWN_MS)
+    console.log(`[cron-sync] ${stale.length}/${projects.length} projects need sync (cooldown ${CRON_COOLDOWN_MS / 60000}m)`)
+
+    for (const project of stale) {
       await ctx.scheduler.runAfter(0, internal.githubSync.syncRepoInternal, { projectId: project._id })
       console.log(`[cron-sync] Scheduled sync for ${project.repoOwner}/${project.repoName}`)
     }
@@ -45,20 +52,16 @@ export const syncAllProjects = internalAction({
 export const syncRepoInternal = internalAction({
   args: { projectId: v.id("projects") },
   handler: async (ctx, { projectId }) => {
-    // Guard: skip if already syncing to prevent race conditions
-    const project = await ctx.runQuery(internal.projects.getProjectInternal, { projectId })
-    if (!project) throw new Error("Project not found")
-    console.log(`[sync] Starting sync for ${project.repoOwner}/${project.repoName}, current status: ${project.syncStatus}`)
-    if (project.syncStatus === "syncing") {
-      console.log("[sync] Skipped — already syncing")
+    // Atomic guard: claim lock in a single mutation to prevent race conditions
+    const { claimed } = await ctx.runMutation(internal.githubSync.claimSyncLock, { projectId })
+    if (!claimed) {
+      console.log("[sync] Skipped — already syncing (lock not claimed)")
       return
     }
 
-    // Set syncing status
-    await ctx.runMutation(internal.githubSync.updateSyncStatus, {
-      projectId,
-      status: "syncing",
-    })
+    const project = await ctx.runQuery(internal.projects.getProjectInternal, { projectId })
+    if (!project) throw new Error("Project not found")
+    console.log(`[sync] Starting sync for ${project.repoOwner}/${project.repoName}`)
 
     try {
       const accessToken = process.env.GITHUB_PAT
@@ -188,46 +191,82 @@ export const syncRepoInternal = internalAction({
         sortOrder++
       }
 
-      // Upsert all data atomically
-      await ctx.runMutation(internal.githubSync.upsertPlans, {
-        projectId,
-        epics: epicsData.map((e, i) => ({
-          path: e.path,
-          contentHash: e.sha,
-          title: e.parsed.title,
-          content: e.parsed.body,
-          status: e.parsed.status,
-          priority: e.parsed.priority,
-          checklistTotal: e.parsed.checklistTotal,
-          checklistCompleted: e.parsed.checklistCompleted,
-          ticketCount: e.tickets.length,
-          sortOrder: i,
-          tickets: e.tickets.map((t, j) => ({
-            path: t.path,
-            contentHash: t.sha,
-            title: t.parsed.title,
-            content: t.parsed.body,
-            status: t.parsed.status,
-            priority: t.parsed.priority,
-            checklistTotal: t.parsed.checklistTotal,
-            checklistCompleted: t.parsed.checklistCompleted,
-            commits: t.commits,
-            sortOrder: j,
-            agentName: t.agentName,
-            blockedReason: t.parsed.blockedReason,
-          })),
+      // Upsert in batches to stay under Convex operation limit
+      const allEpicArgs = epicsData.map((e, i) => ({
+        path: e.path,
+        contentHash: e.sha,
+        title: e.parsed.title,
+        content: e.parsed.body,
+        status: e.parsed.status,
+        priority: e.parsed.priority,
+        checklistTotal: e.parsed.checklistTotal,
+        checklistCompleted: e.parsed.checklistCompleted,
+        ticketCount: e.tickets.length,
+        sortOrder: i,
+        tickets: e.tickets.map((t, j) => ({
+          path: t.path,
+          contentHash: t.sha,
+          title: t.parsed.title,
+          content: t.parsed.body,
+          status: t.parsed.status,
+          priority: t.parsed.priority,
+          checklistTotal: t.parsed.checklistTotal,
+          checklistCompleted: t.parsed.checklistCompleted,
+          commits: t.commits,
+          sortOrder: j,
+          agentName: t.agentName,
+          blockedReason: t.parsed.blockedReason,
         })),
+      }))
+
+      const totalItems = allEpicArgs.reduce((sum, e) => sum + 1 + e.tickets.length, 0)
+      console.log(`[sync] Upserting ${allEpicArgs.length} epics, ${totalItems} total items (epics+tickets)`)
+
+      // Split into batches — each epic + its tickets count toward the limit
+      const batches: typeof allEpicArgs[] = []
+      let currentBatch: typeof allEpicArgs = []
+      let currentBatchItems = 0
+
+      for (const epic of allEpicArgs) {
+        const epicItems = 1 + epic.tickets.length
+        if (currentBatchItems + epicItems > UPSERT_BATCH_THRESHOLD && currentBatch.length > 0) {
+          batches.push(currentBatch)
+          currentBatch = []
+          currentBatchItems = 0
+        }
+        currentBatch.push(epic)
+        currentBatchItems += epicItems
+      }
+      if (currentBatch.length > 0) batches.push(currentBatch)
+
+      console.log(`[sync] Split into ${batches.length} batch(es)`)
+
+      for (let i = 0; i < batches.length; i++) {
+        await ctx.runMutation(internal.githubSync.upsertPlansBatch, {
+          projectId,
+          epics: batches[i],
+        })
+        console.log(`[sync] Batch ${i + 1}/${batches.length} committed`)
+      }
+
+      // Soft-delete stale epics/tickets in a separate mutation
+      const activePaths = allEpicArgs.map((e) => e.path)
+      const activeTicketPaths = allEpicArgs.flatMap((e) => e.tickets.map((t) => t.path))
+      await ctx.runMutation(internal.githubSync.softDeleteStalePlans, {
+        projectId,
+        activePaths,
+        activeTicketPaths,
       })
 
-      // Set idle status
-      await ctx.runMutation(internal.githubSync.updateSyncStatus, {
+      // Release lock with success
+      await ctx.runMutation(internal.githubSync.releaseSyncLock, {
         projectId,
         status: "idle",
         lastSyncAt: Date.now(),
       })
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown sync error"
-      await ctx.runMutation(internal.githubSync.updateSyncStatus, {
+      await ctx.runMutation(internal.githubSync.releaseSyncLock, {
         projectId,
         status: "error",
         syncError: message,
@@ -236,48 +275,42 @@ export const syncRepoInternal = internalAction({
   },
 })
 
-export const upsertPlans = internalMutation({
+const epicValidator = v.object({
+  path: v.string(),
+  contentHash: v.string(),
+  title: v.string(),
+  content: v.string(),
+  status: statusValidator,
+  priority: priorityValidator,
+  checklistTotal: v.number(),
+  checklistCompleted: v.number(),
+  ticketCount: v.number(),
+  sortOrder: v.number(),
+  tickets: v.array(
+    v.object({
+      path: v.string(),
+      contentHash: v.string(),
+      title: v.string(),
+      content: v.string(),
+      status: statusValidator,
+      priority: priorityValidator,
+      checklistTotal: v.number(),
+      checklistCompleted: v.number(),
+      commits: v.array(v.string()),
+      sortOrder: v.number(),
+      agentName: v.optional(v.string()),
+      blockedReason: v.optional(v.string()),
+    }),
+  ),
+})
+
+export const upsertPlansBatch = internalMutation({
   args: {
     projectId: v.id("projects"),
-    epics: v.array(
-      v.object({
-        path: v.string(),
-        contentHash: v.string(),
-        title: v.string(),
-        content: v.string(),
-        status: v.string(),
-        priority: v.string(),
-        checklistTotal: v.number(),
-        checklistCompleted: v.number(),
-        ticketCount: v.number(),
-        sortOrder: v.number(),
-        tickets: v.array(
-          v.object({
-            path: v.string(),
-            contentHash: v.string(),
-            title: v.string(),
-            content: v.string(),
-            status: v.string(),
-            priority: v.string(),
-            checklistTotal: v.number(),
-            checklistCompleted: v.number(),
-            commits: v.array(v.string()),
-            sortOrder: v.number(),
-            agentName: v.optional(v.string()),
-            blockedReason: v.optional(v.string()),
-          }),
-        ),
-      }),
-    ),
+    epics: v.array(epicValidator),
   },
   handler: async (ctx, { projectId, epics }) => {
-    const activePaths = new Set<string>()
-    const activeTicketPaths = new Set<string>()
-
     for (const epicData of epics) {
-      activePaths.add(epicData.path)
-
-      // Find or create epic
       const existing = await ctx.db
         .query("epics")
         .withIndex("by_project_path", (q) => q.eq("projectId", projectId).eq("path", epicData.path))
@@ -323,10 +356,7 @@ export const upsertPlans = internalMutation({
         })
       }
 
-      // Upsert tickets
       for (const ticketData of epicData.tickets) {
-        activeTicketPaths.add(ticketData.path)
-
         const existingTicket = await ctx.db
           .query("tickets")
           .withIndex("by_project_path", (q) => q.eq("projectId", projectId).eq("path", ticketData.path))
@@ -380,11 +410,14 @@ export const upsertPlans = internalMutation({
         }
       }
 
-      // Recalculate completed ticket count for this epic
+      // Recalculate completed ticket count — only patch when changed
       const completedTicketCount = epicData.tickets.filter(
         (t) => t.status === "completed" || t.status === "review"
       ).length
-      await ctx.db.patch(epicId, { completedTicketCount })
+      const currentEpicDoc = await ctx.db.get(epicId)
+      if (currentEpicDoc && currentEpicDoc.completedTicketCount !== completedTicketCount) {
+        await ctx.db.patch(epicId, { completedTicketCount })
+      }
 
       // Auto-promote epic to review when all tickets are done
       const allDone = epicData.tickets.length > 0 &&
@@ -397,37 +430,95 @@ export const upsertPlans = internalMutation({
         }
       }
     }
+  },
+})
 
-    // Soft-delete epics no longer in repo
+export const softDeleteStalePlans = internalMutation({
+  args: {
+    projectId: v.id("projects"),
+    activePaths: v.array(v.string()),
+    activeTicketPaths: v.array(v.string()),
+  },
+  handler: async (ctx, { projectId, activePaths, activeTicketPaths }) => {
+    const activePathSet = new Set(activePaths)
+    const activeTicketPathSet = new Set(activeTicketPaths)
+
     const allEpics = await ctx.db
       .query("epics")
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect()
 
     for (const epic of allEpics) {
-      if (!activePaths.has(epic.path) && !epic.isDeleted) {
+      if (!activePathSet.has(epic.path) && !epic.isDeleted) {
         await ctx.db.patch(epic._id, { isDeleted: true })
       }
     }
 
-    // Soft-delete tickets no longer in repo
     const allTickets = await ctx.db
       .query("tickets")
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect()
 
     for (const ticket of allTickets) {
-      if (!activeTicketPaths.has(ticket.path) && !ticket.isDeleted) {
+      if (!activeTicketPathSet.has(ticket.path) && !ticket.isDeleted) {
         await ctx.db.patch(ticket._id, { isDeleted: true })
       }
     }
   },
 })
 
-export const updateSyncStatus = internalMutation({
+const STALE_LOCK_TIMEOUT_MS = 5 * 60 * 1000 // 5 minutes
+
+export const claimSyncLock = internalMutation({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, { projectId }) => {
+    const project = await ctx.db.get(projectId)
+    if (!project) return { claimed: false }
+
+    const now = Date.now()
+
+    if (project.syncStatus === "syncing") {
+      const startedAt = project.syncStartedAt ?? 0
+      const isStale = now - startedAt > STALE_LOCK_TIMEOUT_MS
+      if (!isStale) return { claimed: false }
+      console.log(`[sync] Reclaiming stale lock (started ${Math.round((now - startedAt) / 1000)}s ago)`)
+    }
+
+    await ctx.db.patch(projectId, {
+      syncStatus: "syncing",
+      syncStartedAt: now,
+      syncError: undefined,
+      updatedAt: now,
+    })
+    return { claimed: true }
+  },
+})
+
+export const releaseSyncLock = internalMutation({
   args: {
     projectId: v.id("projects"),
     status: v.string(),
+    syncError: v.optional(v.string()),
+    lastSyncAt: v.optional(v.number()),
+  },
+  handler: async (ctx, { projectId, status, syncError, lastSyncAt }) => {
+    const updates: Record<string, unknown> = {
+      syncStatus: status,
+      syncStartedAt: undefined,
+      updatedAt: Date.now(),
+    }
+    if (syncError !== undefined) updates.syncError = syncError
+    if (lastSyncAt !== undefined) updates.lastSyncAt = lastSyncAt
+    if (status !== "error") updates.syncError = undefined
+
+    await ctx.db.patch(projectId, updates)
+  },
+})
+
+export const updateSyncStatus = internalMutation({
+  args: {
+    projectId: v.id("projects"),
+    status: syncStatusValidator,
     syncError: v.optional(v.string()),
     lastSyncAt: v.optional(v.number()),
   },
@@ -500,7 +591,76 @@ export const storeWebhookInfo = internalMutation({
   },
 })
 
-// Pushes a status change directly to GitHub by patching the .md file via GitHub API
+// Shared helper: fetch a .md file from GitHub, replace the **Status:** line, and commit
+async function pushStatusToGitHub(opts: {
+  repoOwner: string
+  repoName: string
+  branch: string
+  accessToken: string
+  filePath: string
+  newStatus: string
+  commitMessage: string
+}): Promise<void> {
+  const { repoOwner, repoName, branch, accessToken, filePath, newStatus, commitMessage } = opts
+  const baseUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`
+
+  // 1. Get current file content + SHA from GitHub
+  const fileRes = await fetch(`${baseUrl}?ref=${branch}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: "application/vnd.github+json",
+    },
+  })
+
+  if (!fileRes.ok) {
+    console.error(`[git-status-push] Failed to fetch: ${filePath}`, await fileRes.text())
+    return
+  }
+
+  const fileData = await fileRes.json()
+  const rawBytes = Uint8Array.from(globalThis.atob(fileData.content.replace(/\n/g, "")), (c) => c.charCodeAt(0))
+  const currentContent = new TextDecoder().decode(rawBytes)
+  const fileSha = fileData.sha
+
+  // 2. Replace **Status:** line
+  const updatedContent = currentContent.replace(
+    /\*\*Status:\*\*\s*\S+/,
+    `**Status:** ${newStatus}`
+  )
+
+  if (updatedContent === currentContent) {
+    console.log(`[git-status-push] No status change needed in ${filePath}`)
+    return
+  }
+
+  // 3. Commit the change via GitHub API
+  const encodedBytes = new TextEncoder().encode(updatedContent)
+  const encodedContent = globalThis.btoa(String.fromCharCode(...encodedBytes))
+
+  const updateRes = await fetch(baseUrl, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: "application/vnd.github+json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      message: commitMessage,
+      content: encodedContent,
+      sha: fileSha,
+      branch,
+    }),
+  })
+
+  if (!updateRes.ok) {
+    console.error(`[git-status-push] Failed to commit: ${filePath}`, await updateRes.text())
+    return
+  }
+
+  console.log(`[git-status-push] ✅ ${filePath} → ${newStatus}`)
+}
+
+// Pushes a ticket status change directly to GitHub by patching the .md file
 export const pushTicketStatusToGitHub = internalAction({
   args: {
     ticketId: v.id("tickets"),
@@ -521,66 +681,15 @@ export const pushTicketStatusToGitHub = internalAction({
       return
     }
 
-    const { repoOwner, repoName, branch } = project
-
-    // 1. Get current file content + SHA from GitHub
-    const fileRes = await fetch(
-      `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${ticket.path}?ref=${branch}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/vnd.github+json",
-        },
-      }
-    )
-
-    if (!fileRes.ok) {
-      console.error(`[git-status-push] Failed to fetch file: ${ticket.path}`, await fileRes.text())
-      return
-    }
-
-    const fileData = await fileRes.json()
-    const currentContent = atob(fileData.content.replace(/\n/g, ""))
-    const fileSha = fileData.sha
-
-    // 2. Replace **Status:** line
-    const updatedContent = currentContent.replace(
-      /\*\*Status:\*\*\s*\S+/,
-      `**Status:** ${newStatus}`
-    )
-
-    if (updatedContent === currentContent) {
-      console.log(`[git-status-push] No status change needed in ${ticket.path}`)
-      return
-    }
-
-    // 3. Commit the change via GitHub API
-    const encodedContent = btoa(unescape(encodeURIComponent(updatedContent)))
-
-    const updateRes = await fetch(
-      `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${ticket.path}`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/vnd.github+json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: `chore(tickets): mark ${ticket.title} as ${newStatus}`,
-          content: encodedContent,
-          sha: fileSha,
-          branch,
-        }),
-      }
-    )
-
-    if (!updateRes.ok) {
-      console.error(`[git-status-push] Failed to commit status: ${ticket.path}`, await updateRes.text())
-      return
-    }
-
-    console.log(`[git-status-push] ✅ ${ticket.path} → ${newStatus}`)
+    await pushStatusToGitHub({
+      repoOwner: project.repoOwner,
+      repoName: project.repoName,
+      branch: project.branch,
+      accessToken,
+      filePath: ticket.path,
+      newStatus,
+      commitMessage: `chore(tickets): mark ${ticket.title} as ${newStatus}`,
+    })
   },
 })
 
@@ -600,64 +709,18 @@ export const pushEpicStatusToGitHub = internalAction({
 
     const accessToken = process.env.GITHUB_PAT
     if (!accessToken) {
-      console.error("[git-epic-push] GITHUB_PAT not set")
+      console.error("[git-status-push] GITHUB_PAT not set")
       return
     }
 
-    const { repoOwner, repoName, branch } = project
-    const filePath = `${epic.path}/_context.md`
-
-    const fileRes = await fetch(
-      `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}?ref=${branch}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/vnd.github+json",
-        },
-      }
-    )
-
-    if (!fileRes.ok) {
-      console.error(`[git-epic-push] Failed to fetch: ${filePath}`, await fileRes.text())
-      return
-    }
-
-    const fileData = await fileRes.json()
-    const currentContent = atob(fileData.content.replace(/\n/g, ""))
-    const fileSha = fileData.sha
-
-    const updatedContent = currentContent.replace(
-      /\*\*Status:\*\*\s*\S+/,
-      `**Status:** ${newStatus}`
-    )
-
-    if (updatedContent === currentContent) return
-
-    const encodedContent = btoa(unescape(encodeURIComponent(updatedContent)))
-
-    const updateRes = await fetch(
-      `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/vnd.github+json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: `chore(plans): auto-promote ${epic.title} to ${newStatus}`,
-          content: encodedContent,
-          sha: fileSha,
-          branch,
-        }),
-      }
-    )
-
-    if (!updateRes.ok) {
-      console.error(`[git-epic-push] Failed to commit: ${filePath}`, await updateRes.text())
-      return
-    }
-
-    console.log(`[git-epic-push] ✅ ${filePath} → ${newStatus}`)
+    await pushStatusToGitHub({
+      repoOwner: project.repoOwner,
+      repoName: project.repoName,
+      branch: project.branch,
+      accessToken,
+      filePath: `${epic.path}/_context.md`,
+      newStatus,
+      commitMessage: `chore(plans): auto-promote ${epic.title} to ${newStatus}`,
+    })
   },
 })

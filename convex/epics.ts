@@ -1,6 +1,6 @@
 import { v } from "convex/values"
 import { query, mutation, internalQuery } from "./_generated/server"
-import { requireAuth, assertValidStatus } from "./helpers"
+import { requireAuth, assertValidStatus, statusValidator } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
 
 export const getByProject = query({
@@ -43,7 +43,7 @@ const ALLOWED_TRANSITIONS: Record<string, string[]> = {
 export const updateStatus = mutation({
   args: {
     epicId: v.id("epics"),
-    status: v.string(),
+    status: statusValidator,
   },
   handler: async (ctx, { epicId, status }) => {
     assertValidStatus(status)

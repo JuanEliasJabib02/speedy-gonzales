@@ -1,8 +1,10 @@
-export type FeatureStatus = "todo" | "in-progress" | "review" | "blocked" | "completed"
+import type { Id } from "@/convex/_generated/dataModel"
+
+export type FeatureStatus = "backlog" | "todo" | "in-progress" | "review" | "blocked" | "completed"
 export type Priority = "low" | "medium" | "high" | "critical"
 
 export type Feature = {
-  id: string
+  id: Id<"epics">
   title: string
   status: FeatureStatus
   progress: number
@@ -12,6 +14,7 @@ export type Feature = {
 }
 
 export const STATUS_CONFIG: Record<FeatureStatus, { label: string; colorClass: string }> = {
+  "backlog": { label: "Backlog", colorClass: "bg-status-backlog" },
   "todo": { label: "Todo", colorClass: "bg-status-todo" },
   "in-progress": { label: "In Progress", colorClass: "bg-status-in-progress" },
   "review": { label: "Review", colorClass: "bg-status-review" },
