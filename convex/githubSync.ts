@@ -1,5 +1,5 @@
 import { v } from "convex/values"
-import { mutation, internalAction, internalMutation } from "./_generated/server"
+import { mutation, action, internalAction, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
 import { requireAuth } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
@@ -659,5 +659,83 @@ export const pushEpicStatusToGitHub = internalAction({
     }
 
     console.log(`[git-epic-push] ✅ ${filePath} → ${newStatus}`)
+  },
+})
+
+export const createTicketOnGitHub = action({
+  args: {
+    projectId: v.id("projects"),
+    epicId: v.id("epics"),
+    title: v.string(),
+    priority: v.string(),
+    description: v.optional(v.string()),
+  },
+  handler: async (ctx, { projectId, epicId, title, priority, description }) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Unauthorized")
+
+    const project = await ctx.runQuery(internal.projects.getProjectInternal, { projectId })
+    if (!project) throw new Error("Project not found")
+
+    const epic = await ctx.runQuery(internal.epics.getEpicInternal, { epicId })
+    if (!epic) throw new Error("Epic not found")
+
+    const accessToken = process.env.GITHUB_PAT
+    if (!accessToken) throw new Error("GITHUB_PAT env var not set")
+
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+
+    const filePath = `${epic.path}/${slug}.md`
+
+    const lines = [
+      `# ${title}`,
+      "",
+      "**Status:** todo",
+      `**Priority:** ${priority}`,
+      "",
+      "## What it does",
+      "",
+      description?.trim() || "TODO: add description",
+      "",
+      "## Checklist",
+      "",
+      "- [ ] Implementation",
+      "",
+    ]
+    const mdContent = lines.join("\n")
+
+    const { repoOwner, repoName, branch } = project
+    const encodedContent = btoa(unescape(encodeURIComponent(mdContent)))
+
+    const createRes = await fetch(
+      `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "application/vnd.github+json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: `feat(tickets): create ${title}`,
+          content: encodedContent,
+          branch,
+        }),
+      }
+    )
+
+    if (!createRes.ok) {
+      const errText = await createRes.text()
+      console.error(`[create-ticket] Failed to create file: ${filePath}`, errText)
+      throw new Error(`Failed to create ticket on GitHub: ${createRes.status}`)
+    }
+
+    console.log(`[create-ticket] ✅ Created ${filePath}`)
+
+    // Trigger sync to pull the new ticket into Convex
+    await ctx.scheduler.runAfter(0, internal.githubSync.syncRepoInternal, { projectId })
   },
 })
