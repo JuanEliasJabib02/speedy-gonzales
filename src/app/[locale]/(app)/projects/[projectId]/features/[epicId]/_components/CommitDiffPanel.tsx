@@ -9,7 +9,7 @@ import {
   DialogDescription,
 } from "@/src/lib/components/ui/dialog"
 import { cn } from "@/src/lib/helpers/cn"
-import { FileCode2, Plus, Minus, ChevronDown, ChevronRight, CheckCircle2, Loader2 } from "lucide-react"
+import { FileCode2, Plus, Minus, ChevronDown, ChevronRight, CheckCircle2, Wrench, Loader2 } from "lucide-react"
 
 type DiffFile = {
   filename: string
@@ -38,7 +38,7 @@ type CommitDiffPanelProps = {
   repo: string
   sha: string
   ticketId?: string
-  onMarkComplete?: () => void | Promise<void>
+  onApprove?: (completionType: "clean" | "with-fixes") => void | Promise<void>
 }
 
 const MAX_LINES_PER_FILE = 500
@@ -202,7 +202,7 @@ export function CommitDiffPanel({
   repo,
   sha,
   ticketId,
-  onMarkComplete,
+  onApprove,
 }: CommitDiffPanelProps) {
   const [data, setData] = useState<CommitDiffData | null>(null)
   const [loading, setLoading] = useState(false)
@@ -301,13 +301,13 @@ export function CommitDiffPanel({
             </div>
           )}
 
-          {ticketId && onMarkComplete && (
-            <div className="mt-4 pt-4 border-t border-border">
+          {ticketId && onApprove && (
+            <div className="mt-4 pt-4 border-t border-border flex items-center gap-2">
               <button
                 onClick={async () => {
                   setMarking(true)
                   try {
-                    await onMarkComplete()
+                    await onApprove("clean")
                   } finally {
                     setMarking(false)
                   }
@@ -316,7 +316,22 @@ export function CommitDiffPanel({
                 className="flex items-center gap-2 rounded-md bg-status-completed hover:bg-status-completed/80 text-white px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
               >
                 {marking ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
-                Mark as completed
+                Approve
+              </button>
+              <button
+                onClick={async () => {
+                  setMarking(true)
+                  try {
+                    await onApprove("with-fixes")
+                  } finally {
+                    setMarking(false)
+                  }
+                }}
+                disabled={marking}
+                className="flex items-center gap-2 rounded-md border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                {marking ? <Loader2 className="size-4 animate-spin" /> : <Wrench className="size-4" />}
+                Approve with fixes
               </button>
             </div>
           )}

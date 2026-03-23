@@ -16,7 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/src/lib/components/ui/popover"
-import { ChevronDown, GitCommitHorizontal, Plus, Minus, Code2, CheckCircle2, Loader2 } from "lucide-react"
+import { ChevronDown, GitCommitHorizontal, Plus, Minus, Code2, CheckCircle2, Wrench, Loader2 } from "lucide-react"
 import { ChecklistProgress } from "./ChecklistProgress"
 import { CommitDiffPanel } from "./CommitDiffPanel"
 import { Button } from "@/src/lib/components/ui/button"
@@ -245,11 +245,11 @@ export function PlanViewer({ title, status, priority, content, checklist, ticket
     updateStatus({ ticketId: ticketId as Id<"tickets">, status: "in-progress" })
   }
 
-  const handleMarkCompleted = useCallback(async () => {
+  const handleApprove = useCallback(async (completionType: "clean" | "with-fixes") => {
     if (!ticketId || marking) return
     setMarking(true)
     try {
-      await updateStatus({ ticketId: ticketId as Id<"tickets">, status: "completed" })
+      await updateStatus({ ticketId: ticketId as Id<"tickets">, status: "completed", completionType })
     } finally {
       setMarking(false)
     }
@@ -338,15 +338,27 @@ export function PlanViewer({ title, status, priority, content, checklist, ticket
         )}
 
         {isReview && ticketId && (
-          <Button
-            size="sm"
-            onClick={handleMarkCompleted}
-            disabled={marking}
-            className="h-7 text-xs gap-1.5 bg-status-completed hover:bg-status-completed/80 text-white"
-          >
-            {marking ? <Loader2 className="size-3 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
-            Mark as completed
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={() => handleApprove("clean")}
+              disabled={marking}
+              className="h-7 text-xs gap-1.5 bg-status-completed hover:bg-status-completed/80 text-white"
+            >
+              {marking ? <Loader2 className="size-3 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
+              Approve
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleApprove("with-fixes")}
+              disabled={marking}
+              className="h-7 text-xs gap-1.5 border-amber-500/30 text-amber-500 hover:bg-amber-500/10"
+            >
+              {marking ? <Loader2 className="size-3 animate-spin" /> : <Wrench className="size-3.5" />}
+              Approve with fixes
+            </Button>
+          </div>
         )}
       </div>
 
@@ -384,7 +396,7 @@ export function PlanViewer({ title, status, priority, content, checklist, ticket
           repo={repoName}
           sha={diffTarget}
           ticketId={ticketId}
-          onMarkComplete={isReview && ticketId ? handleMarkCompleted : undefined}
+          onApprove={isReview && ticketId ? handleApprove : undefined}
         />
       )}
     </div>

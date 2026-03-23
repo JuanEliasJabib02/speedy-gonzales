@@ -1,6 +1,6 @@
 # Split Approve Button — Clean vs With Fixes
 
-**Status:** in-progress
+**Status:** review
 **Priority:** high
 **Agent:** Perro salchicha 🌭
 
@@ -10,15 +10,20 @@ Replace the single "Mark as completed" button with two options: "Approve" (agent
 
 ## Checklist
 
-- [ ] In `convex/tickets.ts` `updateStatus`: accept optional `completionType` arg when status is `completed`
-- [ ] In `PlanViewer.tsx`: replace the "Mark as completed" button with a dropdown or two buttons:
+- [x] In `convex/tickets.ts` `updateStatus`: accept optional `completionType` arg when status is `completed`
+- [x] In `PlanViewer.tsx`: replace the "Mark as completed" button with a dropdown or two buttons:
   - ✅ "Approve" (green) → calls updateStatus with `status: "completed", completionType: "clean"`
   - 🔧 "Approve with fixes" (yellow/amber) → calls updateStatus with `status: "completed", completionType: "with-fixes"`
-- [ ] Both buttons should show when status is `review`
-- [ ] Style: "Approve" is the primary action (bigger/bolder), "Approve with fixes" is secondary
-- [ ] The `completionType` is stored on the ticket for analytics queries later
+- [x] Both buttons should show when status is `review`
+- [x] Style: "Approve" is the primary action (bigger/bolder), "Approve with fixes" is secondary
+- [x] The `completionType` is stored on the ticket for analytics queries later
 
 ## Files
 
 - `convex/tickets.ts`
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/PlanViewer.tsx`
+- `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/CommitDiffPanel.tsx`
+
+## Commits
+
+- `7c4c095f7bcfbe10e712af457f76ee92f38f9d2d`

@@ -26,19 +26,30 @@ export const updateStatus = mutation({
     ticketId: v.id("tickets"),
     status: statusValidator,
     blockedReason: v.optional(v.string()),
+    completionType: v.optional(v.union(v.literal("clean"), v.literal("with-fixes"))),
   },
-  handler: async (ctx, { ticketId, status, blockedReason }) => {
+  handler: async (ctx, { ticketId, status, blockedReason, completionType }) => {
     assertValidStatus(status)
     const userId = await requireAuth(ctx)
     const ticket = await ctx.db.get(ticketId)
     if (!ticket) return throwError(ErrorCodes.NOT_FOUND) as never
     const project = await ctx.db.get(ticket.projectId)
     if (!project || project.userId !== userId) return throwError(ErrorCodes.FORBIDDEN) as never
-    const ticketPatch: Partial<Doc<"tickets">> = {
-      status,
-      blockedReason: status === "blocked" ? (blockedReason ?? undefined) : undefined,
+    const now = Date.now()
+    const patch: Record<string, unknown> = { status }
+    if (status === "in-progress") patch.startedAt = now
+    if (status === "review") patch.reviewAt = now
+    if (status === "completed") {
+      patch.completedAt = now
+      if (completionType) patch.completionType = completionType
     }
-    await ctx.db.patch(ticketId, ticketPatch)
+    if (status === "blocked") {
+      patch.blockedAt = now
+      patch.blockedReason = blockedReason ?? undefined
+    } else {
+      patch.blockedReason = undefined
+    }
+    await ctx.db.patch(ticketId, patch)
 
     // Async: push status change to GitHub so the .md file stays in sync
     await ctx.scheduler.runAfter(0, internal.githubSync.pushTicketStatusToGitHub, {
@@ -138,11 +149,18 @@ export const updateStatusInternal = internalMutation({
 
     const previousStatus = ticket.status
 
-    const ticketPatch: Partial<Doc<"tickets">> = {
-      status,
-      blockedReason: status === "blocked" ? (blockedReason ?? undefined) : undefined,
+    const now = Date.now()
+    const patch: Record<string, unknown> = { status }
+    if (status === "in-progress") patch.startedAt = now
+    if (status === "review") patch.reviewAt = now
+    if (status === "completed") patch.completedAt = now
+    if (status === "blocked") {
+      patch.blockedAt = now
+      patch.blockedReason = blockedReason ?? undefined
+    } else {
+      patch.blockedReason = undefined
     }
-    await ctx.db.patch(ticketId, ticketPatch)
+    await ctx.db.patch(ticketId, patch)
 
     // Async: push status change to GitHub so the .md file stays in sync
     await ctx.scheduler.runAfter(0, internal.githubSync.pushTicketStatusToGitHub, {
