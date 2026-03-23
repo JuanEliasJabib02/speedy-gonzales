@@ -226,7 +226,7 @@ Full documentation is available at `/docs` in the app:
 - [Plans Spec](/docs/plans) — plan structure, directory conventions, parsed fields
 - [Source of Truth](/docs/source-of-truth) — how code, plans, and UI stay in sync
 - [Sync](/docs/sync) — GitHub auto-sync webhook mechanism
-- [AI Workflow](/docs/ai-workflow) — how the autonomous loop and agents work
+- [Autonomous Dev Loop](/docs/autonomous-loop) — how the autonomous loop and agents work
 - [Feature View](/docs/feature-view) — the three-panel UI for managing features
 
 ## License
