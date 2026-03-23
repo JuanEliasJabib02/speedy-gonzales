@@ -15,6 +15,7 @@ export const projects = defineTable({
   webhookSecret: v.optional(v.string()),
   lastSyncAt: v.optional(v.number()),
   syncStatus: v.string(), // "idle" | "syncing" | "error"
+  syncStartedAt: v.optional(v.number()), // timestamp when sync started (for stale lock detection)
   syncError: v.optional(v.string()),
   agentName: v.optional(v.string()),
   agentEmoji: v.optional(v.string()),

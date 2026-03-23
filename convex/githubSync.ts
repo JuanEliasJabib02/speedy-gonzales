@@ -24,7 +24,7 @@ export const forceResync = mutation({
   args: { projectId: v.id("projects") },
   handler: async (ctx, { projectId }) => {
     await requireAuth(ctx)
-    await ctx.db.patch(projectId, { syncStatus: "idle", updatedAt: Date.now() })
+    await ctx.db.patch(projectId, { syncStatus: "idle", syncStartedAt: undefined, updatedAt: Date.now() })
     await ctx.scheduler.runAfter(0, internal.githubSync.syncRepoInternal, { projectId })
   },
 })
@@ -45,20 +45,16 @@ export const syncAllProjects = internalAction({
 export const syncRepoInternal = internalAction({
   args: { projectId: v.id("projects") },
   handler: async (ctx, { projectId }) => {
-    // Guard: skip if already syncing to prevent race conditions
-    const project = await ctx.runQuery(internal.projects.getProjectInternal, { projectId })
-    if (!project) throw new Error("Project not found")
-    console.log(`[sync] Starting sync for ${project.repoOwner}/${project.repoName}, current status: ${project.syncStatus}`)
-    if (project.syncStatus === "syncing") {
-      console.log("[sync] Skipped — already syncing")
+    // Atomic guard: claim lock in a single mutation to prevent race conditions
+    const { claimed } = await ctx.runMutation(internal.githubSync.claimSyncLock, { projectId })
+    if (!claimed) {
+      console.log("[sync] Skipped — already syncing (lock not claimed)")
       return
     }
 
-    // Set syncing status
-    await ctx.runMutation(internal.githubSync.updateSyncStatus, {
-      projectId,
-      status: "syncing",
-    })
+    const project = await ctx.runQuery(internal.projects.getProjectInternal, { projectId })
+    if (!project) throw new Error("Project not found")
+    console.log(`[sync] Starting sync for ${project.repoOwner}/${project.repoName}`)
 
     try {
       const accessToken = process.env.GITHUB_PAT
@@ -219,15 +215,15 @@ export const syncRepoInternal = internalAction({
         })),
       })
 
-      // Set idle status
-      await ctx.runMutation(internal.githubSync.updateSyncStatus, {
+      // Release lock with success
+      await ctx.runMutation(internal.githubSync.releaseSyncLock, {
         projectId,
         status: "idle",
         lastSyncAt: Date.now(),
       })
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown sync error"
-      await ctx.runMutation(internal.githubSync.updateSyncStatus, {
+      await ctx.runMutation(internal.githubSync.releaseSyncLock, {
         projectId,
         status: "error",
         syncError: message,
@@ -421,6 +417,54 @@ export const upsertPlans = internalMutation({
         await ctx.db.patch(ticket._id, { isDeleted: true })
       }
     }
+  },
+})
+
+const STALE_LOCK_TIMEOUT_MS = 5 * 60 * 1000 // 5 minutes
+
+export const claimSyncLock = internalMutation({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, { projectId }) => {
+    const project = await ctx.db.get(projectId)
+    if (!project) return { claimed: false }
+
+    const now = Date.now()
+
+    if (project.syncStatus === "syncing") {
+      const startedAt = project.syncStartedAt ?? 0
+      const isStale = now - startedAt > STALE_LOCK_TIMEOUT_MS
+      if (!isStale) return { claimed: false }
+      console.log(`[sync] Reclaiming stale lock (started ${Math.round((now - startedAt) / 1000)}s ago)`)
+    }
+
+    await ctx.db.patch(projectId, {
+      syncStatus: "syncing",
+      syncStartedAt: now,
+      syncError: undefined,
+      updatedAt: now,
+    })
+    return { claimed: true }
+  },
+})
+
+export const releaseSyncLock = internalMutation({
+  args: {
+    projectId: v.id("projects"),
+    status: v.string(),
+    syncError: v.optional(v.string()),
+    lastSyncAt: v.optional(v.number()),
+  },
+  handler: async (ctx, { projectId, status, syncError, lastSyncAt }) => {
+    const updates: Record<string, unknown> = {
+      syncStatus: status,
+      syncStartedAt: undefined,
+      updatedAt: Date.now(),
+    }
+    if (syncError !== undefined) updates.syncError = syncError
+    if (lastSyncAt !== undefined) updates.lastSyncAt = lastSyncAt
+    if (status !== "error") updates.syncError = undefined
+
+    await ctx.db.patch(projectId, updates)
   },
 })
 
