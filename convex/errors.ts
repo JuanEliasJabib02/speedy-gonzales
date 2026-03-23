@@ -8,6 +8,7 @@ export const ErrorCodes = {
   BAD_REQUEST: "BAD_REQUEST",
   CONFLICT: "CONFLICT",
   INTERNAL: "INTERNAL",
+  INVALID_STATUS: "INVALID_STATUS",
 } as const
 
 export type ErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes]
