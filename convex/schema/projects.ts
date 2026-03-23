@@ -28,6 +28,7 @@ export const projects = defineTable({
   notificationEnabled: v.optional(v.boolean()), // Whether to notify on loop events (via agent's connected channel)
   loopStatus: v.optional(v.string()), // "idle" | "running" | "error"
   lastLoopAt: v.optional(v.number()), // timestamp of last loop execution
+  deletionStatus: v.optional(v.string()), // "pending" | "deleting" — set before async cleanup
   createdAt: v.number(),
   updatedAt: v.number(),
 })

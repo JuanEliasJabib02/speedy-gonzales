@@ -1,18 +1,21 @@
 import { v } from "convex/values"
-import { query, mutation, internalQuery } from "./_generated/server"
+import { query, mutation, internalQuery, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
 import { requireAuth } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
 import { parseRepoUrl } from "./model/parseRepoUrl"
 
+const DELETE_BATCH_SIZE = 100
+
 export const getProjects = query({
   args: {},
   handler: async (ctx) => {
     const userId = await requireAuth(ctx)
-    return ctx.db
+    const projects = await ctx.db
       .query("projects")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect()
+    return projects.filter((p) => !p.deletionStatus)
   },
 })
 
@@ -21,7 +24,7 @@ export const getProject = query({
   handler: async (ctx, { projectId }) => {
     const userId = await requireAuth(ctx)
     const project = await ctx.db.get(projectId)
-    if (!project || project.userId !== userId) return throwError(ErrorCodes.NOT_FOUND)
+    if (!project || project.userId !== userId || project.deletionStatus) return throwError(ErrorCodes.NOT_FOUND)
     return project
   },
 })
@@ -74,25 +77,75 @@ export const deleteProject = mutation({
     const userId = await requireAuth(ctx)
     const project = await ctx.db.get(projectId)
     if (!project || project.userId !== userId) return throwError(ErrorCodes.NOT_FOUND)
+    if (project.deletionStatus) return // already being deleted
 
-    // Cascade delete: tickets → epics → project
+    // Soft-mark the project so it disappears from queries immediately
+    await ctx.db.patch(projectId, { deletionStatus: "pending" })
+
+    // Schedule async cascading cleanup
+    await ctx.scheduler.runAfter(0, internal.projects.deleteTicketsBatch, { projectId })
+  },
+})
+
+// --- Internal batch deletion chain ---
+
+export const deleteTicketsBatch = internalMutation({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, { projectId }) => {
+    const project = await ctx.db.get(projectId)
+    if (!project) return
+
+    await ctx.db.patch(projectId, { deletionStatus: "deleting" })
+
+    const tickets = await ctx.db
+      .query("tickets")
+      .withIndex("by_project", (q) => q.eq("projectId", projectId))
+      .take(DELETE_BATCH_SIZE)
+
+    for (const ticket of tickets) {
+      await ctx.db.delete(ticket._id)
+    }
+
+    if (tickets.length === DELETE_BATCH_SIZE) {
+      // More tickets remain — schedule next batch
+      await ctx.scheduler.runAfter(0, internal.projects.deleteTicketsBatch, { projectId })
+    } else {
+      // All tickets deleted — move on to epics
+      await ctx.scheduler.runAfter(0, internal.projects.deleteEpicsBatch, { projectId })
+    }
+  },
+})
+
+export const deleteEpicsBatch = internalMutation({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, { projectId }) => {
+    const project = await ctx.db.get(projectId)
+    if (!project) return
+
     const epics = await ctx.db
       .query("epics")
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
-      .collect()
+      .take(DELETE_BATCH_SIZE)
 
     for (const epic of epics) {
-      const tickets = await ctx.db
-        .query("tickets")
-        .withIndex("by_epic", (q) => q.eq("epicId", epic._id))
-        .collect()
-      for (const ticket of tickets) {
-        await ctx.db.delete(ticket._id)
-      }
-
       await ctx.db.delete(epic._id)
     }
 
+    if (epics.length === DELETE_BATCH_SIZE) {
+      // More epics remain — schedule next batch
+      await ctx.scheduler.runAfter(0, internal.projects.deleteEpicsBatch, { projectId })
+    } else {
+      // All children deleted — remove the project
+      await ctx.scheduler.runAfter(0, internal.projects.deleteProjectFinal, { projectId })
+    }
+  },
+})
+
+export const deleteProjectFinal = internalMutation({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, { projectId }) => {
+    const project = await ctx.db.get(projectId)
+    if (!project) return
     await ctx.db.delete(projectId)
   },
 })
@@ -143,7 +196,7 @@ export const getActiveLoopProjects = internalQuery({
   handler: async (ctx) => {
     const allProjects = await ctx.db.query("projects").collect()
     return allProjects.filter(
-      (p) => p.autonomousLoop === true && !!p.localPath
+      (p) => p.autonomousLoop === true && !!p.localPath && !p.deletionStatus
     )
   },
 })
@@ -151,7 +204,8 @@ export const getActiveLoopProjects = internalQuery({
 export const getAllActiveProjects = internalQuery({
   args: {},
   handler: async (ctx) => {
-    return ctx.db.query("projects").collect()
+    const allProjects = await ctx.db.query("projects").collect()
+    return allProjects.filter((p) => !p.deletionStatus)
   },
 })
 
@@ -177,7 +231,7 @@ export const getProjectStats = query({
   }> => {
     const userId = await requireAuth(ctx)
     const project = await ctx.db.get(projectId)
-    if (!project || project.userId !== userId) return throwError(ErrorCodes.NOT_FOUND)
+    if (!project || project.userId !== userId || project.deletionStatus) return throwError(ErrorCodes.NOT_FOUND)
 
     const epics = await ctx.db
       .query("epics")
@@ -214,10 +268,11 @@ export const getProjectsWithStats = query({
   args: {},
   handler: async (ctx) => {
     const userId = await requireAuth(ctx)
-    const projects = await ctx.db
+    const allProjects = await ctx.db
       .query("projects")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect()
+    const projects = allProjects.filter((p) => !p.deletionStatus)
 
     const results = await Promise.all(
       projects.map(async (project) => {
