@@ -1,6 +1,6 @@
 # Add Auth + Ownership Check to syncProject
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** critical
 **Agent:** Perro salchicha 🌭
 
