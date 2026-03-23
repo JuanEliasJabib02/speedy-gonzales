@@ -500,7 +500,76 @@ export const storeWebhookInfo = internalMutation({
   },
 })
 
-// Pushes a status change directly to GitHub by patching the .md file via GitHub API
+// Shared helper: fetch a .md file from GitHub, replace the **Status:** line, and commit
+async function pushStatusToGitHub(opts: {
+  repoOwner: string
+  repoName: string
+  branch: string
+  accessToken: string
+  filePath: string
+  newStatus: string
+  commitMessage: string
+}): Promise<void> {
+  const { repoOwner, repoName, branch, accessToken, filePath, newStatus, commitMessage } = opts
+  const baseUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`
+
+  // 1. Get current file content + SHA from GitHub
+  const fileRes = await fetch(`${baseUrl}?ref=${branch}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: "application/vnd.github+json",
+    },
+  })
+
+  if (!fileRes.ok) {
+    console.error(`[git-status-push] Failed to fetch: ${filePath}`, await fileRes.text())
+    return
+  }
+
+  const fileData = await fileRes.json()
+  const rawBytes = Uint8Array.from(globalThis.atob(fileData.content.replace(/\n/g, "")), (c) => c.charCodeAt(0))
+  const currentContent = new TextDecoder().decode(rawBytes)
+  const fileSha = fileData.sha
+
+  // 2. Replace **Status:** line
+  const updatedContent = currentContent.replace(
+    /\*\*Status:\*\*\s*\S+/,
+    `**Status:** ${newStatus}`
+  )
+
+  if (updatedContent === currentContent) {
+    console.log(`[git-status-push] No status change needed in ${filePath}`)
+    return
+  }
+
+  // 3. Commit the change via GitHub API
+  const encodedBytes = new TextEncoder().encode(updatedContent)
+  const encodedContent = globalThis.btoa(String.fromCharCode(...encodedBytes))
+
+  const updateRes = await fetch(baseUrl, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: "application/vnd.github+json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      message: commitMessage,
+      content: encodedContent,
+      sha: fileSha,
+      branch,
+    }),
+  })
+
+  if (!updateRes.ok) {
+    console.error(`[git-status-push] Failed to commit: ${filePath}`, await updateRes.text())
+    return
+  }
+
+  console.log(`[git-status-push] ✅ ${filePath} → ${newStatus}`)
+}
+
+// Pushes a ticket status change directly to GitHub by patching the .md file
 export const pushTicketStatusToGitHub = internalAction({
   args: {
     ticketId: v.id("tickets"),
@@ -521,66 +590,15 @@ export const pushTicketStatusToGitHub = internalAction({
       return
     }
 
-    const { repoOwner, repoName, branch } = project
-
-    // 1. Get current file content + SHA from GitHub
-    const fileRes = await fetch(
-      `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${ticket.path}?ref=${branch}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/vnd.github+json",
-        },
-      }
-    )
-
-    if (!fileRes.ok) {
-      console.error(`[git-status-push] Failed to fetch file: ${ticket.path}`, await fileRes.text())
-      return
-    }
-
-    const fileData = await fileRes.json()
-    const currentContent = atob(fileData.content.replace(/\n/g, ""))
-    const fileSha = fileData.sha
-
-    // 2. Replace **Status:** line
-    const updatedContent = currentContent.replace(
-      /\*\*Status:\*\*\s*\S+/,
-      `**Status:** ${newStatus}`
-    )
-
-    if (updatedContent === currentContent) {
-      console.log(`[git-status-push] No status change needed in ${ticket.path}`)
-      return
-    }
-
-    // 3. Commit the change via GitHub API
-    const encodedContent = btoa(unescape(encodeURIComponent(updatedContent)))
-
-    const updateRes = await fetch(
-      `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${ticket.path}`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/vnd.github+json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: `chore(tickets): mark ${ticket.title} as ${newStatus}`,
-          content: encodedContent,
-          sha: fileSha,
-          branch,
-        }),
-      }
-    )
-
-    if (!updateRes.ok) {
-      console.error(`[git-status-push] Failed to commit status: ${ticket.path}`, await updateRes.text())
-      return
-    }
-
-    console.log(`[git-status-push] ✅ ${ticket.path} → ${newStatus}`)
+    await pushStatusToGitHub({
+      repoOwner: project.repoOwner,
+      repoName: project.repoName,
+      branch: project.branch,
+      accessToken,
+      filePath: ticket.path,
+      newStatus,
+      commitMessage: `chore(tickets): mark ${ticket.title} as ${newStatus}`,
+    })
   },
 })
 
@@ -600,64 +618,18 @@ export const pushEpicStatusToGitHub = internalAction({
 
     const accessToken = process.env.GITHUB_PAT
     if (!accessToken) {
-      console.error("[git-epic-push] GITHUB_PAT not set")
+      console.error("[git-status-push] GITHUB_PAT not set")
       return
     }
 
-    const { repoOwner, repoName, branch } = project
-    const filePath = `${epic.path}/_context.md`
-
-    const fileRes = await fetch(
-      `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}?ref=${branch}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/vnd.github+json",
-        },
-      }
-    )
-
-    if (!fileRes.ok) {
-      console.error(`[git-epic-push] Failed to fetch: ${filePath}`, await fileRes.text())
-      return
-    }
-
-    const fileData = await fileRes.json()
-    const currentContent = atob(fileData.content.replace(/\n/g, ""))
-    const fileSha = fileData.sha
-
-    const updatedContent = currentContent.replace(
-      /\*\*Status:\*\*\s*\S+/,
-      `**Status:** ${newStatus}`
-    )
-
-    if (updatedContent === currentContent) return
-
-    const encodedContent = btoa(unescape(encodeURIComponent(updatedContent)))
-
-    const updateRes = await fetch(
-      `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/vnd.github+json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: `chore(plans): auto-promote ${epic.title} to ${newStatus}`,
-          content: encodedContent,
-          sha: fileSha,
-          branch,
-        }),
-      }
-    )
-
-    if (!updateRes.ok) {
-      console.error(`[git-epic-push] Failed to commit: ${filePath}`, await updateRes.text())
-      return
-    }
-
-    console.log(`[git-epic-push] ✅ ${filePath} → ${newStatus}`)
+    await pushStatusToGitHub({
+      repoOwner: project.repoOwner,
+      repoName: project.repoName,
+      branch: project.branch,
+      accessToken,
+      filePath: `${epic.path}/_context.md`,
+      newStatus,
+      commitMessage: `chore(plans): auto-promote ${epic.title} to ${newStatus}`,
+    })
   },
 })
