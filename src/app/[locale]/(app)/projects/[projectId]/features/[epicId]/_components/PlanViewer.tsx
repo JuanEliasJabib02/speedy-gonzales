@@ -23,6 +23,7 @@ import { Button } from "@/src/lib/components/ui/button"
 import { Input } from "@/src/lib/components/ui/input"
 import type { Components } from "react-markdown"
 import { MarkdownContent } from "@/src/lib/components/common/MarkdownContent"
+import { STATUS_PILL, STATUS_DOT, PRIORITY_STYLES } from "@/src/lib/constants/status-styles"
 
 const planMarkdownComponents: Components = {
   h2({ children }) {
@@ -69,36 +70,14 @@ const planMarkdownComponents: Components = {
   },
 }
 
-const STATUS_PILL: Record<string, string> = {
-  "blocked": "bg-status-blocked/15 text-status-blocked",
-  "todo": "bg-status-todo/15 text-status-todo",
-  "in-progress": "bg-status-in-progress/15 text-status-in-progress",
-  "review": "bg-status-review/15 text-status-review",
-  "completed": "bg-status-completed/15 text-status-completed",
-}
-
-const STATUS_DOT: Record<string, string> = {
-  "blocked": "bg-status-blocked",
-  "todo": "bg-status-todo",
-  "in-progress": "bg-status-in-progress",
-  "review": "bg-status-review",
-  "completed": "bg-status-completed",
-}
-
 const STATUS_OPTIONS = [
+  { value: "backlog", label: "Backlog" },
   { value: "todo", label: "Todo" },
   { value: "in-progress", label: "In Progress" },
   { value: "blocked", label: "Blocked" },
   { value: "review", label: "Review" },
   { value: "completed", label: "Done" },
 ] as const
-
-const PRIORITY_PILL: Record<string, string> = {
-  low: "bg-muted text-muted-foreground",
-  medium: "bg-status-in-progress/15 text-status-in-progress",
-  high: "bg-status-review/15 text-status-review",
-  critical: "bg-status-blocked/15 text-status-blocked",
-}
 
 type CommitDetail = {
   sha: string
@@ -240,7 +219,7 @@ export function PlanViewer({ title, status, priority, content, checklist, ticket
   const [marking, setMarking] = useState(false)
   const [diffTarget, setDiffTarget] = useState<string | null>(null)
 
-  const handleStatusChange = (newStatus: string) => {
+  const handleStatusChange = (newStatus: "todo" | "in-progress" | "review" | "completed" | "blocked") => {
     if (!ticketId) return
     if (newStatus === "blocked") {
       setReasonText("")
@@ -343,7 +322,7 @@ export function PlanViewer({ title, status, priority, content, checklist, ticket
           </span>
         )}
 
-        <span className={`rounded-full px-2.5 py-0.5 text-xs ${PRIORITY_PILL[priority] ?? PRIORITY_PILL.medium}`}>
+        <span className={`rounded-full px-2.5 py-0.5 text-xs ${PRIORITY_STYLES[priority] ?? PRIORITY_STYLES.medium}`}>
           {priority}
         </span>
 

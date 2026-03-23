@@ -1,6 +1,5 @@
 import { convexAuth } from "@convex-dev/auth/server"
 import { Email } from "@convex-dev/auth/providers/Email"
-import type { MutationCtx } from "./_generated/server"
 
 const generateOtpCode = async () =>
   Math.floor(100000 + Math.random() * 900000).toString()
@@ -43,9 +42,14 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       }
 
       if (args.profile.email) {
-        const existing = await (ctx as unknown as MutationCtx).db
+        const existing = await ctx.db
           .query("users")
-          .withIndex("by_email", (q) => q.eq("email", args.profile.email!))
+          // @ts-expect-error — @convex-dev/auth@0.0.91 types the callback ctx
+          // with a generic DataModel, so withIndex can't see table indexes.
+          // Runtime ctx is a full MutationCtx. No upstream fix as of v0.0.91.
+          .withIndex("by_email", (q: { eq: (field: string, value: string) => unknown }) =>
+            q.eq("email", args.profile.email!),
+          )
           .first()
         if (existing) return existing._id
       }

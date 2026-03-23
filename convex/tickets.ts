@@ -1,7 +1,8 @@
 import { v } from "convex/values"
 import { query, mutation, internalQuery, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
-import { requireAuth } from "./helpers"
+import type { Doc } from "./_generated/dataModel"
+import { requireAuth, statusValidator } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
 
 export const getByEpic = query({
@@ -23,7 +24,7 @@ export const getByEpic = query({
 export const updateStatus = mutation({
   args: {
     ticketId: v.id("tickets"),
-    status: v.string(),
+    status: statusValidator,
     blockedReason: v.optional(v.string()),
   },
   handler: async (ctx, { ticketId, status, blockedReason }) => {
@@ -32,13 +33,11 @@ export const updateStatus = mutation({
     if (!ticket) return throwError(ErrorCodes.NOT_FOUND) as never
     const project = await ctx.db.get(ticket.projectId)
     if (!project || project.userId !== userId) return throwError(ErrorCodes.FORBIDDEN) as never
-    const patch: Record<string, unknown> = { status }
-    if (status === "blocked") {
-      patch.blockedReason = blockedReason ?? undefined
-    } else {
-      patch.blockedReason = undefined
+    const ticketPatch: Partial<Doc<"tickets">> = {
+      status,
+      blockedReason: status === "blocked" ? (blockedReason ?? undefined) : undefined,
     }
-    await ctx.db.patch(ticketId, patch)
+    await ctx.db.patch(ticketId, ticketPatch)
 
     // Async: push status change to GitHub so the .md file stays in sync
     await ctx.scheduler.runAfter(0, internal.githubSync.pushTicketStatusToGitHub, {
@@ -47,33 +46,33 @@ export const updateStatus = mutation({
     })
 
     // Update denormalized completed ticket count + auto-promote epic
-    const ticket = await ctx.db.get(ticketId)
-    if (ticket) {
+    const updatedTicket = await ctx.db.get(ticketId)
+    if (updatedTicket) {
       const allTickets = await ctx.db
         .query("tickets")
-        .withIndex("by_epic", (q) => q.eq("epicId", ticket.epicId))
+        .withIndex("by_epic", (q) => q.eq("epicId", updatedTicket.epicId))
         .collect()
       const activeTickets = allTickets.filter((t) => !t.isDeleted)
       const completedCount = activeTickets.filter((t) => t.status === "completed" || t.status === "review").length
 
-      const epicPatch: Record<string, unknown> = { completedTicketCount: completedCount }
+      const epicPatch: Partial<Doc<"epics">> = { completedTicketCount: completedCount }
 
       // Auto-promote epic to review when all tickets are done (completed or review)
       if (status === "completed" || status === "review") {
         const allDone = activeTickets.every((t) => t.status === "completed" || t.status === "review")
         if (allDone && activeTickets.length > 0) {
-          const epic = await ctx.db.get(ticket.epicId)
+          const epic = await ctx.db.get(updatedTicket.epicId)
           if (epic && epic.status !== "review" && epic.status !== "completed") {
             epicPatch.status = "review"
             await ctx.scheduler.runAfter(0, internal.githubSync.pushEpicStatusToGitHub, {
-              epicId: ticket.epicId,
+              epicId: updatedTicket.epicId,
               newStatus: "review",
             })
           }
         }
       }
 
-      await ctx.db.patch(ticket.epicId, epicPatch)
+      await ctx.db.patch(updatedTicket.epicId, epicPatch)
     }
   },
 })
@@ -128,7 +127,7 @@ export const getByProjectPath = internalQuery({
 export const updateStatusInternal = internalMutation({
   args: {
     ticketId: v.id("tickets"),
-    status: v.string(),
+    status: statusValidator,
     blockedReason: v.optional(v.string()),
   },
   handler: async (ctx, { ticketId, status, blockedReason }) => {
@@ -137,13 +136,11 @@ export const updateStatusInternal = internalMutation({
 
     const previousStatus = ticket.status
 
-    const patch: Record<string, unknown> = { status }
-    if (status === "blocked") {
-      patch.blockedReason = blockedReason ?? undefined
-    } else {
-      patch.blockedReason = undefined
+    const ticketPatch: Partial<Doc<"tickets">> = {
+      status,
+      blockedReason: status === "blocked" ? (blockedReason ?? undefined) : undefined,
     }
-    await ctx.db.patch(ticketId, patch)
+    await ctx.db.patch(ticketId, ticketPatch)
 
     // Async: push status change to GitHub so the .md file stays in sync
     await ctx.scheduler.runAfter(0, internal.githubSync.pushTicketStatusToGitHub, {
@@ -161,7 +158,7 @@ export const updateStatusInternal = internalMutation({
       (t) => t.status === "completed" || t.status === "review"
     ).length
 
-    const epicPatch: Record<string, unknown> = { completedTicketCount: completedCount }
+    const epicPatch: Partial<Doc<"epics">> = { completedTicketCount: completedCount }
 
     if (status === "completed" || status === "review") {
       const allDone = activeTickets.every((t) => t.status === "completed" || t.status === "review")

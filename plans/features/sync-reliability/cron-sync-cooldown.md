@@ -1,6 +1,6 @@
 # Add Cooldown to Cron Sync
 
-**Status:** todo
+**Status:** review
 **Priority:** medium
 **Agent:** Perro salchicha 🌭
 
@@ -10,13 +10,16 @@
 
 ## Checklist
 
-- [ ] Add a `lastSyncedAt` timestamp field to the projects schema (if not already present)
-- [ ] In `syncAllProjects`: skip projects where `lastSyncedAt` is within the last 15 minutes
-- [ ] Update `lastSyncedAt` at the end of each successful sync (both webhook and cron triggered)
-- [ ] Skip unnecessary `completedTicketCount` patches in `upsertPlans` — only patch when value actually changed
+- [x] Add a `lastSyncedAt` timestamp field to the projects schema (if not already present)
+- [x] In `syncAllProjects`: skip projects where `lastSyncAt` is within the last 15 minutes
+- [x] Update `lastSyncAt` at the end of each successful sync (both webhook and cron triggered)
+- [x] Skip unnecessary `completedTicketCount` patches in `upsertPlans` — only patch when value actually changed
 
 ## Files
 
 - `convex/githubSync.ts`
 - `convex/crons.ts`
 - `convex/schema/projects.ts`
+
+## Commits
+- `521c80bb1f4de381358bee33718820709ec04326`

@@ -4,17 +4,10 @@ import { useState } from "react"
 import { Check, Play, Square, Loader2, Github } from "lucide-react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
-import type { Id } from "@/convex/_generated/dataModel"
 import { Link } from "@/src/i18n/routing"
 import { Button } from "@/src/lib/components/ui/button"
 import type { Feature } from "../_constants/kanban-config"
-
-const PRIORITY_STYLES: Record<string, string> = {
-  low: "bg-muted text-muted-foreground",
-  medium: "bg-status-in-progress/15 text-status-in-progress",
-  high: "bg-status-review/15 text-status-review",
-  critical: "bg-status-blocked/15 text-status-blocked",
-}
+import { PRIORITY_STYLES } from "@/src/lib/constants/status-styles"
 
 type FeatureCardProps = {
   feature: Feature
@@ -31,14 +24,14 @@ export function FeatureCard({ feature, projectId }: FeatureCardProps) {
 
   const handleStatusChange = async (
     e: React.MouseEvent,
-    newStatus: string,
+    newStatus: "todo" | "in-progress" | "review" | "completed" | "blocked",
   ) => {
     e.preventDefault()
     e.stopPropagation()
     setIsUpdating(true)
     try {
       await updateStatus({
-        epicId: feature.id as Id<"epics">,
+        epicId: feature.id,
         status: newStatus,
       })
     } finally {

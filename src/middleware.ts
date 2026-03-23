@@ -10,11 +10,11 @@ import { routing } from "./i18n/routing"
 const intlMiddleware = createNextIntlMiddleware(routing)
 
 const isPrivateRoute = createRouteMatcher([
-  "/(en|es|pt)/dashboard(.*)",
-  "/(en|es|pt)/projects(.*)",
+  "/(en|es)/dashboard(.*)",
+  "/(en|es)/projects(.*)",
 ])
 
-const isLoginRoute = createRouteMatcher(["/(en|es|pt)/login"])
+const isLoginRoute = createRouteMatcher(["/(en|es)/login"])
 
 export default convexAuthNextjsMiddleware(
   async (request: NextRequest, { convexAuth }) => {
@@ -45,7 +45,7 @@ export default convexAuthNextjsMiddleware(
 export const config = {
   matcher: [
     "/",
-    "/(es|en|pt)/:path*",
+    "/(es|en)/:path*",
     "/api/auth(.*)",
     "/((?!_next|_vercel|.*\\..*).*)",
   ],
