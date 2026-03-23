@@ -1,6 +1,6 @@
 # Add Ownership Check to Epic Mutations and Queries
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** critical
 **Agent:** Perro salchicha 🌭
 
