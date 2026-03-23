@@ -1,6 +1,6 @@
 # Update Sync + Source of Truth Pages
 
-**Status:** todo
+**Status:** review
 **Priority:** medium
 **Agent:** Charizard 🔥
 
@@ -10,12 +10,12 @@ Update the GitHub Auto-Sync and Source of Truth documentation pages. Both exist 
 
 ## Checklist
 
-- [ ] Rewrite source-of-truth page: emphasize git is truth for PLANS, Convex is truth for STATUS (this is a dual model now). Explain why: status changes need to be real-time (kanban), but plan content lives in git.
-- [ ] Add diagram showing the data flow: repo `.md` files → webhook → Convex sync → UI display. And separately: autonomous loop → HTTP endpoint → Convex status update → UI display.
-- [ ] Rewrite sync page: explain webhook setup (same as setup guide but with more technical detail), what triggers a sync, what gets synced (only files under `plansPath`), what the sync does (upsert epics + tickets, parse frontmatter, track checklist progress)
-- [ ] Add section on manual sync: the "Sync now" button in the UI, and the manual curl command for triggering sync
-- [ ] Add section on the `/update-ticket-status` endpoint — how the autonomous loop updates status in real-time without waiting for git push + webhook
-- [ ] Remove any references to chat or AI-in-the-UI features (these were removed)
+- [x] Rewrite source-of-truth page: emphasize git is truth for PLANS, Convex is truth for STATUS (this is a dual model now). Explain why: status changes need to be real-time (kanban), but plan content lives in git.
+- [x] Add diagram showing the data flow: repo `.md` files → webhook → Convex sync → UI display. And separately: autonomous loop → HTTP endpoint → Convex status update → UI display.
+- [x] Rewrite sync page: explain webhook setup (same as setup guide but with more technical detail), what triggers a sync, what gets synced (only files under `plansPath`), what the sync does (upsert epics + tickets, parse frontmatter, track checklist progress)
+- [x] Add section on manual sync: the "Sync now" button in the UI, and the manual curl command for triggering sync
+- [x] Add section on the `/update-ticket-status` endpoint — how the autonomous loop updates status in real-time without waiting for git push + webhook
+- [x] Remove any references to chat or AI-in-the-UI features (these were removed)
 
 ## Files
 
@@ -35,3 +35,7 @@ Update the GitHub Auto-Sync and Source of Truth documentation pages. Both exist 
 - Reuse: same doc page pattern
 - Match: existing docs pages
 - Tokens: standard docs tokens, code blocks for API examples and curl commands
+
+## Commits
+
+`558cde2c0dcfe550439e5c4898fcb4c8aad28bab`

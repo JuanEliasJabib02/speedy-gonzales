@@ -52,6 +52,46 @@ curl -s -X POST "https://necessary-fish-66.convex.site/github-webhook" \
   -d '{"repository": {"owner": {"login": "JuanEliasJabib02"}, "name": "speedy-gonzales"}, "commits": [{"modified": ["plans/features/chat/_context.md"]}]}'
 ```
 
+## Quality Gates (3-Gate System)
+
+Every feature goes through three quality gates before any code is written. This ensures tickets are solid, specific, and verifiable.
+
+### Gate 1 — Structured Discuss
+
+Before writing any plans, Charizard asks 3-5 targeted questions based on the feature's domain (frontend, backend, data model, integration, or refactor). These surface decisions that would be expensive to change later. If the answer is "you decide," the agent decides and documents it.
+
+### Gate 2 — Ticket Quality Verification
+
+After creating all tickets but before dispatching Perro salchicha, a quality check validates:
+- File paths in `## Files` exist (for modifications) or make sense (for new files)
+- Patterns in `## Patterns to follow` reference real, existing code
+- Each checklist item is specific enough to implement without guessing
+- No conflicts between tickets modifying the same file
+- Dependency order is correct (no ticket references code from a later ticket)
+- Frontend tickets have a `## UI Contract`
+
+**Verdict:** PASS → dispatch. FAIL → fix and re-verify (max 1 retry).
+
+### Gate 3 — UI Contract (Frontend Tickets)
+
+Every ticket that touches `.tsx` or UI components must include a `## UI Contract` specifying:
+- **Layout** — how elements are arranged
+- **States** — what renders for loading, empty, error, success
+- **Reuse** — existing components to use (don't reinvent)
+- **Match** — which existing page/component this should visually resemble
+- **Tokens** — specific tailwind classes, color tokens, spacing
+
+### Post-Execution Verification
+
+After Perro salchicha finishes a ticket, the agent:
+1. Re-reads the ticket checklist — confirms every item is addressed
+2. Runs `npx tsc --noEmit` to catch type errors
+3. Fixes any issues found before committing
+4. Updates ticket status to `review` and marks checklist items `[x]` in the same commit as the code
+5. Pushes and notifies — Juan reviews and moves to `completed`
+
+**Agents never mark tickets as `completed`** — only `review`. Human review is the final gate.
+
 ## Key Rules
 
 - Components are pure UI — all logic in hooks

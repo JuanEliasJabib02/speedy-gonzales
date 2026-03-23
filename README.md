@@ -4,18 +4,28 @@
 
 **You write the plan. AI builds it while you sleep.**
 
-Speedy Gonzales is an autonomous development orchestrator. Define features in plain markdown, and AI agents code them 24/7 — picking tickets by priority, writing code, pushing branches, creating PRs, and updating a real-time kanban. You review when you're ready.
+Speedy Gonzales is an autonomous development orchestrator. Define features as plain markdown files in your repo, and AI agents code them 24/7 — picking tickets by priority, writing code, pushing branches, and creating PRs. A real-time kanban tracks everything. You review when you're ready.
 
 ## How it works
 
 ```
 You define a feature → tickets are created as .md files in your repo
                               ↓
+            ┌─── Quality Gate 1: Plan Verification ───┐
+            │  Structured discussion → ticket breakdown │
+            │  UI contracts defined before code starts  │
+            └─────────────────────────────────────────┘
+                              ↓
          The loop fires every 30 minutes (cron)
                               ↓
      Picks the highest priority "todo" ticket
                               ↓
-    AI agent reads the plan, codes the solution
+    Coding agent reads the plan, codes the solution
+                              ↓
+            ┌─── Quality Gate 2: Verification ────────┐
+            │  Agent verifies checklist items are met   │
+            │  Ticket moves to "review" only if passed  │
+            └─────────────────────────────────────────┘
                               ↓
       Pushes to a feature branch automatically
                               ↓
@@ -23,71 +33,181 @@ You define a feature → tickets are created as .md files in your repo
                               ↓
            PR is created on GitHub
                               ↓
-         Loop picks the next ticket. Repeat.
+            ┌─── Quality Gate 3: Human Review ────────┐
+            │  Agents can't move tickets to "completed" │
+            │  Only humans approve and merge             │
+            └─────────────────────────────────────────┘
                               ↓
-          You wake up. Review. Approve.
+         Loop picks the next ticket. Repeat.
 ```
 
 ## Why Speedy
 
-- **Fully autonomous** — no prompting, no babysitting. Define the work, walk away.
-- **Git is the source of truth** — plans are `.md` files in your repo. No vendor lock-in.
-- **Real-time kanban** — watch tickets move from `todo` → `in-progress` → `review` as agents work.
-- **Stack-agnostic** — works with any repo. Next.js, Expo, FastAPI, Shopify, whatever. Each repo defines its own conventions via `.claude/` adapters.
-- **Agent-agnostic** — uses Claude Code today, swap in Codex, OpenHands, or anything tomorrow.
-- **Open source** — inspect everything. Trust the system.
+- **Plans as Code** — features and tickets are `.md` files in your repo. Git is the source of truth. No vendor lock-in, no external boards.
+- **Real-Time Kanban** — plans sync from GitHub via webhooks. Watch tickets move across the board as agents work.
+- **Autonomous Dev Loop** — a cron fires every 30 minutes, picks the highest-priority todo ticket, dispatches a coding agent, and pushes the result. No prompting, no babysitting.
+- **Stack-Agnostic** — Speedy manages plans, not code. Next.js, Expo, FastAPI, Shopify, Rails — any stack works. Each repo defines its own conventions.
+- **Agent-Agnostic** — uses Claude Code today. Swap in Codex, OpenHands, or any CLI-based agent tomorrow.
+- **Quality Gates** — a 3-gate system ensures work is correct: structured planning → ticket verification → UI contracts. Code doesn't ship without passing all gates.
+- **Human Review Gate** — agents move tickets to `review`, never to `completed`. Only humans approve and merge. You stay in control.
+- **Multi-Project / Multi-Agent** — one orchestrator manages multiple repos and agents. Scale from one side project to a full portfolio.
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────┐
-│                   Your Repo                      │
-│                                                  │
-│  plans/features/                                 │
-│    ├── auth/                                     │
-│    │   ├── _context.md      ← feature overview   │
-│    │   ├── login-flow.md    ← ticket             │
-│    │   └── oauth-setup.md   ← ticket             │
-│    ├── dashboard/                                │
-│    │   ├── _context.md                           │
-│    │   └── progress-bar.md                       │
-│    └── ...                                       │
-│                                                  │
-│  .claude/                   ← agent conventions  │
-│  src/                       ← your code          │
-└──────────────────┬──────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│                    Your Repo                         │
+│                                                      │
+│  plans/features/                                     │
+│    ├── auth/                                         │
+│    │   ├── _context.md      ← epic overview          │
+│    │   ├── login-flow.md    ← ticket                 │
+│    │   └── oauth-setup.md   ← ticket                 │
+│    ├── dashboard/                                    │
+│    │   ├── _context.md                               │
+│    │   └── progress-bar.md                           │
+│    └── ...                                           │
+│                                                      │
+│  .claude/                   ← agent conventions      │
+│  src/                       ← your code              │
+└──────────────────┬──────────────────────────────────┘
                    │
                    │  git sync (webhooks)
                    ▼
-┌──────────────────────────────────────────────────┐
-│              Convex (real-time DB)                │
-│                                                  │
-│  Syncs .md plans → real-time kanban state         │
-│  Status updates before PR merge (HTTP endpoint)  │
-└──────────────────┬───────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│              Convex (real-time DB)                    │
+│                                                      │
+│  Syncs .md plans → real-time kanban state             │
+│  Status updates before PR merge (HTTP endpoint)      │
+│  Verification agent confirms checklist completion    │
+└──────────────────┬───────────────────────────────────┘
                    │
                    ▼
-┌──────────────────────────────────────────────────┐
-│            Speedy UI (Next.js)                    │
-│                                                  │
-│  Dashboard → Features → Kanban → Plan Viewer     │
-│  Real-time updates • Commit diffs • PR links     │
-└──────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│            Speedy UI (Next.js)                        │
+│                                                      │
+│  Dashboard → Features → Kanban → Plan Viewer         │
+│  Real-time updates • Commit diffs • PR links         │
+└──────────────────────────────────────────────────────┘
                    │
                    │  autonomous loop (cron)
                    ▼
-┌──────────────────────────────────────────────────┐
-│            Orchestrator (OpenClaw)                │
-│                                                  │
-│  Every 30 min:                                   │
-│    1. Query todo tickets                         │
-│    2. Pick highest priority                      │
-│    3. Dispatch AI agent                          │
-│    4. Agent codes → pushes → creates PR          │
-│    5. Kanban updates in real-time                │
-│    6. Repeat                                     │
-└──────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│            Orchestrator (OpenClaw)                    │
+│                                                      │
+│  Every 30 min:                                       │
+│    1. Query todo tickets                             │
+│    2. Pick highest priority                          │
+│    3. Run quality gate checks                        │
+│    4. Dispatch coding agent                          │
+│    5. Agent codes → verifies → pushes → creates PR   │
+│    6. Kanban updates in real-time                    │
+│    7. Human reviews and approves                     │
+│    8. Repeat                                         │
+│                                                      │
+│  Quality gates enforced at every step                │
+└──────────────────────────────────────────────────────┘
 ```
+
+## Core Concepts
+
+### Epics and Tickets
+
+Work is organized in two levels:
+
+- **Epic** — a feature directory under `plans/features/<epic-slug>/`. Contains a `_context.md` (overview, architecture decisions, what's built, what's missing) and one or more ticket files.
+- **Ticket** — a single `.md` file inside an epic directory. Each ticket has a status, priority, checklist, and description of the work to do.
+
+### Plan Spec
+
+Plans follow a strict format (see `plans/SPEC.md`):
+
+```
+plans/features/
+  ├── auth/
+  │   ├── _context.md        # Required: epic overview
+  │   ├── login-flow.md      # Ticket
+  │   └── oauth-setup.md     # Ticket
+  └── dashboard/
+      ├── _context.md
+      └── progress-bar.md
+```
+
+- Kebab-case for all file and directory names
+- Only 2 levels deep — no nested directories
+- `_context.md` is required per epic
+
+### Status Lifecycle
+
+Every ticket follows this lifecycle:
+
+```
+todo → in-progress → review → completed
+                       ↑          ↑
+                    agent moves  human moves
+                    ticket here  ticket here
+```
+
+- `todo` — ready for an agent to pick up
+- `in-progress` — an agent is actively working on it
+- `review` — agent finished, waiting for human review
+- `completed` — human approved and merged
+- `blocked` — waiting on a dependency (requires a `## Blocked` section explaining why)
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- pnpm
+- A [Convex](https://convex.dev) account
+- A GitHub repo with plans in `plans/features/`
+
+### Setup
+
+```bash
+# Clone
+git clone https://github.com/JuanEliasJabib02/speedy-gonzales.git
+cd speedy-gonzales
+
+# Install dependencies
+pnpm install
+
+# Set up Convex (creates your deployment, sets up schema)
+npx convex dev
+
+# Configure environment variables (see Configuration below)
+
+# Run the development server
+pnpm dev
+```
+
+### Create your first project
+
+1. Connect your GitHub repo through the Speedy dashboard
+2. Add a `plans/features/` directory to your repo with at least one epic and ticket
+3. Push to GitHub — the webhook syncs your plans to the kanban automatically
+4. The autonomous loop picks up `todo` tickets and starts coding
+
+## Configuration
+
+### Frontend (`.env.local`)
+
+| Variable | Required | Description |
+|---|---|---|
+| `NEXT_PUBLIC_CONVEX_URL` | Yes | Your Convex deployment URL |
+| `NEXT_PUBLIC_SITE_URL` | No | Application URL (used for metadata/sitemap) |
+
+### Backend (Convex environment variables)
+
+Set these via `npx convex env set <KEY> <VALUE>`:
+
+| Variable | Required | Description |
+|---|---|---|
+| `GITHUB_PAT` | Yes | GitHub Personal Access Token — reads repos, commits, and webhooks |
+| `LOOP_API_KEY` | Yes | API key for the autonomous loop endpoint |
+| `AUTH_RESEND_KEY` | Yes | Resend API key for email authentication (OTP/magic link) |
+| `CONVEX_SITE_URL` | Yes | Your Convex deployment site URL (used for auth domains) |
 
 ## Tech Stack
 
@@ -97,22 +217,17 @@ You define a feature → tickets are created as .md files in your repo
 - **AI Agent:** Claude Code (swappable)
 - **Hosting:** Vercel
 
-## Getting Started
+## Documentation
 
-```bash
-# Clone
-git clone https://github.com/JuanEliasJabib02/speedy-gonzales.git
-cd speedy-gonzales
+Full documentation is available at `/docs` in the app:
 
-# Install
-pnpm install
-
-# Configure Convex
-npx convex dev
-
-# Run
-pnpm dev
-```
+- [Philosophy](/docs/philosophy) — why Speedy exists and the principles behind it
+- [Setup Guide](/docs/setup) — complete onboarding: GitHub, Convex, first project
+- [Plans Spec](/docs/plans) — plan structure, directory conventions, parsed fields
+- [Source of Truth](/docs/source-of-truth) — how code, plans, and UI stay in sync
+- [Sync](/docs/sync) — GitHub auto-sync webhook mechanism
+- [Autonomous Dev Loop](/docs/autonomous-loop) — how the autonomous loop and agents work
+- [Feature View](/docs/feature-view) — the three-panel UI for managing features
 
 ## License
 

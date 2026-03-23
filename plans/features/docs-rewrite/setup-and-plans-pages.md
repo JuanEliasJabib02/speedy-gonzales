@@ -1,6 +1,6 @@
 # Rewrite Setup Guide + Plan Structure Pages
 
-**Status:** todo
+**Status:** review
 **Priority:** high
 **Agent:** Charizard 🔥
 
@@ -10,14 +10,14 @@ Complete rewrite of the setup guide and plan structure docs. Setup needs to be a
 
 ## Checklist
 
-- [ ] Rewrite setup page with complete flow: prerequisites → clone/fork → install deps → configure Convex → create first project → create plans directory → add first epic + ticket → configure webhook → test sync → (optional) set up autonomous loop
-- [ ] Add prerequisites section: Node.js, pnpm, Convex account, GitHub account, (optional) OpenClaw for autonomous loop
-- [ ] Add environment variables reference: `NEXT_PUBLIC_CONVEX_URL`, `CONVEX_DEPLOYMENT`, `LOOP_API_KEY`, `GITHUB_WEBHOOK_SECRET`
-- [ ] Add troubleshooting section: common issues (webhook not firing, sync not updating, auth issues)
-- [ ] Rewrite plan structure page to match `plans/SPEC.md` exactly — directory structure, `_context.md` format, ticket `.md` format, parsed fields table, status/priority values
-- [ ] Add example epic with 2 tickets showing real content (not placeholder lorem ipsum)
-- [ ] Explain the naming rules: kebab-case, never rename after creation, why paths matter
-- [ ] Add section on checklist tracking: `[x]` and `[ ]` are parsed and shown as progress in the UI
+- [x] Rewrite setup page with complete flow: prerequisites → clone/fork → install deps → configure Convex → create first project → create plans directory → add first epic + ticket → configure webhook → test sync → (optional) set up autonomous loop
+- [x] Add prerequisites section: Node.js, pnpm, Convex account, GitHub account, (optional) OpenClaw for autonomous loop
+- [x] Add environment variables reference: `NEXT_PUBLIC_CONVEX_URL`, `CONVEX_DEPLOYMENT`, `LOOP_API_KEY`, `GITHUB_WEBHOOK_SECRET`
+- [x] Add troubleshooting section: common issues (webhook not firing, sync not updating, auth issues)
+- [x] Rewrite plan structure page to match `plans/SPEC.md` exactly — directory structure, `_context.md` format, ticket `.md` format, parsed fields table, status/priority values
+- [x] Add example epic with 2 tickets showing real content (not placeholder lorem ipsum)
+- [x] Explain the naming rules: kebab-case, never rename after creation, why paths matter
+- [x] Add section on checklist tracking: `[x]` and `[ ]` are parsed and shown as progress in the UI
 
 ## Files
 
@@ -37,3 +37,7 @@ Complete rewrite of the setup guide and plan structure docs. Setup needs to be a
 - Reuse: same step card pattern from current setup page (numbered circles + label + description)
 - Match: current docs pages
 - Tokens: code blocks use `rounded-lg bg-muted p-4 text-sm`, inline code uses `rounded bg-muted px-1.5 py-0.5 text-sm`
+
+## Commits
+
+- `e0bd59615bd07788c42e5b9270db1cee55ff0a17`

@@ -14,7 +14,7 @@ export default function SyncDocsPage() {
         </Link>
         <h1 className="text-3xl font-semibold tracking-tight">GitHub Auto-Sync</h1>
         <p className="mt-2 text-muted-foreground">
-          Keep your plans in sync between GitHub and Speedy Gonzales.
+          How plan files in your repo stay in sync with the Speedy Gonzales UI.
         </p>
       </div>
 
@@ -22,33 +22,61 @@ export default function SyncDocsPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">What sync does</h2>
         <p className="leading-relaxed text-muted-foreground">
-          Speedy Gonzales reads the <code className="rounded bg-muted px-1.5 py-0.5 text-sm">plans/</code> directory
-          from your GitHub repository, parses the markdown files, and stores the
-          structured data in Convex. This means your project plans live in your
-          repo as plain markdown &mdash; version-controlled, reviewable, and
-          always in sync with your IDE.
+          The sync engine reads markdown files from your{" "}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-sm">plans/features/</code> directory
+          on GitHub, parses them into structured data (epics and tickets), and upserts the results
+          into Convex. The UI then displays this data via reactive queries &mdash; any change
+          propagates to the kanban board in real time.
+        </p>
+        <p className="leading-relaxed text-muted-foreground">
+          Only files under your project&apos;s configured <code className="rounded bg-muted px-1.5 py-0.5 text-sm">plansPath</code> are
+          synced. Code, config, and other files are ignored entirely.
         </p>
       </section>
 
-      {/* Automatic sync */}
+      {/* What gets parsed */}
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Automatic sync</h2>
+        <h2 className="text-xl font-semibold">What gets parsed</h2>
         <p className="leading-relaxed text-muted-foreground">
-          When you create a project, Speedy Gonzales registers a webhook on your
-          GitHub repo. Every time someone pushes to the repository, GitHub sends
-          a POST request to our webhook endpoint. The handler:
+          For each markdown file, the sync engine extracts:
+        </p>
+        <ul className="list-inside list-disc space-y-2 text-muted-foreground">
+          <li><strong className="text-foreground">Title</strong> &mdash; from the first <code className="rounded bg-muted px-1.5 py-0.5 text-sm"># Heading</code></li>
+          <li><strong className="text-foreground">Status</strong> &mdash; from <code className="rounded bg-muted px-1.5 py-0.5 text-sm">**Status:** value</code> in the frontmatter</li>
+          <li><strong className="text-foreground">Priority</strong> &mdash; from <code className="rounded bg-muted px-1.5 py-0.5 text-sm">**Priority:** value</code></li>
+          <li><strong className="text-foreground">Checklist progress</strong> &mdash; counts <code className="rounded bg-muted px-1.5 py-0.5 text-sm">[x]</code> vs <code className="rounded bg-muted px-1.5 py-0.5 text-sm">[ ]</code> items across the entire file</li>
+          <li><strong className="text-foreground">Commits</strong> &mdash; SHA references from a <code className="rounded bg-muted px-1.5 py-0.5 text-sm">## Commits</code> section</li>
+          <li><strong className="text-foreground">Agent name</strong> &mdash; from <code className="rounded bg-muted px-1.5 py-0.5 text-sm">**Agent:** value</code> if present</li>
+        </ul>
+        <p className="text-sm text-muted-foreground">
+          Each subdirectory under <code className="rounded bg-muted px-1.5 py-0.5 text-sm">features/</code> becomes
+          an <strong>epic</strong>. The <code className="rounded bg-muted px-1.5 py-0.5 text-sm">_context.md</code> file
+          defines the epic&apos;s metadata. Every other <code className="rounded bg-muted px-1.5 py-0.5 text-sm">.md</code> file
+          becomes a <strong>ticket</strong>.
+        </p>
+      </section>
+
+      {/* Automatic sync (webhook) */}
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold">Automatic sync (webhook)</h2>
+        <p className="leading-relaxed text-muted-foreground">
+          When you create a project, Speedy Gonzales registers a webhook on your GitHub repo.
+          Every push to the repository triggers the following flow:
         </p>
         <ol className="list-inside list-decimal space-y-2 text-muted-foreground">
-          <li>Verifies the request signature (HMAC-SHA256)</li>
-          <li>Checks if any changed files are inside the plans directory</li>
-          <li>If plan files changed, triggers a sync for that project</li>
-          <li>Fetches the updated plan files from the GitHub API</li>
-          <li>Parses markdown into epics and tickets</li>
-          <li>Upserts the data in Convex &mdash; the UI updates in real time</li>
+          <li>GitHub sends a <code className="rounded bg-muted px-1.5 py-0.5 text-sm">POST</code> to <code className="rounded bg-muted px-1.5 py-0.5 text-sm">/github-webhook</code></li>
+          <li>The handler verifies the HMAC-SHA256 signature using the project&apos;s webhook secret</li>
+          <li>It checks if any changed files (added, modified, or removed) are inside the project&apos;s <code className="rounded bg-muted px-1.5 py-0.5 text-sm">plansPath</code></li>
+          <li>If relevant files changed, it schedules a sync action for that project</li>
+          <li>The sync fetches the full file tree from GitHub, filters to plan files, and groups them into epics</li>
+          <li>For each file, it compares the content hash (git SHA) against what&apos;s already in Convex &mdash; unchanged files are skipped</li>
+          <li>Changed files are fetched, parsed, and upserted. Deleted files are soft-deleted in Convex</li>
+          <li>The UI updates in real time via Convex reactive queries</li>
         </ol>
         <p className="text-sm text-muted-foreground">
-          Only plan files trigger a sync. Pushing code changes alone won&apos;t
-          cause unnecessary syncs.
+          Only pushes that include plan file changes trigger a sync. Code-only pushes are ignored.
+          The webhook only processes <code className="rounded bg-muted px-1.5 py-0.5 text-sm">push</code> events &mdash;
+          PRs, issues, and other events are silently skipped.
         </p>
       </section>
 
@@ -56,81 +84,180 @@ export default function SyncDocsPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">Manual sync</h2>
         <p className="leading-relaxed text-muted-foreground">
-          Every project has a <strong>&quot;Sync now&quot;</strong> button in the
-          project header. Click it to trigger a full sync on demand. This is
-          useful as a fallback if a webhook was missed, or after initial setup
-          when you want to pull in existing plans immediately.
+          Every project has a <strong>&quot;Sync now&quot;</strong> button in the project header.
+          Clicking it triggers a full sync on demand. This is useful as a fallback if a webhook
+          was missed, or after initial setup when you want to pull in existing plans immediately.
         </p>
-        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-          <p className="mb-2 font-medium text-destructive">
-            Warning &mdash; Manual sync can overwrite your data
-          </p>
-          <p className="text-sm text-muted-foreground">
-            The sync engine reads from <strong className="text-foreground">GitHub</strong>, not
-            your local files. If you edited plan files locally but haven&apos;t pushed,
-            clicking &quot;Sync now&quot; will overwrite Convex with the <strong className="text-foreground">older
-            version</strong> from GitHub. Your unpushed changes will be lost.
-          </p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Always run <code className="rounded bg-muted px-1.5 py-0.5">git push</code> before
-            using manual sync. The automatic webhook sync doesn&apos;t have this problem
-            because it only fires after a push.
-          </p>
-        </div>
-      </section>
-
-      {/* Plan structure */}
-      <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Plan structure</h2>
         <p className="leading-relaxed text-muted-foreground">
-          Plans follow a simple directory convention inside your repo:
+          The sync can also be triggered programmatically via the Convex mutation:
         </p>
         <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
-{`plans/
-├── features/
-│   ├── auth/
-│   │   ├── _context.md      # Epic overview
-│   │   ├── login-flow.md    # Ticket
-│   │   └── otp-verify.md    # Ticket
-│   ├── dashboard/
-│   │   ├── _context.md
-│   │   └── project-cards.md
-│   └── kanban/
-│       ├── _context.md
-│       └── drag-drop.md`}
+{`// From a Convex client
+import { api } from "../convex/_generated/api"
+
+await convex.mutation(api.githubSync.syncProject, {
+  projectId: "your-project-id"
+})`}
         </pre>
-        <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
-          <li>Each subdirectory under <code className="rounded bg-muted px-1.5 py-0.5 text-sm">features/</code> becomes an <strong>epic</strong></li>
-          <li><code className="rounded bg-muted px-1.5 py-0.5 text-sm">_context.md</code> defines the epic&apos;s overview and metadata</li>
-          <li>Every other <code className="rounded bg-muted px-1.5 py-0.5 text-sm">.md</code> file becomes a <strong>ticket</strong></li>
-        </ul>
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+          <p className="mb-2 font-medium text-destructive">
+            Warning &mdash; Manual sync reads from GitHub, not local files
+          </p>
+          <p className="text-sm text-muted-foreground">
+            If you edited plan files locally but haven&apos;t pushed, clicking &quot;Sync now&quot;
+            will overwrite Convex with the <strong className="text-foreground">older version</strong> from
+            GitHub. Always run <code className="rounded bg-muted px-1.5 py-0.5">git push</code> before
+            using manual sync.
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            The automatic webhook sync doesn&apos;t have this problem because it only fires
+            after a push.
+          </p>
+        </div>
       </section>
 
-      {/* How it works step by step */}
+      {/* Race condition guard */}
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">How it works &mdash; step by step</h2>
-        <div className="flex flex-col gap-2">
-          {[
-            { step: "1", label: "Push", desc: "You push plan changes to GitHub" },
-            { step: "2", label: "Webhook", desc: "GitHub sends a webhook POST to Speedy Gonzales" },
-            { step: "3", label: "Verify", desc: "HMAC-SHA256 signature is validated" },
-            { step: "4", label: "Detect", desc: "Changed files are checked against the plans path" },
-            { step: "5", label: "Fetch", desc: "Updated plan files are fetched via GitHub API" },
-            { step: "6", label: "Parse", desc: "Markdown is parsed into epics and tickets" },
-            { step: "7", label: "Upsert", desc: "Data is upserted in Convex" },
-            { step: "8", label: "Live", desc: "UI updates in real time via reactive queries" },
-          ].map((item) => (
-            <div key={item.step} className="flex items-start gap-3 rounded-md bg-muted/50 px-4 py-3">
-              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-                {item.step}
-              </span>
-              <div>
-                <span className="font-medium">{item.label}</span>
-                <span className="text-muted-foreground"> &mdash; {item.desc}</span>
-              </div>
-            </div>
-          ))}
+        <h2 className="text-xl font-semibold">Concurrency &amp; locking</h2>
+        <p className="leading-relaxed text-muted-foreground">
+          The sync engine uses an atomic lock to prevent concurrent syncs for the same project.
+          Before starting, it claims a lock via a Convex mutation. If another sync is already
+          running, the new one is silently skipped. The &quot;Sync now&quot; button disables
+          while a sync is in progress.
+        </p>
+        <p className="leading-relaxed text-muted-foreground">
+          Locks have a 5-minute staleness timeout. If a sync crashes without releasing the lock,
+          the next sync attempt will reclaim it automatically.
+        </p>
+      </section>
+
+      {/* /update-ticket-status endpoint */}
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold">Real-time status updates</h2>
+        <p className="leading-relaxed text-muted-foreground">
+          The autonomous dev loop updates ticket status in real time via an HTTP endpoint,
+          without waiting for git push + webhook. This makes the kanban board reflect the
+          actual state of work as it happens.
+        </p>
+        <h3 className="mt-4 font-medium">
+          <code className="rounded bg-muted px-1.5 py-0.5 text-sm">POST /update-ticket-status</code>
+        </h3>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Updates a ticket&apos;s status in Convex. Requires API key authentication.
+        </p>
+        <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+{`curl -X POST https://your-convex-url.convex.site/update-ticket-status \\
+  -H "Authorization: Bearer $LOOP_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "repoOwner": "your-org",
+    "repoName": "your-repo",
+    "ticketPath": "plans/features/auth/login-flow.md",
+    "status": "in-progress"
+  }'`}
+        </pre>
+        <div className="overflow-hidden rounded-lg border border-border">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-muted/50">
+                <th className="px-4 py-2.5 text-left font-medium">Field</th>
+                <th className="px-4 py-2.5 text-left font-medium">Required</th>
+                <th className="px-4 py-2.5 text-left font-medium">Description</th>
+              </tr>
+            </thead>
+            <tbody className="text-muted-foreground">
+              <tr className="border-t border-border">
+                <td className="px-4 py-2.5"><code className="rounded bg-muted px-1.5 py-0.5">repoOwner</code></td>
+                <td className="px-4 py-2.5">Yes</td>
+                <td className="px-4 py-2.5">GitHub organization or user</td>
+              </tr>
+              <tr className="border-t border-border">
+                <td className="px-4 py-2.5"><code className="rounded bg-muted px-1.5 py-0.5">repoName</code></td>
+                <td className="px-4 py-2.5">Yes</td>
+                <td className="px-4 py-2.5">Repository name</td>
+              </tr>
+              <tr className="border-t border-border">
+                <td className="px-4 py-2.5"><code className="rounded bg-muted px-1.5 py-0.5">ticketPath</code></td>
+                <td className="px-4 py-2.5">Yes</td>
+                <td className="px-4 py-2.5">Full path to the ticket markdown file in the repo</td>
+              </tr>
+              <tr className="border-t border-border">
+                <td className="px-4 py-2.5"><code className="rounded bg-muted px-1.5 py-0.5">status</code></td>
+                <td className="px-4 py-2.5">Yes</td>
+                <td className="px-4 py-2.5">One of: <code className="rounded bg-muted px-1.5 py-0.5">backlog</code>, <code className="rounded bg-muted px-1.5 py-0.5">todo</code>, <code className="rounded bg-muted px-1.5 py-0.5">in-progress</code>, <code className="rounded bg-muted px-1.5 py-0.5">review</code>, <code className="rounded bg-muted px-1.5 py-0.5">completed</code>, <code className="rounded bg-muted px-1.5 py-0.5">blocked</code></td>
+              </tr>
+              <tr className="border-t border-border">
+                <td className="px-4 py-2.5"><code className="rounded bg-muted px-1.5 py-0.5">blockedReason</code></td>
+                <td className="px-4 py-2.5">No</td>
+                <td className="px-4 py-2.5">Explanation when status is <code className="rounded bg-muted px-1.5 py-0.5">blocked</code></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+        <p className="text-sm text-muted-foreground">
+          The response includes the previous and new status, so the caller can verify the transition:
+        </p>
+        <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+{`{
+  "ok": true,
+  "ticketId": "abc123",
+  "previousStatus": "todo",
+  "newStatus": "in-progress"
+}`}
+        </pre>
+      </section>
+
+      {/* /autonomous-loop/status endpoint */}
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold">Loop status endpoint</h2>
+        <p className="leading-relaxed text-muted-foreground">
+          The autonomous dev loop queries this endpoint to discover which projects are active
+          and which tickets need work:
+        </p>
+        <h3 className="mt-4 font-medium">
+          <code className="rounded bg-muted px-1.5 py-0.5 text-sm">GET /autonomous-loop/status</code>
+        </h3>
+        <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+{`curl https://your-convex-url.convex.site/autonomous-loop/status \\
+  -H "Authorization: Bearer $LOOP_API_KEY"`}
+        </pre>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Returns a JSON array of active projects, each with their{" "}
+          <code className="rounded bg-muted px-1.5 py-0.5">todoTickets</code> list. The loop uses this
+          to decide which tickets to assign to agents. Both endpoints require a{" "}
+          <code className="rounded bg-muted px-1.5 py-0.5">LOOP_API_KEY</code> environment variable
+          for authentication.
+        </p>
+      </section>
+
+      {/* Data flow diagram */}
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold">Full data flow</h2>
+        <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+{`Plan content sync (webhook)
+───────────────────────────
+  git push  ──▶  GitHub webhook  ──▶  /github-webhook
+                                          │
+                                     verify signature
+                                     check plansPath
+                                          │
+                                     schedule sync action
+                                          │
+                                     fetch tree + files
+                                     parse markdown
+                                     compare content hashes
+                                          │
+                                     upsert to Convex  ──▶  UI updates
+
+Status updates (HTTP API)
+─────────────────────────
+  Agent finishes  ──▶  POST /update-ticket-status  ──▶  Convex  ──▶  UI updates
+  Agent starts    ──▶  POST /update-ticket-status  ──▶  Convex  ──▶  UI updates
+
+Loop discovery
+──────────────
+  Loop process  ──▶  GET /autonomous-loop/status  ──▶  todo tickets list`}
+        </pre>
       </section>
 
       {/* Architecture notes */}
@@ -139,7 +266,7 @@ export default function SyncDocsPage() {
         <ul className="list-inside list-disc space-y-2 text-muted-foreground">
           <li>
             Authentication uses a <strong>Personal Access Token (PAT)</strong> stored as a
-            Convex environment variable for the MVP.
+            Convex environment variable.
           </li>
           <li>
             The sync engine uses a <strong>provider-agnostic interface</strong> (<code className="rounded bg-muted px-1.5 py-0.5 text-sm">GitProvider</code>),
@@ -148,6 +275,12 @@ export default function SyncDocsPage() {
           <li>
             All GitHub API calls run as <strong>Convex actions</strong> &mdash; no
             Next.js API routes involved in the sync flow.
+          </li>
+          <li>
+            Content hashing uses the git blob SHA, so unchanged files skip fetch and parse entirely.
+          </li>
+          <li>
+            Upserts are batched (max 50 items per mutation) to stay within Convex operation limits.
           </li>
         </ul>
       </section>
@@ -159,60 +292,46 @@ export default function SyncDocsPage() {
         <div className="space-y-2">
           <h3 className="font-medium">Does the sync touch my code?</h3>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            No. The sync only reads <code className="rounded bg-muted px-1.5 py-0.5">plans/features/</code> markdown
-            files from GitHub and writes structured data to Convex (the database). It never
-            modifies files on your machine, never touches <code className="rounded bg-muted px-1.5 py-0.5">src/</code>,
-            and never runs <code className="rounded bg-muted px-1.5 py-0.5">git pull</code>.
-            Your local code is always safe.
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <h3 className="font-medium">Can the auto-sync mess up my local work?</h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            No. The automatic sync (webhook) only fires <strong>after you push</strong>.
-            At that point, GitHub already has your latest version, so the sync writes
-            the correct data to Convex. Auto-sync is always safe.
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <h3 className="font-medium">When is manual sync dangerous?</h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Only when you edited plan files locally but <strong>haven&apos;t pushed yet</strong>.
-            The sync reads from GitHub (which still has the old version) and overwrites
-            Convex with stale data. Your unpushed changes are lost because Convex now
-            has the older version. The fix is simple: always{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5">git push</code> before
-            clicking &quot;Sync now&quot;.
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <h3 className="font-medium">What if I click &quot;Sync now&quot; twice?</h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Nothing bad happens. The sync engine has a race condition guard &mdash; if a
-            sync is already running, the second one is silently skipped. The button
-            also disables while syncing to prevent accidental double-clicks.
+            No. The sync only reads plan files from GitHub and writes structured data to Convex.
+            It never modifies files on your machine, never touches{" "}
+            <code className="rounded bg-muted px-1.5 py-0.5">src/</code>, and never
+            runs <code className="rounded bg-muted px-1.5 py-0.5">git pull</code>.
           </p>
         </div>
 
         <div className="space-y-2">
           <h3 className="font-medium">What triggers an auto-sync?</h3>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            A <code className="rounded bg-muted px-1.5 py-0.5">git push</code> to your
-            repository that includes changes inside the <code className="rounded bg-muted px-1.5 py-0.5">plans/</code> directory.
-            Pushing code-only changes (no plan files) does <strong>not</strong> trigger a sync.
+            A <code className="rounded bg-muted px-1.5 py-0.5">git push</code> that includes
+            changes inside the project&apos;s <code className="rounded bg-muted px-1.5 py-0.5">plansPath</code> directory.
+            Code-only pushes do not trigger a sync.
           </p>
         </div>
 
         <div className="space-y-2">
-          <h3 className="font-medium">How fast is the auto-sync?</h3>
+          <h3 className="font-medium">How fast is the sync?</h3>
           <p className="text-sm leading-relaxed text-muted-foreground">
             Typically 2&ndash;5 seconds after pushing. GitHub sends the webhook immediately,
-            the sync engine fetches and parses the changed files, and Convex reactive
-            queries update the UI in real time. You can see the exact time in the sync
-            timer next to the &quot;Sync now&quot; button.
+            and unchanged files are skipped via content hash comparison. The sync timer next
+            to the &quot;Sync now&quot; button shows the exact duration.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="font-medium">What if I click &quot;Sync now&quot; twice?</h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Nothing bad happens. The sync engine uses an atomic lock &mdash; if a sync is already
+            running, the second one is silently skipped. The button also disables while syncing.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="font-medium">Can the autonomous loop and webhook conflict?</h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            No. The loop updates <strong>status</strong> via the HTTP API. The webhook syncs{" "}
+            <strong>content</strong> from git. They write to different fields. If both happen
+            simultaneously, the sync lock prevents data corruption from concurrent syncs, and
+            status-only updates don&apos;t trigger a sync at all.
           </p>
         </div>
       </section>

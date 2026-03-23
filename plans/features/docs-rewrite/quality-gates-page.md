@@ -1,6 +1,6 @@
 # Create Quality Gates Docs Page
 
-**Status:** todo
+**Status:** review
 **Priority:** medium
 **Agent:** Charizard 🔥
 
