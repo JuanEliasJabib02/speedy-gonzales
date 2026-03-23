@@ -1,6 +1,6 @@
 # Write Commit SHAs to Ticket Files
 
-**Status:** todo
+**Status:** review
 **Priority:** high
 **Agent:** Perro salchicha 🌭
 
@@ -10,9 +10,9 @@ After Perro pushes code for a ticket, the autonomous-loop skill should append a 
 
 ## Checklist
 
-- [ ] In the autonomous-loop skill, after Perro pushes, extract the commit SHA(s) from `git log`
-- [ ] Append a `## Commits` section to the ticket `.md` before changing status to `review`
-- [ ] Format: one SHA per line, e.g. `- abc1234`
+- [x] In the autonomous-loop skill, after Perro pushes, extract the commit SHA(s) from `git log`
+- [x] Append a `## Commits` section to the ticket `.md` before changing status to `review`
+- [x] Format: one SHA per line, e.g. `- abc1234`
 - [ ] Verify the sync engine picks up the commits and they appear in the PlanViewer
 
 ## Files
