@@ -35,6 +35,7 @@
   --color-ring: hsl(var(--ring));
 
   /* Status colors */
+  --color-status-backlog: hsl(var(--status-backlog));
   --color-status-todo: hsl(var(--status-todo));
   --color-status-in-progress: hsl(var(--status-in-progress));
   --color-status-review: hsl(var(--status-review));
@@ -88,6 +89,7 @@
   --ring: 220 80% 60%;
 
   /* Status colors — the only chromatic UI elements */
+  --status-backlog: 0 0% 35%;
   --status-todo: 0 0% 45%;
   --status-in-progress: 220 80% 60%;
   --status-review: 45 90% 50%;
@@ -129,6 +131,7 @@
   --input: 0 0% 93%;
   --ring: 220 80% 50%;
 
+  --status-backlog: 0 0% 45%;
   --status-todo: 0 0% 55%;
   --status-in-progress: 220 80% 50%;
   --status-review: 45 90% 45%;

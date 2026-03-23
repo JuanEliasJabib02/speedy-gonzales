@@ -1,6 +1,6 @@
 # Make Sync Guard Atomic
 
-**Status:** in-progress
+**Status:** review
 **Priority:** high
 **Agent:** Perro salchicha 🌭
 
@@ -10,11 +10,15 @@ The current sync guard reads `project.syncStatus`, checks if it's "syncing", the
 
 ## Checklist
 
-- [ ] Create an internal mutation `claimSyncLock` that reads `syncStatus`, returns false if already "syncing", otherwise sets it to "syncing" and returns true
-- [ ] Replace the current read-check-set pattern in `syncRepoInternal` with a call to `claimSyncLock`
-- [ ] Ensure `syncStatus` is reset to "idle" in both success and error paths (finally block)
-- [ ] Add a timeout: if `syncStatus` is "syncing" for >5 minutes, allow re-claiming (stale lock protection)
+- [x] Create an internal mutation `claimSyncLock` that reads `syncStatus`, returns false if already "syncing", otherwise sets it to "syncing" and returns true
+- [x] Replace the current read-check-set pattern in `syncRepoInternal` with a call to `claimSyncLock`
+- [x] Ensure `syncStatus` is reset to "idle" in both success and error paths (finally block)
+- [x] Add a timeout: if `syncStatus` is "syncing" for >5 minutes, allow re-claiming (stale lock protection)
 
 ## Files
 
 - `convex/githubSync.ts`
+- `convex/schema/projects.ts`
+
+## Commits
+- `20f4fb389f02bb2bb1ee364431045d61952e519f`

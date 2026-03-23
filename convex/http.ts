@@ -2,6 +2,7 @@ import { httpRouter } from "convex/server"
 import { auth } from "./auth"
 import { internal } from "./_generated/api"
 import { httpAction } from "./_generated/server"
+import { VALID_STATUSES, type ValidStatus } from "./helpers"
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -195,13 +196,13 @@ http.route({
       )
     }
 
-    const validStatuses = ["todo", "in-progress", "review", "completed", "blocked"]
-    if (!validStatuses.includes(status)) {
+    if (!VALID_STATUSES.includes(status as ValidStatus)) {
       return new Response(
-        JSON.stringify({ ok: false, error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` }),
+        JSON.stringify({ ok: false, error: `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}` }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       )
     }
+    const validatedStatus = status as (typeof VALID_STATUSES)[number]
 
     // Look up project
     const project = await ctx.runQuery(internal.projects.getByRepo, {
@@ -230,8 +231,8 @@ http.route({
     // Update status
     const result = await ctx.runMutation(internal.tickets.updateStatusInternal, {
       ticketId: ticket._id,
-      status,
-      blockedReason: status === "blocked" ? blockedReason : undefined,
+      status: validatedStatus,
+      blockedReason: validatedStatus === "blocked" ? blockedReason : undefined,
     })
 
     return new Response(

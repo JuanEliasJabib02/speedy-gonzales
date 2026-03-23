@@ -10,14 +10,17 @@ const PRIORITY_ORDER: Record<string, number> = {
 
 type KanbanBoardProps = {
   features: Feature[]
+  showBacklog: boolean
   showCompleted: boolean
   projectId: string
 }
 
-export function KanbanBoard({ features, showCompleted, projectId }: KanbanBoardProps) {
-  const columns = showCompleted
-    ? [...ACTIVE_COLUMNS, "completed" as const]
-    : ACTIVE_COLUMNS
+export function KanbanBoard({ features, showBacklog, showCompleted, projectId }: KanbanBoardProps) {
+  const columns = [
+    ...(showBacklog ? ["backlog" as const] : []),
+    ...ACTIVE_COLUMNS,
+    ...(showCompleted ? ["completed" as const] : []),
+  ]
 
   return (
     <div className="flex h-full items-stretch gap-4 overflow-x-auto pb-4 scrollbar-thin">
