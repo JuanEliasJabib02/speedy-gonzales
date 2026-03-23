@@ -1,6 +1,6 @@
 # Add Status Value Validation
 
-**Status:** in-progress
+**Status:** review
 **Priority:** high
 **Agent:** Perro salchicha 🌭
 
@@ -10,11 +10,11 @@
 
 ## Checklist
 
-- [ ] Create a shared `VALID_STATUSES` constant: `["todo", "in-progress", "review", "completed", "blocked"]`
-- [ ] In `tickets.updateStatus` mutation: validate status is in `VALID_STATUSES`, throw `ConvexError` with code `INVALID_STATUS` if not
-- [ ] In `epics.updateStatus` mutation: same validation
-- [ ] In `updateTicketStatusInternal` (HTTP endpoint path): validate status before patching
-- [ ] Create a shared `VALID_PRIORITIES` constant too: `["low", "medium", "high", "critical"]`
+- [x] Create a shared `VALID_STATUSES` constant: `["todo", "in-progress", "review", "completed", "blocked"]`
+- [x] In `tickets.updateStatus` mutation: validate status is in `VALID_STATUSES`, throw `ConvexError` with code `INVALID_STATUS` if not
+- [x] In `epics.updateStatus` mutation: same validation
+- [x] In `updateTicketStatusInternal` (HTTP endpoint path): validate status before patching
+- [x] Create a shared `VALID_PRIORITIES` constant too: `["low", "medium", "high", "critical"]`
 
 ## Files
 
@@ -22,3 +22,7 @@
 - `convex/epics.ts`
 - `convex/helpers.ts` (for shared constants)
 - `convex/http.ts`
+- `convex/errors.ts`
+
+## Commits
+- `e60908052c6049eeccdba0fc0e7dfcd3538f0c8a`

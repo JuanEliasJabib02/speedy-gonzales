@@ -1,6 +1,6 @@
 import { v } from "convex/values"
 import { query, mutation, internalQuery } from "./_generated/server"
-import { requireAuth, statusValidator } from "./helpers"
+import { requireAuth, assertValidStatus, statusValidator } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
 
 export const getByProject = query({
@@ -46,6 +46,7 @@ export const updateStatus = mutation({
     status: statusValidator,
   },
   handler: async (ctx, { epicId, status }) => {
+    assertValidStatus(status)
     const userId = await requireAuth(ctx)
     const epic = await ctx.db.get(epicId)
     if (!epic || epic.isDeleted) return throwError(ErrorCodes.NOT_FOUND)

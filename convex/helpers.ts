@@ -51,10 +51,18 @@ export const VALID_PRIORITIES = ["low", "medium", "high", "critical"] as const
 // TypeScript types derived from the arrays
 export type TicketStatus = (typeof VALID_STATUSES)[number]
 export type TicketPriority = (typeof VALID_PRIORITIES)[number]
+export type ValidStatus = TicketStatus
+export type ValidPriority = TicketPriority
 
 // Returns the authenticated userId or throws UNAUTHORIZED
 export async function requireAuth(ctx: QueryCtx | MutationCtx): Promise<Id<"users">> {
   const userId = await getAuthUserId(ctx)
   if (!userId) return throwError(ErrorCodes.UNAUTHORIZED) as never
   return userId
+}
+
+export function assertValidStatus(status: string): asserts status is ValidStatus {
+  if (!(VALID_STATUSES as readonly string[]).includes(status)) {
+    throwError(ErrorCodes.INVALID_STATUS)
+  }
 }

@@ -2,7 +2,7 @@ import { httpRouter } from "convex/server"
 import { auth } from "./auth"
 import { internal } from "./_generated/api"
 import { httpAction } from "./_generated/server"
-import { VALID_STATUSES } from "./helpers"
+import { VALID_STATUSES, type ValidStatus } from "./helpers"
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -196,7 +196,7 @@ http.route({
       )
     }
 
-    if (!(VALID_STATUSES as readonly string[]).includes(status)) {
+    if (!VALID_STATUSES.includes(status as ValidStatus)) {
       return new Response(
         JSON.stringify({ ok: false, error: `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}` }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }

@@ -2,7 +2,7 @@ import { v } from "convex/values"
 import { query, mutation, internalQuery, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
 import type { Doc } from "./_generated/dataModel"
-import { requireAuth, statusValidator } from "./helpers"
+import { requireAuth, assertValidStatus, statusValidator } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
 
 export const getByEpic = query({
@@ -28,6 +28,7 @@ export const updateStatus = mutation({
     blockedReason: v.optional(v.string()),
   },
   handler: async (ctx, { ticketId, status, blockedReason }) => {
+    assertValidStatus(status)
     const userId = await requireAuth(ctx)
     const ticket = await ctx.db.get(ticketId)
     if (!ticket) return throwError(ErrorCodes.NOT_FOUND) as never
@@ -131,6 +132,7 @@ export const updateStatusInternal = internalMutation({
     blockedReason: v.optional(v.string()),
   },
   handler: async (ctx, { ticketId, status, blockedReason }) => {
+    assertValidStatus(status)
     const ticket = await ctx.db.get(ticketId)
     if (!ticket) throw new Error("Ticket not found")
 
