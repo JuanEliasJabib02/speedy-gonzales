@@ -32,8 +32,13 @@ export const updateStatus = mutation({
     if (!ticket) return throwError(ErrorCodes.NOT_FOUND) as never
     const project = await ctx.db.get(ticket.projectId)
     if (!project || project.userId !== userId) return throwError(ErrorCodes.FORBIDDEN) as never
+    const now = Date.now()
     const patch: Record<string, unknown> = { status }
+    if (status === "in-progress") patch.startedAt = now
+    if (status === "review") patch.reviewAt = now
+    if (status === "completed") patch.completedAt = now
     if (status === "blocked") {
+      patch.blockedAt = now
       patch.blockedReason = blockedReason ?? undefined
     } else {
       patch.blockedReason = undefined
@@ -137,8 +142,13 @@ export const updateStatusInternal = internalMutation({
 
     const previousStatus = ticket.status
 
+    const now = Date.now()
     const patch: Record<string, unknown> = { status }
+    if (status === "in-progress") patch.startedAt = now
+    if (status === "review") patch.reviewAt = now
+    if (status === "completed") patch.completedAt = now
     if (status === "blocked") {
+      patch.blockedAt = now
       patch.blockedReason = blockedReason ?? undefined
     } else {
       patch.blockedReason = undefined
