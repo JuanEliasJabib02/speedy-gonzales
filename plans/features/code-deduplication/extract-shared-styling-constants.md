@@ -1,6 +1,6 @@
 # Extract Shared Status/Priority Styling Constants
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** low
 **Agent:** Perro salchicha 🌭
 

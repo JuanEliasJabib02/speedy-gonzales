@@ -1,6 +1,6 @@
 # Fix Unsafe Cast in auth.ts
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** low
 **Agent:** Perro salchicha 🌭
 
