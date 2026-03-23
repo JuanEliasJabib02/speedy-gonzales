@@ -42,6 +42,43 @@ type CommitDiffPanelProps = {
 }
 
 const MAX_LINES_PER_FILE = 500
+const CACHE_PREFIX = "commit-diff:"
+const MAX_CACHE_ENTRIES = 20
+
+function safeSetCache(key: string, value: string) {
+  try {
+    evictOldestCacheEntries()
+    sessionStorage.setItem(key, value)
+  } catch {
+    try {
+      clearAllCacheEntries()
+      sessionStorage.setItem(key, value)
+    } catch {
+      // Storage completely full or unavailable — skip caching
+    }
+  }
+}
+
+function evictOldestCacheEntries() {
+  const keys: string[] = []
+  for (let i = 0; i < sessionStorage.length; i++) {
+    const k = sessionStorage.key(i)
+    if (k?.startsWith(CACHE_PREFIX)) keys.push(k)
+  }
+  if (keys.length >= MAX_CACHE_ENTRIES) {
+    const toRemove = keys.slice(0, keys.length - MAX_CACHE_ENTRIES + 1)
+    toRemove.forEach((k) => sessionStorage.removeItem(k))
+  }
+}
+
+function clearAllCacheEntries() {
+  const keys: string[] = []
+  for (let i = 0; i < sessionStorage.length; i++) {
+    const k = sessionStorage.key(i)
+    if (k?.startsWith(CACHE_PREFIX)) keys.push(k)
+  }
+  keys.forEach((k) => sessionStorage.removeItem(k))
+}
 
 function DiffLine({ line }: { line: string }) {
   const isAdded = line.startsWith("+") && !line.startsWith("+++")
@@ -177,7 +214,7 @@ export function CommitDiffPanel({
     setError(null)
     setData(null)
 
-    const cacheKey = `commit-diff:${owner}/${repo}/${sha}`
+    const cacheKey = `${CACHE_PREFIX}${owner}/${repo}/${sha}`
     const cached = sessionStorage.getItem(cacheKey)
     if (cached) {
       try {
@@ -199,7 +236,7 @@ export function CommitDiffPanel({
       }
       const result: CommitDiffData = await res.json()
       setData(result)
-      sessionStorage.setItem(cacheKey, JSON.stringify(result))
+      safeSetCache(cacheKey, JSON.stringify(result))
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error")
     } finally {

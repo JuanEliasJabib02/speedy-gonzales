@@ -23,6 +23,7 @@ type ConcurrencySettingsProps = {
   autonomousLoop: boolean
   localPath: string
   notificationEnabled: boolean
+  branchPrefix: string
 }
 
 export function ConcurrencySettings({
@@ -32,6 +33,7 @@ export function ConcurrencySettings({
   autonomousLoop,
   localPath,
   notificationEnabled,
+  branchPrefix,
 }: ConcurrencySettingsProps) {
   const updateSettings = useMutation(api.projects.updateSettings)
   const [perFeature, setPerFeature] = useState(maxConcurrentPerFeature)
@@ -39,6 +41,7 @@ export function ConcurrencySettings({
   const [loopEnabled, setLoopEnabled] = useState(autonomousLoop)
   const [path, setPath] = useState(localPath)
   const [notifications, setNotifications] = useState(notificationEnabled)
+  const [prefix, setPrefix] = useState(branchPrefix)
   const [isSaving, setIsSaving] = useState(false)
   const [open, setOpen] = useState(false)
 
@@ -47,7 +50,8 @@ export function ConcurrencySettings({
     global !== maxConcurrentGlobal ||
     loopEnabled !== autonomousLoop ||
     path !== localPath ||
-    notifications !== notificationEnabled
+    notifications !== notificationEnabled ||
+    prefix !== branchPrefix
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -59,6 +63,7 @@ export function ConcurrencySettings({
         autonomousLoop: loopEnabled,
         localPath: path,
         notificationEnabled: notifications,
+        branchPrefix: prefix,
       })
       setOpen(false)
     } finally {
@@ -74,6 +79,7 @@ export function ConcurrencySettings({
       setLoopEnabled(autonomousLoop)
       setPath(localPath)
       setNotifications(notificationEnabled)
+      setPrefix(branchPrefix)
     }
   }
 
@@ -119,6 +125,24 @@ export function ConcurrencySettings({
                 onChange={(e) => setGlobal(Number(e.target.value))}
               />
             </div>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-1.5">
+            <Label htmlFor="branch-prefix" className="text-xs">
+              Branch prefix
+            </Label>
+            <Input
+              id="branch-prefix"
+              type="text"
+              placeholder="feat/"
+              value={prefix}
+              onChange={(e) => setPrefix(e.target.value)}
+            />
+            <p className="text-[10px] text-muted-foreground">
+              Prefix used for feature branches (e.g. feat/, feature/)
+            </p>
           </div>
 
           <Separator />

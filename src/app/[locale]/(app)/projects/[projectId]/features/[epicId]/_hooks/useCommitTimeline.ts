@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import type { BranchCommit } from "@/src/app/api/branch-commits/route"
 
 type UseCommitTimelineParams = {
@@ -17,9 +17,14 @@ export function useCommitTimeline({ owner, repo, branch, fallbackBranch = "main"
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const [activeBranch, setActiveBranch] = useState(branch)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   const fetchCommits = useCallback(async (pageNum: number, append: boolean) => {
     if (!owner || !repo) return
+
+    abortControllerRef.current?.abort()
+    const controller = new AbortController()
+    abortControllerRef.current = controller
 
     setLoading(true)
     setError(null)
@@ -34,7 +39,7 @@ export function useCommitTimeline({ owner, repo, branch, fallbackBranch = "main"
         page: String(pageNum),
       })
 
-      const res = await fetch(`/api/branch-commits?${params}`)
+      const res = await fetch(`/api/branch-commits?${params}`, { signal: controller.signal })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         throw new Error(body.error || `Failed to fetch commits (${res.status})`)
@@ -50,6 +55,7 @@ export function useCommitTimeline({ owner, repo, branch, fallbackBranch = "main"
 
       setCommits((prev) => append ? [...prev, ...data.commits] : data.commits)
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return
       setError(err instanceof Error ? err.message : "Unknown error")
     } finally {
       setLoading(false)
@@ -62,6 +68,10 @@ export function useCommitTimeline({ owner, repo, branch, fallbackBranch = "main"
     setHasMore(true)
     setActiveBranch(branch)
     fetchCommits(1, false)
+
+    return () => {
+      abortControllerRef.current?.abort()
+    }
   }, [fetchCommits, branch])
 
   const loadMore = useCallback(() => {

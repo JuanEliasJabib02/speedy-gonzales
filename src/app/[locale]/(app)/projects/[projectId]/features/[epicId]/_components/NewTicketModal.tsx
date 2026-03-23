@@ -22,7 +22,7 @@ const PRIORITIES = [
 
 type NewTicketModalProps = {
   epicId: string
-  onSubmit?: (message: string) => void
+  onSubmit?: (args: { title: string; priority: string; description: string }) => Promise<void>
 }
 
 export function NewTicketModal({ epicId, onSubmit }: NewTicketModalProps) {
@@ -31,33 +31,28 @@ export function NewTicketModal({ epicId, onSubmit }: NewTicketModalProps) {
   const [priority, setPriority] = useState("medium")
   const [description, setDescription] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async () => {
-    if (!title.trim()) return
+    if (!title.trim() || !onSubmit) return
     setIsSubmitting(true)
+    setError(null)
 
-    const prompt = [
-      `Create a new ticket for the current feature:`,
-      `Title: ${title.trim()}`,
-      `Priority: ${priority}`,
-      description.trim() ? `Description: ${description.trim()}` : "",
-      "",
-      `Create the file following the SPEC format, commit it, and push.`,
-    ]
-      .filter(Boolean)
-      .join("\n")
-
-    onSubmit?.(prompt)
-
-    setTitle("")
-    setPriority("medium")
-    setDescription("")
-    setIsSubmitting(false)
-    setOpen(false)
+    try {
+      await onSubmit({ title: title.trim(), priority, description: description.trim() })
+      setTitle("")
+      setPriority("medium")
+      setDescription("")
+      setOpen(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create ticket")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setError(null) }}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
           <Plus className="size-3.5" />
@@ -79,7 +74,7 @@ export function NewTicketModal({ epicId, onSubmit }: NewTicketModalProps) {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Add streaming support"
               className="h-8 text-sm mt-1"
-              onKeyDown={(e) => { if (e.key === "Enter" && title.trim()) handleSubmit() }}
+              onKeyDown={(e) => { if (e.key === "Enter" && title.trim() && !isSubmitting) handleSubmit() }}
               autoFocus
             />
           </div>
@@ -107,6 +102,9 @@ export function NewTicketModal({ epicId, onSubmit }: NewTicketModalProps) {
               className="mt-1 w-full rounded border border-border bg-card text-sm px-3 py-2 text-foreground resize-none placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
+          {error && (
+            <p className="text-xs text-destructive">{error}</p>
+          )}
           <Button
             onClick={handleSubmit}
             disabled={!title.trim() || isSubmitting}

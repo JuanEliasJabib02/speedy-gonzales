@@ -29,6 +29,7 @@ type TicketSidebarProps = {
   epicId: string
   lastSyncAt?: number
   syncStatus?: string
+  onCreateTicket?: (args: { title: string; priority: string; description: string }) => Promise<void>
 }
 
 const STATUS_TABS = [
@@ -42,7 +43,7 @@ const STATUS_TABS = [
 
 type TabKey = (typeof STATUS_TABS)[number]["key"]
 
-export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId, epicId, lastSyncAt, syncStatus }: TicketSidebarProps) {
+export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId, epicId, lastSyncAt, syncStatus, onCreateTicket }: TicketSidebarProps) {
   const isSyncing = syncStatus === "syncing"
   const syncLabel = lastSyncAt ? timeAgo(lastSyncAt) : null
   const router = useRouter()
@@ -99,7 +100,7 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
         )}
       </div>
       <div className="flex gap-2 px-3 pb-3">
-        <NewTicketModal epicId={epicId} />
+        <NewTicketModal epicId={epicId} onSubmit={onCreateTicket} />
       </div>
       <div className="px-3 pb-3">
         <div className="relative">

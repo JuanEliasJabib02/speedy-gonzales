@@ -20,7 +20,7 @@ export function useLivePlan(epicId: string, projectId?: string) {
         title: epic.title,
         status: epic.status as "backlog" | "todo" | "in-progress" | "review" | "completed" | "blocked",
         priority: epic.priority,
-        branch: `feature/${epic.path.split("/").pop()}`,
+        branch: `${project?.branchPrefix ?? "feat/"}${epic.path.split("/").pop()}`,
         tickets: [
           { id: "_context", title: "Overview", status: epic.status as "backlog" | "todo" | "in-progress" | "review" | "completed" | "blocked", blockedReason: undefined },
           ...(tickets ?? []).map((t) => ({

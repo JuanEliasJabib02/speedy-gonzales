@@ -32,6 +32,7 @@ export const projects = defineTable({
   autonomousLoop: v.optional(v.boolean()), // opt-in to autonomous dev loop
   localPath: v.optional(v.string()), // absolute path to local repo clone
   notificationEnabled: v.optional(v.boolean()),
+  branchPrefix: v.optional(v.string()), // default: "feat/"
   loopStatus: v.optional(loopStatusValidator),
   lastLoopAt: v.optional(v.number()), // timestamp of last loop execution
   deletionStatus: v.optional(v.string()), // "pending" | "deleting" — set before async cleanup
