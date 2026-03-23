@@ -29,13 +29,18 @@ export const forceResync = mutation({
   },
 })
 
+const CRON_COOLDOWN_MS = 15 * 60 * 1000 // 15 minutes
+
 export const syncAllProjects = internalAction({
   args: {},
   handler: async (ctx) => {
     const projects = await ctx.runQuery(internal.projects.getAllActiveProjects)
-    console.log(`[cron-sync] Found ${projects.length} active projects`)
+    const now = Date.now()
 
-    for (const project of projects) {
+    const stale = projects.filter((p) => !p.lastSyncAt || now - p.lastSyncAt >= CRON_COOLDOWN_MS)
+    console.log(`[cron-sync] ${stale.length}/${projects.length} projects need sync (cooldown ${CRON_COOLDOWN_MS / 60000}m)`)
+
+    for (const project of stale) {
       await ctx.scheduler.runAfter(0, internal.githubSync.syncRepoInternal, { projectId: project._id })
       console.log(`[cron-sync] Scheduled sync for ${project.repoOwner}/${project.repoName}`)
     }
@@ -376,11 +381,14 @@ export const upsertPlans = internalMutation({
         }
       }
 
-      // Recalculate completed ticket count for this epic
+      // Recalculate completed ticket count — only patch when changed
       const completedTicketCount = epicData.tickets.filter(
         (t) => t.status === "completed" || t.status === "review"
       ).length
-      await ctx.db.patch(epicId, { completedTicketCount })
+      const currentEpicDoc = await ctx.db.get(epicId)
+      if (currentEpicDoc && currentEpicDoc.completedTicketCount !== completedTicketCount) {
+        await ctx.db.patch(epicId, { completedTicketCount })
+      }
 
       // Auto-promote epic to review when all tickets are done
       const allDone = epicData.tickets.length > 0 &&
