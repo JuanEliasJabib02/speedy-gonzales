@@ -1,6 +1,6 @@
 # Add Analytics Timestamps to Ticket Schema
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** high
 **Agent:** Perro salchicha 🌭
 
