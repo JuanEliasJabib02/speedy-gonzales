@@ -40,3 +40,4 @@ export const projects = defineTable({
 })
   .index("by_user", ["userId"])
   .index("by_repo", ["repoOwner", "repoName"])
+  .index("by_autonomous_loop", ["autonomousLoop"])
