@@ -20,4 +20,4 @@ export const STATUS_CONFIG: Record<FeatureStatus, { label: string; colorClass: s
   "completed": { label: "Completed", colorClass: "bg-status-completed" },
 }
 
-export const ACTIVE_COLUMNS: FeatureStatus[] = ["backlog", "todo", "in-progress", "review", "blocked"]
+export const ACTIVE_COLUMNS: FeatureStatus[] = ["todo", "in-progress", "review", "blocked"]

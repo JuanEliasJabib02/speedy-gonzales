@@ -10,6 +10,7 @@ import { KanbanBoard } from "./_components/KanbanBoard"
 
 export default function ProjectPage() {
   const { projectId } = useParams<{ projectId: string }>()
+  const [showBacklog, setShowBacklog] = useState(true)
   const [showCompleted, setShowCompleted] = useState(false)
 
   const project = useQuery(api.projects.getProject, {
@@ -32,6 +33,7 @@ export default function ProjectPage() {
     )
   }
 
+  const backlogCount = epics.filter((e) => e.status === "backlog").length
   const completedCount = epics.filter((e) => e.status === "completed").length
 
   // Map epics to Feature shape for the board
@@ -52,6 +54,9 @@ export default function ProjectPage() {
       <ProjectHeader
         projectId={projectId as Id<"projects">}
         projectName={project.name}
+        showBacklog={showBacklog}
+        onToggleBacklog={() => setShowBacklog((v) => !v)}
+        backlogCount={backlogCount}
         showCompleted={showCompleted}
         onToggleCompleted={() => setShowCompleted((v) => !v)}
         completedCount={completedCount}
@@ -69,7 +74,7 @@ export default function ProjectPage() {
         loopStatus={project.loopStatus}
         lastLoopAt={project.lastLoopAt}
       />
-      <KanbanBoard features={features} showCompleted={showCompleted} projectId={projectId} />
+      <KanbanBoard features={features} showBacklog={showBacklog} showCompleted={showCompleted} projectId={projectId} />
     </div>
   )
 }

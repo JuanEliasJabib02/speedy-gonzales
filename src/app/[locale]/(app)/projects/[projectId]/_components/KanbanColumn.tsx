@@ -1,5 +1,6 @@
 import { FeatureCard } from "./FeatureCard"
 import type { Feature, FeatureStatus } from "../_constants/kanban-config"
+import { cn } from "@/src/lib/helpers/cn"
 
 type KanbanColumnProps = {
   status: FeatureStatus
@@ -11,9 +12,13 @@ type KanbanColumnProps = {
 
 export function KanbanColumn({ status, label, colorClass, features, projectId }: KanbanColumnProps) {
   const isReviewWithItems = status === "review" && features.length > 0
+  const isBacklog = status === "backlog"
 
   return (
-    <div className="flex w-[280px] min-w-[280px] flex-col self-stretch rounded-lg bg-card/50 p-3">
+    <div className={cn(
+      "flex w-[280px] min-w-[280px] flex-col self-stretch rounded-lg bg-card/50 p-3",
+      isBacklog && "opacity-60"
+    )}>
       <div className="mb-3 flex items-center gap-2">
         <div className={`size-2 rounded-full ${colorClass}`} />
         <span className="text-sm font-medium">{label}</span>
