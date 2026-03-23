@@ -1,6 +1,6 @@
 # Add Cooldown to Cron Sync
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** medium
 **Agent:** Perro salchicha 🌭
 
