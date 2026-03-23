@@ -1,6 +1,6 @@
 # Security: Endpoint Hardening
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** high
 
 ## Overview
