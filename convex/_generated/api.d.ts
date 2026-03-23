@@ -10,6 +10,7 @@
 
 import type * as analytics from "../analytics.js";
 import type * as auth from "../auth.js";
+import type * as crons from "../crons.js";
 import type * as epics from "../epics.js";
 import type * as errors from "../errors.js";
 import type * as files from "../files.js";
@@ -41,6 +42,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
   auth: typeof auth;
+  crons: typeof crons;
   epics: typeof epics;
   errors: typeof errors;
   files: typeof files;
