@@ -55,10 +55,13 @@ export function useCommitTimeline({ owner, repo, branch, fallbackBranch = "main"
 
       setCommits((prev) => append ? [...prev, ...data.commits] : data.commits)
     } catch (err) {
+      if (controller.signal.aborted) return
       if (err instanceof DOMException && err.name === "AbortError") return
       setError(err instanceof Error ? err.message : "Unknown error")
     } finally {
-      setLoading(false)
+      if (!controller.signal.aborted) {
+        setLoading(false)
+      }
     }
   }, [owner, repo, branch, fallbackBranch])
 
