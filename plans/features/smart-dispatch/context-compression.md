@@ -1,6 +1,6 @@
 # Add Context Compression for Large Tickets
 
-**Status:** todo
+**Status:** review
 **Priority:** low
 **Agent:** Perro salchicha 🌭
 
