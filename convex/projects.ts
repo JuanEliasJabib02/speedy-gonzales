@@ -141,10 +141,11 @@ export const getProjectInternal = internalQuery({
 export const getActiveLoopProjects = internalQuery({
   args: {},
   handler: async (ctx) => {
-    const allProjects = await ctx.db.query("projects").collect()
-    return allProjects.filter(
-      (p) => p.autonomousLoop === true && !!p.localPath
-    )
+    const projects = await ctx.db
+      .query("projects")
+      .withIndex("by_autonomous_loop", (q) => q.eq("autonomousLoop", true))
+      .collect()
+    return projects.filter((p) => !!p.localPath)
   },
 })
 
