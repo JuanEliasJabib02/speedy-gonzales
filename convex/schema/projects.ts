@@ -25,6 +25,7 @@ export const projects = defineTable({
   autonomousLoop: v.optional(v.boolean()), // opt-in to autonomous dev loop
   localPath: v.optional(v.string()), // absolute path to local repo clone
   notificationEnabled: v.optional(v.boolean()), // Whether to notify on loop events (via agent's connected channel)
+  branchPrefix: v.optional(v.string()), // default: "feat/"
   loopStatus: v.optional(v.string()), // "idle" | "running" | "error"
   lastLoopAt: v.optional(v.number()), // timestamp of last loop execution
   createdAt: v.number(),

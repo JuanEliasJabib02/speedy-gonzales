@@ -109,6 +109,7 @@ export const updateSettings = mutation({
     autonomousLoop: v.optional(v.boolean()),
     localPath: v.optional(v.string()),
     notificationEnabled: v.optional(v.boolean()),
+    branchPrefix: v.optional(v.string()),
   },
   handler: async (ctx, { projectId, ...updates }) => {
     const userId = await requireAuth(ctx)
@@ -125,6 +126,7 @@ export const updateSettings = mutation({
     if (updates.autonomousLoop !== undefined) patch.autonomousLoop = updates.autonomousLoop
     if (updates.localPath !== undefined) patch.localPath = updates.localPath
     if (updates.notificationEnabled !== undefined) patch.notificationEnabled = updates.notificationEnabled
+    if (updates.branchPrefix !== undefined) patch.branchPrefix = updates.branchPrefix
 
     await ctx.db.patch(projectId, patch)
   },

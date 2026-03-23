@@ -36,6 +36,7 @@ type ProjectHeaderProps = {
   autonomousLoop?: boolean
   localPath?: string
   notificationEnabled?: boolean
+  branchPrefix?: string
   loopStatus?: string
   lastLoopAt?: number
 }
@@ -78,6 +79,7 @@ export function ProjectHeader({
   autonomousLoop,
   localPath,
   notificationEnabled,
+  branchPrefix,
   loopStatus,
   lastLoopAt,
 }: ProjectHeaderProps) {
@@ -155,6 +157,7 @@ export function ProjectHeader({
             autonomousLoop={autonomousLoop ?? false}
             localPath={localPath ?? ""}
             notificationEnabled={notificationEnabled ?? false}
+            branchPrefix={branchPrefix ?? "feat/"}
           />
         </div>
       </div>
