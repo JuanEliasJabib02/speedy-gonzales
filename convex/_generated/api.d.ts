@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as analytics from "../analytics.js";
 import type * as auth from "../auth.js";
 import type * as epics from "../epics.js";
 import type * as errors from "../errors.js";
@@ -15,6 +16,7 @@ import type * as files from "../files.js";
 import type * as githubSync from "../githubSync.js";
 import type * as helpers from "../helpers.js";
 import type * as http from "../http.js";
+import type * as loopCycles from "../loopCycles.js";
 import type * as model_gitProvider from "../model/gitProvider.js";
 import type * as model_groupFiles from "../model/groupFiles.js";
 import type * as model_parsePlan from "../model/parsePlan.js";
@@ -23,6 +25,7 @@ import type * as model_providers_github from "../model/providers/github.js";
 import type * as model_providers_index from "../model/providers/index.js";
 import type * as projects from "../projects.js";
 import type * as schema_epics from "../schema/epics.js";
+import type * as schema_loopCycles from "../schema/loopCycles.js";
 import type * as schema_projects from "../schema/projects.js";
 import type * as schema_tickets from "../schema/tickets.js";
 import type * as schema_users from "../schema/users.js";
@@ -36,6 +39,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  analytics: typeof analytics;
   auth: typeof auth;
   epics: typeof epics;
   errors: typeof errors;
@@ -43,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   githubSync: typeof githubSync;
   helpers: typeof helpers;
   http: typeof http;
+  loopCycles: typeof loopCycles;
   "model/gitProvider": typeof model_gitProvider;
   "model/groupFiles": typeof model_groupFiles;
   "model/parsePlan": typeof model_parsePlan;
@@ -51,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   "model/providers/index": typeof model_providers_index;
   projects: typeof projects;
   "schema/epics": typeof schema_epics;
+  "schema/loopCycles": typeof schema_loopCycles;
   "schema/projects": typeof schema_projects;
   "schema/tickets": typeof schema_tickets;
   "schema/users": typeof schema_users;
