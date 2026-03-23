@@ -10,9 +10,9 @@ Removes `src/lib/helpers/authHelper.ts` which is never imported anywhere. It che
 
 ## Checklist
 
-- [ ] Delete `src/lib/helpers/authHelper.ts`
-- [ ] Search for any references to `authHelper`, `getAuthRedirect`, or `isAuthenticated` from this file — should find none
-- [ ] Confirm middleware still uses `convexAuth.isAuthenticated()` correctly
+- [x] Delete `src/lib/helpers/authHelper.ts`
+- [x] Search for any references to `authHelper`, `getAuthRedirect`, or `isAuthenticated` from this file — should find none
+- [x] Confirm middleware still uses `convexAuth.isAuthenticated()` correctly
 
 ## Files
 
