@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Check, Play, Square, Loader2, Github } from "lucide-react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
-import type { Id } from "@/convex/_generated/dataModel"
 import { Link } from "@/src/i18n/routing"
 import { Button } from "@/src/lib/components/ui/button"
 import type { Feature } from "../_constants/kanban-config"
@@ -38,7 +37,7 @@ export function FeatureCard({ feature, projectId }: FeatureCardProps) {
     setIsUpdating(true)
     try {
       await updateStatus({
-        epicId: feature.id as Id<"epics">,
+        epicId: feature.id,
         status: newStatus,
       })
     } finally {
