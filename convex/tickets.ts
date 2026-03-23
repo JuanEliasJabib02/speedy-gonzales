@@ -25,8 +25,9 @@ export const updateStatus = mutation({
     ticketId: v.id("tickets"),
     status: v.string(),
     blockedReason: v.optional(v.string()),
+    completionType: v.optional(v.union(v.literal("clean"), v.literal("with-fixes"))),
   },
-  handler: async (ctx, { ticketId, status, blockedReason }) => {
+  handler: async (ctx, { ticketId, status, blockedReason, completionType }) => {
     const userId = await requireAuth(ctx)
     const ticket = await ctx.db.get(ticketId)
     if (!ticket) return throwError(ErrorCodes.NOT_FOUND) as never
@@ -36,7 +37,10 @@ export const updateStatus = mutation({
     const patch: Record<string, unknown> = { status }
     if (status === "in-progress") patch.startedAt = now
     if (status === "review") patch.reviewAt = now
-    if (status === "completed") patch.completedAt = now
+    if (status === "completed") {
+      patch.completedAt = now
+      if (completionType) patch.completionType = completionType
+    }
     if (status === "blocked") {
       patch.blockedAt = now
       patch.blockedReason = blockedReason ?? undefined
@@ -52,11 +56,11 @@ export const updateStatus = mutation({
     })
 
     // Update denormalized completed ticket count + auto-promote epic
-    const ticket = await ctx.db.get(ticketId)
-    if (ticket) {
+    const updatedTicket = await ctx.db.get(ticketId)
+    if (updatedTicket) {
       const allTickets = await ctx.db
         .query("tickets")
-        .withIndex("by_epic", (q) => q.eq("epicId", ticket.epicId))
+        .withIndex("by_epic", (q) => q.eq("epicId", updatedTicket.epicId))
         .collect()
       const activeTickets = allTickets.filter((t) => !t.isDeleted)
       const completedCount = activeTickets.filter((t) => t.status === "completed" || t.status === "review").length
@@ -67,18 +71,18 @@ export const updateStatus = mutation({
       if (status === "completed" || status === "review") {
         const allDone = activeTickets.every((t) => t.status === "completed" || t.status === "review")
         if (allDone && activeTickets.length > 0) {
-          const epic = await ctx.db.get(ticket.epicId)
+          const epic = await ctx.db.get(updatedTicket.epicId)
           if (epic && epic.status !== "review" && epic.status !== "completed") {
             epicPatch.status = "review"
             await ctx.scheduler.runAfter(0, internal.githubSync.pushEpicStatusToGitHub, {
-              epicId: ticket.epicId,
+              epicId: updatedTicket.epicId,
               newStatus: "review",
             })
           }
         }
       }
 
-      await ctx.db.patch(ticket.epicId, epicPatch)
+      await ctx.db.patch(updatedTicket.epicId, epicPatch)
     }
   },
 })
