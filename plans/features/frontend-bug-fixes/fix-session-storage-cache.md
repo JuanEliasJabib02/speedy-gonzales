@@ -1,6 +1,6 @@
 # Fix CommitDiffPanel sessionStorage Cache
 
-**Status:** in-progress
+**Status:** review
 **Priority:** low
 **Agent:** Perro salchicha 🌭
 
@@ -10,10 +10,10 @@ CommitDiffPanel caches every commit diff in `sessionStorage` with no size limit.
 
 ## Checklist
 
-- [ ] Add a try/catch around `sessionStorage.setItem` to handle `QuotaExceededError`
-- [ ] On quota error: clear oldest cached entries (LRU or clear all) then retry
-- [ ] Optionally: limit cache to last N diffs (e.g. 20) instead of unlimited
-- [ ] In `useCommitTimeline`: add `AbortController` to fetch calls, abort on unmount via useEffect cleanup
+- [x] Add a try/catch around `sessionStorage.setItem` to handle `QuotaExceededError`
+- [x] On quota error: clear oldest cached entries (LRU or clear all) then retry
+- [x] Optionally: limit cache to last N diffs (e.g. 20) instead of unlimited
+- [x] In `useCommitTimeline`: add `AbortController` to fetch calls, abort on unmount via useEffect cleanup
 
 ## Files
 
