@@ -1,6 +1,6 @@
 # Prevent upsertPlans from Hitting Operation Limit
 
-**Status:** in-progress
+**Status:** review
 **Priority:** medium
 **Agent:** Perro salchicha 🌭
 
@@ -10,11 +10,14 @@
 
 ## Checklist
 
-- [ ] Measure current op count for a typical sync (log it in dev)
-- [ ] If epic+ticket count > threshold (~100 total), split into batched scheduled mutations
-- [ ] Each batch processes a subset of epics/tickets, then schedules the next batch
-- [ ] Ensure the `syncStatus` remains "syncing" across all batches and only resets on completion/error
+- [x] Measure current op count for a typical sync (log it in dev)
+- [x] If epic+ticket count > threshold (~100 total), split into batched scheduled mutations
+- [x] Each batch processes a subset of epics/tickets, then schedules the next batch
+- [x] Ensure the `syncStatus` remains "syncing" across all batches and only resets on completion/error
 
 ## Files
 
 - `convex/githubSync.ts`
+
+## Commits
+- `5614ef5`

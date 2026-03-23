@@ -9,6 +9,8 @@ import { groupFilesIntoEpics } from "./model/groupFiles"
 import { parsePlan, parseCommits } from "./model/parsePlan"
 import type { GitProviderConfig, GitProviderType } from "./model/gitProvider"
 
+const UPSERT_BATCH_THRESHOLD = 50 // max epics+tickets per mutation batch
+
 export const syncProject = mutation({
   args: { projectId: v.id("projects") },
   handler: async (ctx, { projectId }) => {
@@ -189,35 +191,71 @@ export const syncRepoInternal = internalAction({
         sortOrder++
       }
 
-      // Upsert all data atomically
-      await ctx.runMutation(internal.githubSync.upsertPlans, {
-        projectId,
-        epics: epicsData.map((e, i) => ({
-          path: e.path,
-          contentHash: e.sha,
-          title: e.parsed.title,
-          content: e.parsed.body,
-          status: e.parsed.status,
-          priority: e.parsed.priority,
-          checklistTotal: e.parsed.checklistTotal,
-          checklistCompleted: e.parsed.checklistCompleted,
-          ticketCount: e.tickets.length,
-          sortOrder: i,
-          tickets: e.tickets.map((t, j) => ({
-            path: t.path,
-            contentHash: t.sha,
-            title: t.parsed.title,
-            content: t.parsed.body,
-            status: t.parsed.status,
-            priority: t.parsed.priority,
-            checklistTotal: t.parsed.checklistTotal,
-            checklistCompleted: t.parsed.checklistCompleted,
-            commits: t.commits,
-            sortOrder: j,
-            agentName: t.agentName,
-            blockedReason: t.parsed.blockedReason,
-          })),
+      // Upsert in batches to stay under Convex operation limit
+      const allEpicArgs = epicsData.map((e, i) => ({
+        path: e.path,
+        contentHash: e.sha,
+        title: e.parsed.title,
+        content: e.parsed.body,
+        status: e.parsed.status,
+        priority: e.parsed.priority,
+        checklistTotal: e.parsed.checklistTotal,
+        checklistCompleted: e.parsed.checklistCompleted,
+        ticketCount: e.tickets.length,
+        sortOrder: i,
+        tickets: e.tickets.map((t, j) => ({
+          path: t.path,
+          contentHash: t.sha,
+          title: t.parsed.title,
+          content: t.parsed.body,
+          status: t.parsed.status,
+          priority: t.parsed.priority,
+          checklistTotal: t.parsed.checklistTotal,
+          checklistCompleted: t.parsed.checklistCompleted,
+          commits: t.commits,
+          sortOrder: j,
+          agentName: t.agentName,
+          blockedReason: t.parsed.blockedReason,
         })),
+      }))
+
+      const totalItems = allEpicArgs.reduce((sum, e) => sum + 1 + e.tickets.length, 0)
+      console.log(`[sync] Upserting ${allEpicArgs.length} epics, ${totalItems} total items (epics+tickets)`)
+
+      // Split into batches — each epic + its tickets count toward the limit
+      const batches: typeof allEpicArgs[] = []
+      let currentBatch: typeof allEpicArgs = []
+      let currentBatchItems = 0
+
+      for (const epic of allEpicArgs) {
+        const epicItems = 1 + epic.tickets.length
+        if (currentBatchItems + epicItems > UPSERT_BATCH_THRESHOLD && currentBatch.length > 0) {
+          batches.push(currentBatch)
+          currentBatch = []
+          currentBatchItems = 0
+        }
+        currentBatch.push(epic)
+        currentBatchItems += epicItems
+      }
+      if (currentBatch.length > 0) batches.push(currentBatch)
+
+      console.log(`[sync] Split into ${batches.length} batch(es)`)
+
+      for (let i = 0; i < batches.length; i++) {
+        await ctx.runMutation(internal.githubSync.upsertPlansBatch, {
+          projectId,
+          epics: batches[i],
+        })
+        console.log(`[sync] Batch ${i + 1}/${batches.length} committed`)
+      }
+
+      // Soft-delete stale epics/tickets in a separate mutation
+      const activePaths = allEpicArgs.map((e) => e.path)
+      const activeTicketPaths = allEpicArgs.flatMap((e) => e.tickets.map((t) => t.path))
+      await ctx.runMutation(internal.githubSync.softDeleteStalePlans, {
+        projectId,
+        activePaths,
+        activeTicketPaths,
       })
 
       // Release lock with success
@@ -237,48 +275,42 @@ export const syncRepoInternal = internalAction({
   },
 })
 
-export const upsertPlans = internalMutation({
+const epicValidator = v.object({
+  path: v.string(),
+  contentHash: v.string(),
+  title: v.string(),
+  content: v.string(),
+  status: v.string(),
+  priority: v.string(),
+  checklistTotal: v.number(),
+  checklistCompleted: v.number(),
+  ticketCount: v.number(),
+  sortOrder: v.number(),
+  tickets: v.array(
+    v.object({
+      path: v.string(),
+      contentHash: v.string(),
+      title: v.string(),
+      content: v.string(),
+      status: v.string(),
+      priority: v.string(),
+      checklistTotal: v.number(),
+      checklistCompleted: v.number(),
+      commits: v.array(v.string()),
+      sortOrder: v.number(),
+      agentName: v.optional(v.string()),
+      blockedReason: v.optional(v.string()),
+    }),
+  ),
+})
+
+export const upsertPlansBatch = internalMutation({
   args: {
     projectId: v.id("projects"),
-    epics: v.array(
-      v.object({
-        path: v.string(),
-        contentHash: v.string(),
-        title: v.string(),
-        content: v.string(),
-        status: v.string(),
-        priority: v.string(),
-        checklistTotal: v.number(),
-        checklistCompleted: v.number(),
-        ticketCount: v.number(),
-        sortOrder: v.number(),
-        tickets: v.array(
-          v.object({
-            path: v.string(),
-            contentHash: v.string(),
-            title: v.string(),
-            content: v.string(),
-            status: v.string(),
-            priority: v.string(),
-            checklistTotal: v.number(),
-            checklistCompleted: v.number(),
-            commits: v.array(v.string()),
-            sortOrder: v.number(),
-            agentName: v.optional(v.string()),
-            blockedReason: v.optional(v.string()),
-          }),
-        ),
-      }),
-    ),
+    epics: v.array(epicValidator),
   },
   handler: async (ctx, { projectId, epics }) => {
-    const activePaths = new Set<string>()
-    const activeTicketPaths = new Set<string>()
-
     for (const epicData of epics) {
-      activePaths.add(epicData.path)
-
-      // Find or create epic
       const existing = await ctx.db
         .query("epics")
         .withIndex("by_project_path", (q) => q.eq("projectId", projectId).eq("path", epicData.path))
@@ -324,10 +356,7 @@ export const upsertPlans = internalMutation({
         })
       }
 
-      // Upsert tickets
       for (const ticketData of epicData.tickets) {
-        activeTicketPaths.add(ticketData.path)
-
         const existingTicket = await ctx.db
           .query("tickets")
           .withIndex("by_project_path", (q) => q.eq("projectId", projectId).eq("path", ticketData.path))
@@ -401,27 +430,37 @@ export const upsertPlans = internalMutation({
         }
       }
     }
+  },
+})
 
-    // Soft-delete epics no longer in repo
+export const softDeleteStalePlans = internalMutation({
+  args: {
+    projectId: v.id("projects"),
+    activePaths: v.array(v.string()),
+    activeTicketPaths: v.array(v.string()),
+  },
+  handler: async (ctx, { projectId, activePaths, activeTicketPaths }) => {
+    const activePathSet = new Set(activePaths)
+    const activeTicketPathSet = new Set(activeTicketPaths)
+
     const allEpics = await ctx.db
       .query("epics")
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect()
 
     for (const epic of allEpics) {
-      if (!activePaths.has(epic.path) && !epic.isDeleted) {
+      if (!activePathSet.has(epic.path) && !epic.isDeleted) {
         await ctx.db.patch(epic._id, { isDeleted: true })
       }
     }
 
-    // Soft-delete tickets no longer in repo
     const allTickets = await ctx.db
       .query("tickets")
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect()
 
     for (const ticket of allTickets) {
-      if (!activeTicketPaths.has(ticket.path) && !ticket.isDeleted) {
+      if (!activeTicketPathSet.has(ticket.path) && !ticket.isDeleted) {
         await ctx.db.patch(ticket._id, { isDeleted: true })
       }
     }
