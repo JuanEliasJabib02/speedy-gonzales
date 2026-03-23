@@ -28,4 +28,4 @@ Create a `loopCycles` table in Convex to track every autonomous loop execution. 
 
 ## Commits
 
-- (pending — will be added after commit)
+- `9bf3106` feat(analytics): add loop cycles tracking table and endpoint
