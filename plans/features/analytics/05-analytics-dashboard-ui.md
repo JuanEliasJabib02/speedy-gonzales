@@ -42,3 +42,7 @@ New "Analytics" tab in the project view that visualizes agent performance, quali
 - `src/app/[locale]/(app)/analytics/_helpers/formatResolutionTime.ts` (NEW)
 - `src/app/[locale]/(app)/_components/AppSidebar.tsx` (MODIFIED — added Analytics link)
 - `convex/_generated/api.d.ts` (MODIFIED — added analytics + loopCycles types)
+
+## Commits
+
+- `2572fde` feat(analytics): build analytics dashboard UI with charts and stat cards
