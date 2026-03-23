@@ -1,6 +1,6 @@
 # Require LOOP_API_KEY on Autonomous Loop Endpoints
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** high
 **Agent:** Perro salchicha 🌭
 
