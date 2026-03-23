@@ -1,6 +1,6 @@
 # Delete Dead authHelper.ts
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** medium
 **Agent:** Perro salchicha 🌭
 
