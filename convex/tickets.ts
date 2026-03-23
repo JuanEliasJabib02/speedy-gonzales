@@ -2,11 +2,16 @@ import { v } from "convex/values"
 import { query, mutation, internalQuery, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
 import { requireAuth } from "./helpers"
+import { throwError, ErrorCodes } from "./errors"
 
 export const getByEpic = query({
   args: { epicId: v.id("epics") },
   handler: async (ctx, { epicId }) => {
-    await requireAuth(ctx)
+    const userId = await requireAuth(ctx)
+    const epic = await ctx.db.get(epicId)
+    if (!epic) return []
+    const project = await ctx.db.get(epic.projectId)
+    if (!project || project.userId !== userId) return throwError(ErrorCodes.FORBIDDEN) as never
     const tickets = await ctx.db
       .query("tickets")
       .withIndex("by_epic", (q) => q.eq("epicId", epicId))
@@ -22,7 +27,11 @@ export const updateStatus = mutation({
     blockedReason: v.optional(v.string()),
   },
   handler: async (ctx, { ticketId, status, blockedReason }) => {
-    await requireAuth(ctx)
+    const userId = await requireAuth(ctx)
+    const ticket = await ctx.db.get(ticketId)
+    if (!ticket) return throwError(ErrorCodes.NOT_FOUND) as never
+    const project = await ctx.db.get(ticket.projectId)
+    if (!project || project.userId !== userId) return throwError(ErrorCodes.FORBIDDEN) as never
     const patch: Record<string, unknown> = { status }
     if (status === "blocked") {
       patch.blockedReason = blockedReason ?? undefined
