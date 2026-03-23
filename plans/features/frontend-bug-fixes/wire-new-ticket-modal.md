@@ -1,6 +1,6 @@
 # Wire NewTicketModal onSubmit
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** medium
 **Agent:** Perro salchicha 🌭
 
