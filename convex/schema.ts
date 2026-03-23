@@ -4,6 +4,7 @@ import { users } from "./schema/users"
 import { projects } from "./schema/projects"
 import { epics } from "./schema/epics"
 import { tickets } from "./schema/tickets"
+import { loopCycles } from "./schema/loopCycles"
 
 export default defineSchema({
   ...authTables,
@@ -11,4 +12,5 @@ export default defineSchema({
   projects,
   epics,
   tickets,
+  loopCycles,
 })

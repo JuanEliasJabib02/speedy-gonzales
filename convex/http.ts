@@ -246,4 +246,90 @@ http.route({
   }),
 })
 
+// Log loop cycle — called by the autonomous loop after each execution
+http.route({
+  path: "/log-loop-cycle",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const expectedKey = process.env.LOOP_API_KEY
+    if (!expectedKey) {
+      return new Response(JSON.stringify({ ok: false, error: "LOOP_API_KEY not configured" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      })
+    }
+    const authHeader = request.headers.get("authorization")
+    if (authHeader !== `Bearer ${expectedKey}`) {
+      return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      })
+    }
+
+    let body: {
+      repoOwner?: string
+      repoName?: string
+      timestamp?: number
+      ticketsProcessed?: number
+      ticketsSkipped?: number
+      wasIdle?: boolean
+      rateLimitHit?: boolean
+      modelUsed?: string
+      durationMs?: number
+    }
+
+    try {
+      body = await request.json()
+    } catch {
+      return new Response(JSON.stringify({ ok: false, error: "Invalid JSON" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      })
+    }
+
+    const { repoOwner, repoName, timestamp, ticketsProcessed, ticketsSkipped, wasIdle, rateLimitHit, modelUsed, durationMs } = body
+
+    if (!repoOwner || !repoName || timestamp == null || ticketsProcessed == null || ticketsSkipped == null || wasIdle == null || rateLimitHit == null) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "Missing required fields: repoOwner, repoName, timestamp, ticketsProcessed, ticketsSkipped, wasIdle, rateLimitHit" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      )
+    }
+
+    if (modelUsed && modelUsed !== "opus" && modelUsed !== "sonnet") {
+      return new Response(
+        JSON.stringify({ ok: false, error: "modelUsed must be 'opus' or 'sonnet'" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      )
+    }
+
+    const project = await ctx.runQuery(internal.projects.getByRepo, {
+      owner: repoOwner,
+      name: repoName,
+    })
+    if (!project) {
+      return new Response(
+        JSON.stringify({ ok: false, error: `Project not found: ${repoOwner}/${repoName}` }),
+        { status: 404, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      )
+    }
+
+    await ctx.runMutation(internal.loopCycles.logCycle, {
+      projectId: project._id,
+      timestamp,
+      ticketsProcessed,
+      ticketsSkipped,
+      wasIdle,
+      rateLimitHit,
+      modelUsed: modelUsed as "opus" | "sonnet" | undefined,
+      durationMs,
+    })
+
+    return new Response(
+      JSON.stringify({ ok: true }),
+      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+    )
+  }),
+})
+
 export default http
