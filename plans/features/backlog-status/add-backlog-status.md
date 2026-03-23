@@ -1,6 +1,6 @@
 # Add Backlog Status to Schema and Validators
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** high
 **Agent:** Perro salchicha 🌭
 
