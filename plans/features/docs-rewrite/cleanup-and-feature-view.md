@@ -1,6 +1,6 @@
 # Cleanup Stale Files + Update Feature View Docs
 
-**Status:** in-progress
+**Status:** review
 **Priority:** medium
 **Agent:** Charizard 🔥
 
@@ -10,11 +10,11 @@ Delete stale files from the repo and update the feature view docs page. Also upd
 
 ## Checklist
 
-- [ ] Delete `.perro-queue.md` — stale, references dead features (chat, roadmap modal, paste image upload)
-- [ ] Update `src/app/[locale]/(public-routes)/docs/feature-view/page.tsx` — verify it matches the current UI (ticket sidebar, plan viewer, commit timeline). Remove references to chat panel if any exist.
-- [ ] Check and update sub-pages: `src/app/[locale]/(public-routes)/docs/feature-view/plan-viewer/page.tsx` and `src/app/[locale]/(public-routes)/docs/feature-view/ticket-sidebar/page.tsx` — make sure they reflect current functionality
-- [ ] Update `AGENTS.md` — add section about quality gates (3-gate system) and post-execution verification. This is what AI agents read when they land in the repo.
-- [ ] Verify all internal links across docs pages work (no broken links to deleted pages like `/docs/ai-workflow` or `/docs/agent-workflow`)
+- [x] Delete `.perro-queue.md` — stale, references dead features (chat, roadmap modal, paste image upload)
+- [x] Update `src/app/[locale]/(public-routes)/docs/feature-view/page.tsx` — verify it matches the current UI (ticket sidebar, plan viewer, commit timeline). Remove references to chat panel if any exist.
+- [x] Check and update sub-pages: `src/app/[locale]/(public-routes)/docs/feature-view/plan-viewer/page.tsx` and `src/app/[locale]/(public-routes)/docs/feature-view/ticket-sidebar/page.tsx` — make sure they reflect current functionality
+- [x] Update `AGENTS.md` — add section about quality gates (3-gate system) and post-execution verification. This is what AI agents read when they land in the repo.
+- [x] Verify all internal links across docs pages work (no broken links to deleted pages like `/docs/ai-workflow` or `/docs/agent-workflow`)
 
 ## Files
 
@@ -28,3 +28,7 @@ Delete stale files from the repo and update the feature view docs page. Also upd
 
 - Reference: current feature-view docs pages — keep the structure, just verify accuracy
 - Reference: `~/.openclaw/workspace/skills/create-feature/SKILL.md` — for quality gates content to add to AGENTS.md
+
+## Commits
+
+`9146867823c0ee40b587f25f55568f0fd62a41c8`

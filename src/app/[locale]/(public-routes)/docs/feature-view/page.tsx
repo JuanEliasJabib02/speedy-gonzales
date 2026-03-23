@@ -24,7 +24,7 @@ const panels = [
     icon: GitCommit,
     title: "Commit Timeline",
     desc: "Browse the commit history for the feature branch. View diffs, filter by ticket, and track what the agent has pushed.",
-    href: "/docs/feature-view/commit-timeline",
+    href: null,
   },
 ]
 
@@ -136,27 +136,48 @@ export default function FeatureViewDocsPage() {
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">The three panels</h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          {panels.map((panel) => (
-            <Link
-              key={panel.href}
-              href={panel.href}
-              className="group flex flex-col gap-3 rounded-lg border border-border bg-card p-6 transition-colors hover:border-primary/50 hover:bg-accent"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex size-9 items-center justify-center rounded-md bg-primary/10">
-                  <panel.icon className="size-4 text-primary" />
+          {panels.map((panel) => {
+            const content = (
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="flex size-9 items-center justify-center rounded-md bg-primary/10">
+                    <panel.icon className="size-4 text-primary" />
+                  </div>
+                  <h3 className="font-semibold">{panel.title}</h3>
                 </div>
-                <h3 className="font-semibold">{panel.title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {panel.desc}
+                </p>
+                {panel.href && (
+                  <div className="mt-auto flex items-center gap-1 text-sm text-primary">
+                    <span>Learn more</span>
+                    <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+                  </div>
+                )}
+              </>
+            )
+
+            if (panel.href) {
+              return (
+                <Link
+                  key={panel.title}
+                  href={panel.href}
+                  className="group flex flex-col gap-3 rounded-lg border border-border bg-card p-6 transition-colors hover:border-primary/50 hover:bg-accent"
+                >
+                  {content}
+                </Link>
+              )
+            }
+
+            return (
+              <div
+                key={panel.title}
+                className="flex flex-col gap-3 rounded-lg border border-border bg-card p-6"
+              >
+                {content}
               </div>
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {panel.desc}
-              </p>
-              <div className="mt-auto flex items-center gap-1 text-sm text-primary">
-                <span>Learn more</span>
-                <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
-              </div>
-            </Link>
-          ))}
+            )
+          })}
         </div>
       </section>
     </div>
