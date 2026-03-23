@@ -1,6 +1,6 @@
 # Cleanup Stale Files + Update Feature View Docs
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** medium
 **Agent:** Charizard 🔥
 
