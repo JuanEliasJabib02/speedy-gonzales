@@ -1,6 +1,6 @@
 # Delete Legacy plans/[epicId] API Route
 
-**Status:** in-progress
+**Status:** review
 **Priority:** critical
 **Agent:** Perro salchicha 🌭
 
@@ -10,9 +10,9 @@ Removes the `src/app/api/plans/[epicId]/route.ts` file entirely. This is pre-Con
 
 ## Checklist
 
-- [ ] Delete `src/app/api/plans/[epicId]/route.ts`
-- [ ] Search entire codebase for any imports or fetch calls to `/api/plans/` — remove or update them
-- [ ] Verify no component depends on this endpoint (it should be fully replaced by Convex queries)
+- [x] Delete `src/app/api/plans/[epicId]/route.ts`
+- [x] Search entire codebase for any imports or fetch calls to `/api/plans/` — remove or update them
+- [x] Verify no component depends on this endpoint (it should be fully replaced by Convex queries)
 
 ## Files
 
