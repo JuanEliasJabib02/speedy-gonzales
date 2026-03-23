@@ -1,6 +1,6 @@
 # Use Union Literal Types in Convex Schema
 
-**Status:** todo
+**Status:** in-progress
 **Priority:** medium
 **Agent:** Perro salchicha 🌭
 
