@@ -19,3 +19,6 @@ CommitDiffPanel caches every commit diff in `sessionStorage` with no size limit.
 
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_components/CommitDiffPanel.tsx`
 - `src/app/[locale]/(app)/projects/[projectId]/features/[epicId]/_hooks/useCommitTimeline.ts`
+
+## Commits
+- `8dbaf2025163c1760dd614e286afaa9ca9a98de5`
