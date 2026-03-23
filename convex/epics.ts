@@ -61,6 +61,22 @@ export const updateStatus = mutation({
   },
 })
 
+export const setPrUrl = mutation({
+  args: {
+    epicId: v.id("epics"),
+    prUrl: v.string(),
+  },
+  handler: async (ctx, { epicId, prUrl }) => {
+    const userId = await requireAuth(ctx)
+    const epic = await ctx.db.get(epicId)
+    if (!epic || epic.isDeleted) return throwError(ErrorCodes.NOT_FOUND)
+    const project = await ctx.db.get(epic.projectId)
+    if (!project || project.userId !== userId) return throwError(ErrorCodes.FORBIDDEN) as never
+
+    await ctx.db.patch(epicId, { prUrl })
+  },
+})
+
 export const getEpicInternal = internalQuery({
   args: { epicId: v.id("epics") },
   handler: async (ctx, { epicId }) => {

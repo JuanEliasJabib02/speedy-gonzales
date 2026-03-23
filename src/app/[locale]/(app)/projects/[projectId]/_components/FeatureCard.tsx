@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, Play, Square, Loader2 } from "lucide-react"
+import { Check, Play, Square, Loader2, Github } from "lucide-react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
@@ -109,9 +109,22 @@ export function FeatureCard({ feature, projectId }: FeatureCardProps) {
           <span className="text-xs text-muted-foreground">
             {feature.ticketCount} tickets
           </span>
-          <span className={`rounded-full px-2 py-0.5 text-xs ${PRIORITY_STYLES[feature.priority]}`}>
-            {feature.priority}
-          </span>
+          <div className="flex items-center gap-1.5">
+            {feature.status === "review" && feature.prUrl && (
+              <a
+                href={feature.prUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <Github className="size-3.5" />
+              </a>
+            )}
+            <span className={`rounded-full px-2 py-0.5 text-xs ${PRIORITY_STYLES[feature.priority]}`}>
+              {feature.priority}
+            </span>
+          </div>
         </div>
       </div>
     </Link>

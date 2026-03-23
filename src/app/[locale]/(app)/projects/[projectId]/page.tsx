@@ -44,6 +44,7 @@ export default function ProjectPage() {
       : 0,
     ticketCount: epic.ticketCount,
     priority: epic.priority as "low" | "medium" | "high" | "critical",
+    prUrl: epic.prUrl,
   }))
 
   return (

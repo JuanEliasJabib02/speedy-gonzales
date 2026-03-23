@@ -8,6 +8,7 @@ export type Feature = {
   progress: number
   ticketCount: number
   priority: Priority
+  prUrl?: string
 }
 
 export const STATUS_CONFIG: Record<FeatureStatus, { label: string; colorClass: string }> = {

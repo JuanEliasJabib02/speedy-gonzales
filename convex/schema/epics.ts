@@ -14,6 +14,7 @@ export const epics = defineTable({
   ticketCount: v.number(),
   completedTicketCount: v.optional(v.number()),
   sortOrder: v.number(),
+  prUrl: v.optional(v.string()),
   isDeleted: v.boolean(),
 })
   .index("by_project", ["projectId"])
