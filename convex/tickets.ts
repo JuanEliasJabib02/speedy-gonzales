@@ -2,7 +2,7 @@ import { v } from "convex/values"
 import { query, mutation, internalQuery, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
 import type { Doc } from "./_generated/dataModel"
-import { requireAuth } from "./helpers"
+import { requireAuth, statusValidator } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
 
 export const getByEpic = query({
@@ -24,7 +24,7 @@ export const getByEpic = query({
 export const updateStatus = mutation({
   args: {
     ticketId: v.id("tickets"),
-    status: v.string(),
+    status: statusValidator,
     blockedReason: v.optional(v.string()),
   },
   handler: async (ctx, { ticketId, status, blockedReason }) => {
@@ -127,7 +127,7 @@ export const getByProjectPath = internalQuery({
 export const updateStatusInternal = internalMutation({
   args: {
     ticketId: v.id("tickets"),
-    status: v.string(),
+    status: statusValidator,
     blockedReason: v.optional(v.string()),
   },
   handler: async (ctx, { ticketId, status, blockedReason }) => {

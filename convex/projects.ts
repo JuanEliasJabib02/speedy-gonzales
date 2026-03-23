@@ -2,7 +2,7 @@ import { v } from "convex/values"
 import { query, mutation, internalQuery } from "./_generated/server"
 import { internal } from "./_generated/api"
 import type { Doc } from "./_generated/dataModel"
-import { requireAuth } from "./helpers"
+import { requireAuth, agentStatusValidator } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
 import { parseRepoUrl } from "./model/parseRepoUrl"
 
@@ -105,7 +105,7 @@ export const updateSettings = mutation({
     maxConcurrentGlobal: v.optional(v.number()),
     agentName: v.optional(v.string()),
     agentEmoji: v.optional(v.string()),
-    agentStatus: v.optional(v.string()),
+    agentStatus: v.optional(agentStatusValidator),
     agentCurrentFeature: v.optional(v.string()),
     autonomousLoop: v.optional(v.boolean()),
     localPath: v.optional(v.string()),

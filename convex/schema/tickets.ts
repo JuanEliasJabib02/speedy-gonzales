@@ -1,5 +1,6 @@
 import { defineTable } from "convex/server"
 import { v } from "convex/values"
+import { statusValidator, priorityValidator } from "../helpers"
 
 export const tickets = defineTable({
   projectId: v.id("projects"),
@@ -8,9 +9,9 @@ export const tickets = defineTable({
   path: v.string(), // e.g. "plans/features/auth/magic-link-signin.md"
   content: v.string(),
   contentHash: v.string(),
-  status: v.string(), // "todo" | "in-progress" | "review" | "completed" | "blocked"
+  status: statusValidator,
   blockedReason: v.optional(v.string()),
-  priority: v.string(), // "low" | "medium" | "high" | "critical"
+  priority: priorityValidator,
   checklistTotal: v.number(),
   checklistCompleted: v.number(),
   commits: v.optional(v.array(v.string())),

@@ -30,7 +30,7 @@ export function FeatureCard({ feature, projectId }: FeatureCardProps) {
 
   const handleStatusChange = async (
     e: React.MouseEvent,
-    newStatus: string,
+    newStatus: "todo" | "in-progress" | "review" | "completed" | "blocked",
   ) => {
     e.preventDefault()
     e.stopPropagation()

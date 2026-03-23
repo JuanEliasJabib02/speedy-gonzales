@@ -1,7 +1,7 @@
 import { v } from "convex/values"
 import { mutation, internalAction, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
-import { requireAuth } from "./helpers"
+import { requireAuth, statusValidator, priorityValidator, syncStatusValidator } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
 import type { Id } from "./_generated/dataModel"
 import { getGitProvider } from "./model/providers"
@@ -245,8 +245,8 @@ export const upsertPlans = internalMutation({
         contentHash: v.string(),
         title: v.string(),
         content: v.string(),
-        status: v.string(),
-        priority: v.string(),
+        status: statusValidator,
+        priority: priorityValidator,
         checklistTotal: v.number(),
         checklistCompleted: v.number(),
         ticketCount: v.number(),
@@ -257,8 +257,8 @@ export const upsertPlans = internalMutation({
             contentHash: v.string(),
             title: v.string(),
             content: v.string(),
-            status: v.string(),
-            priority: v.string(),
+            status: statusValidator,
+            priority: priorityValidator,
             checklistTotal: v.number(),
             checklistCompleted: v.number(),
             commits: v.array(v.string()),
@@ -427,7 +427,7 @@ export const upsertPlans = internalMutation({
 export const updateSyncStatus = internalMutation({
   args: {
     projectId: v.id("projects"),
-    status: v.string(),
+    status: syncStatusValidator,
     syncError: v.optional(v.string()),
     lastSyncAt: v.optional(v.number()),
   },
