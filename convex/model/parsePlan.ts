@@ -1,12 +1,17 @@
 // Parses a plan .md file into structured data
 
-const VALID_STATUSES = new Set(["backlog", "todo", "in-progress", "review", "completed", "blocked"])
-const VALID_PRIORITIES = new Set(["low", "medium", "high", "critical"])
+import { VALID_STATUSES, VALID_PRIORITIES } from "../helpers"
+
+const VALID_STATUSES_SET = new Set<string>(VALID_STATUSES)
+const VALID_PRIORITIES_SET = new Set<string>(VALID_PRIORITIES)
+
+type TicketStatus = (typeof VALID_STATUSES)[number]
+type TicketPriority = (typeof VALID_PRIORITIES)[number]
 
 type ParsedPlan = {
   title: string
-  status: string
-  priority: string
+  status: TicketStatus
+  priority: TicketPriority
   body: string
   checklistTotal: number
   checklistCompleted: number
@@ -90,9 +95,9 @@ export function parseBlockedReason(content: string): string | undefined {
 export function parsePlan(content: string): ParsedPlan {
   const title = parseTitle(content)
   const rawStatus = parseField(content, "Status")
-  const status = VALID_STATUSES.has(rawStatus) ? rawStatus : "todo"
+  const status = (VALID_STATUSES_SET.has(rawStatus) ? rawStatus : "todo") as TicketStatus
   const rawPriority = parseField(content, "Priority")
-  const priority = VALID_PRIORITIES.has(rawPriority) ? rawPriority : "medium"
+  const priority = (VALID_PRIORITIES_SET.has(rawPriority) ? rawPriority : "medium") as TicketPriority
   const agentName = parseAgent(content)
   const body = stripHeader(content)
   const checklist = parseChecklist(content)

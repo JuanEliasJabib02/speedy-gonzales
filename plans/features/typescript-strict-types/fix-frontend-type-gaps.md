@@ -1,6 +1,6 @@
 # Fix Frontend Type Gaps
 
-**Status:** in-progress
+**Status:** review
 **Priority:** medium
 **Agent:** Perro salchicha 🌭
 
@@ -10,10 +10,10 @@ Several frontend type issues: `useLivePlan` status union is missing "blocked", `
 
 ## Checklist
 
-- [ ] In `useLivePlan.ts`: add "blocked" to the status type union cast
-- [ ] In `kanban-config.ts`: change `Feature.id` from `string` to `Id<"epics">` — remove unsafe casts in `FeatureCard`
-- [ ] Replace `Record<string, unknown>` patch objects with `Partial<Doc<"tickets">>` or `Partial<Doc<"epics">>` in mutations
-- [ ] Fix `LOCALES` array in `src/i18n/locales.ts` — either add "pt" or remove "pt" from middleware matchers in `src/middleware.ts`
+- [x] In `useLivePlan.ts`: add "blocked" to the status type union cast
+- [x] In `kanban-config.ts`: change `Feature.id` from `string` to `Id<"epics">` — remove unsafe casts in `FeatureCard`
+- [x] Replace `Record<string, unknown>` patch objects with `Partial<Doc<"tickets">>` or `Partial<Doc<"epics">>` in mutations
+- [x] Fix `LOCALES` array in `src/i18n/locales.ts` — either add "pt" or remove "pt" from middleware matchers in `src/middleware.ts`
 
 ## Files
 
@@ -23,3 +23,6 @@ Several frontend type issues: `useLivePlan` status union is missing "blocked", `
 - `convex/tickets.ts`
 - `src/i18n/locales.ts`
 - `src/middleware.ts`
+
+## Commits
+- `8de6a50730d444a95109351e00535bc922e5321c`

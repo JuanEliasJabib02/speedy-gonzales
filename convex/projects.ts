@@ -1,7 +1,8 @@
 import { v } from "convex/values"
 import { query, mutation, internalQuery, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
-import { requireAuth } from "./helpers"
+import type { Doc } from "./_generated/dataModel"
+import { requireAuth, agentStatusValidator } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
 import { parseRepoUrl } from "./model/parseRepoUrl"
 
@@ -157,7 +158,7 @@ export const updateSettings = mutation({
     maxConcurrentGlobal: v.optional(v.number()),
     agentName: v.optional(v.string()),
     agentEmoji: v.optional(v.string()),
-    agentStatus: v.optional(v.string()),
+    agentStatus: v.optional(agentStatusValidator),
     agentCurrentFeature: v.optional(v.string()),
     autonomousLoop: v.optional(v.boolean()),
     localPath: v.optional(v.string()),
@@ -168,7 +169,7 @@ export const updateSettings = mutation({
     const project = await ctx.db.get(projectId)
     if (!project || project.userId !== userId) return throwError(ErrorCodes.NOT_FOUND)
 
-    const patch: Record<string, unknown> = { updatedAt: Date.now() }
+    const patch: Partial<Doc<"projects">> = { updatedAt: Date.now() }
     if (updates.maxConcurrentPerFeature !== undefined) patch.maxConcurrentPerFeature = updates.maxConcurrentPerFeature
     if (updates.maxConcurrentGlobal !== undefined) patch.maxConcurrentGlobal = updates.maxConcurrentGlobal
     if (updates.agentName !== undefined) patch.agentName = updates.agentName

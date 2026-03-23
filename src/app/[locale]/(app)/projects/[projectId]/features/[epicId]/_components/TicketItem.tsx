@@ -40,7 +40,7 @@ export function TicketItem({ ticket, isActive, onClick }: TicketItemProps) {
   const [showBlockedInput, setShowBlockedInput] = useState(false)
   const [blockedReason, setBlockedReason] = useState("")
 
-  const handleStatusChange = (newStatus: string) => {
+  const handleStatusChange = (newStatus: "todo" | "in-progress" | "review" | "completed" | "blocked") => {
     if (newStatus === "blocked") {
       setBlockedReason("")
       setShowBlockedInput(true)

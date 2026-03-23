@@ -1,6 +1,6 @@
 # Fix Unsafe Cast in auth.ts
 
-**Status:** in-progress
+**Status:** review
 **Priority:** low
 **Agent:** Perro salchicha 🌭
 
@@ -10,11 +10,14 @@
 
 ## Checklist
 
-- [ ] Check if newer @convex-dev/auth version exposes a proper mutation context type
+- [x] Check if newer @convex-dev/auth version exposes a proper mutation context type
 - [ ] If yes, upgrade and remove the cast
-- [ ] If no, add a `// @ts-expect-error` or `// eslint-disable` with a comment explaining why, linking to the upstream issue
-- [ ] Either way, remove the `as unknown as MutationCtx` chain — it hides real type errors
+- [x] If no, add a `// @ts-expect-error` or `// eslint-disable` with a comment explaining why, linking to the upstream issue
+- [x] Either way, remove the `as unknown as MutationCtx` chain — it hides real type errors
 
 ## Files
 
 - `convex/auth.ts`
+
+## Commits
+- `a04e5c7387fce90706fd0810fdbbe229b523ee22`
