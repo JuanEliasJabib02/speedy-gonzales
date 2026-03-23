@@ -6,7 +6,9 @@ import { throwError, ErrorCodes } from "./errors"
 export const getByProject = query({
   args: { projectId: v.id("projects") },
   handler: async (ctx, { projectId }) => {
-    await requireAuth(ctx)
+    const userId = await requireAuth(ctx)
+    const project = await ctx.db.get(projectId)
+    if (!project || project.userId !== userId) return throwError(ErrorCodes.FORBIDDEN) as never
     const epics = await ctx.db
       .query("epics")
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
@@ -22,9 +24,11 @@ export const getByProject = query({
 export const getEpic = query({
   args: { epicId: v.id("epics") },
   handler: async (ctx, { epicId }) => {
-    await requireAuth(ctx)
+    const userId = await requireAuth(ctx)
     const epic = await ctx.db.get(epicId)
     if (!epic || epic.isDeleted) return null
+    const project = await ctx.db.get(epic.projectId)
+    if (!project || project.userId !== userId) return throwError(ErrorCodes.FORBIDDEN) as never
     return epic
   },
 })
@@ -42,9 +46,11 @@ export const updateStatus = mutation({
     status: v.string(),
   },
   handler: async (ctx, { epicId, status }) => {
-    await requireAuth(ctx)
+    const userId = await requireAuth(ctx)
     const epic = await ctx.db.get(epicId)
     if (!epic || epic.isDeleted) return throwError(ErrorCodes.NOT_FOUND)
+    const project = await ctx.db.get(epic.projectId)
+    if (!project || project.userId !== userId) return throwError(ErrorCodes.FORBIDDEN) as never
 
     const allowed = ALLOWED_TRANSITIONS[epic.status]
     if (!allowed || !allowed.includes(status)) {
