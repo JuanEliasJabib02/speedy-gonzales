@@ -1,6 +1,5 @@
 import { v } from "convex/values"
 import { query, mutation, internalQuery, internalMutation } from "./_generated/server"
-import { internal } from "./_generated/api"
 import type { Doc } from "./_generated/dataModel"
 import { requireAuth, assertValidStatus, statusValidator } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
@@ -51,12 +50,6 @@ export const updateStatus = mutation({
     }
     await ctx.db.patch(ticketId, patch)
 
-    // Async: push status change to GitHub so the .md file stays in sync
-    await ctx.scheduler.runAfter(0, internal.githubSync.pushTicketStatusToGitHub, {
-      ticketId,
-      newStatus: status,
-    })
-
     // Update denormalized completed ticket count + auto-promote epic
     const updatedTicket = await ctx.db.get(ticketId)
     if (updatedTicket) {
@@ -76,10 +69,6 @@ export const updateStatus = mutation({
           const epic = await ctx.db.get(updatedTicket.epicId)
           if (epic && epic.status !== "review" && epic.status !== "completed") {
             epicPatch.status = "review"
-            await ctx.scheduler.runAfter(0, internal.githubSync.pushEpicStatusToGitHub, {
-              epicId: updatedTicket.epicId,
-              newStatus: "review",
-            })
           }
         }
       }
@@ -162,12 +151,6 @@ export const updateStatusInternal = internalMutation({
     }
     await ctx.db.patch(ticketId, patch)
 
-    // Async: push status change to GitHub so the .md file stays in sync
-    await ctx.scheduler.runAfter(0, internal.githubSync.pushTicketStatusToGitHub, {
-      ticketId,
-      newStatus: status,
-    })
-
     // Update denormalized completed ticket count + auto-promote epic
     const allTickets = await ctx.db
       .query("tickets")
@@ -186,10 +169,6 @@ export const updateStatusInternal = internalMutation({
         const epic = await ctx.db.get(ticket.epicId)
         if (epic && epic.status !== "review" && epic.status !== "completed") {
           epicPatch.status = "review"
-          await ctx.scheduler.runAfter(0, internal.githubSync.pushEpicStatusToGitHub, {
-            epicId: ticket.epicId,
-            newStatus: "review",
-          })
         }
       }
     }

@@ -1,6 +1,6 @@
 # Remove pushStatusToGitHub Functions
 
-**Status:** todo
+**Status:** review
 **Priority:** high
 **Agent:** Perro salchicha 🌭
 
@@ -10,17 +10,16 @@ Delete `pushTicketStatusToGitHub`, `pushEpicStatusToGitHub`, and the shared `pus
 
 ## Checklist
 
-- [ ] Delete `pushStatusToGitHub` helper function from `convex/githubSync.ts`
-- [ ] Delete `pushTicketStatusToGitHub` internal action from `convex/githubSync.ts`
-- [ ] Delete `pushEpicStatusToGitHub` internal action from `convex/githubSync.ts`
-- [ ] Remove all `ctx.scheduler.runAfter` calls that schedule these functions (search entire `convex/` directory)
-- [ ] Remove from `convex/tickets.ts` — any call to `pushTicketStatusToGitHub` after status update
-- [ ] Remove from `convex/epics.ts` — any call to `pushEpicStatusToGitHub` after status update
-- [ ] Clean up any unused imports after removal
-- [ ] Verify `npx tsc --noEmit` passes with no errors
+- [x] Delete `pushStatusToGitHub` helper function from `convex/githubSync.ts`
+- [x] Delete `pushTicketStatusToGitHub` internal action from `convex/githubSync.ts`
+- [x] Delete `pushEpicStatusToGitHub` internal action from `convex/githubSync.ts`
+- [x] Remove all `ctx.scheduler.runAfter` calls that schedule these functions (search entire `convex/` directory)
+- [x] Remove from `convex/tickets.ts` — any call to `pushTicketStatusToGitHub` after status update
+- [x] Remove from `convex/epics.ts` — any call to `pushEpicStatusToGitHub` after status update (none found — no changes needed)
+- [x] Clean up any unused imports after removal
+- [x] Verify `npx tsc --noEmit` passes with no errors (2 pre-existing errors unrelated to this change)
 
 ## Files
 
 - `convex/githubSync.ts`
 - `convex/tickets.ts`
-- `convex/epics.ts`
