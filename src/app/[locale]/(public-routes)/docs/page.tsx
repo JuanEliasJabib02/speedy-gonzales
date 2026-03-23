@@ -1,11 +1,11 @@
-import { ArrowRight, BookOpen, CheckCircle, Circle, Clock, Code, FolderTree, GitBranch, Heart, Layout, Rocket, Zap } from "lucide-react"
+import { ArrowRight, BookOpen, CheckCircle, Circle, Clock, Code, FolderTree, GitBranch, Heart, Layout, Repeat, Rocket, Shield } from "lucide-react"
 import Link from "next/link"
 
 const guides = [
   {
     title: "The Speedy Philosophy",
     description:
-      "Why Speedy Gonzales exists. The vision of Juan Elias Jabib — developing at the speed of thought, with AI as a first-class teammate.",
+      "Why Speedy Gonzales exists — developing at the speed of thought with plans in git, real-time sync, and AI agents as first-class teammates.",
     href: "/docs/philosophy",
     icon: Heart,
   },
@@ -48,11 +48,18 @@ const features = [
     icon: GitBranch,
   },
   {
-    title: "AI Development Workflow",
+    title: "Autonomous Dev Loop",
     description:
-      "How to leverage Charizard and Perro salchicha for faster development. Best practices and when to use AI.",
-    href: "/docs/ai-workflow",
-    icon: Zap,
+      "A 24/7 cron-driven development cycle. Agents pick up tickets, write code, push commits, and move cards — autonomously.",
+    href: "/docs/autonomous-loop",
+    icon: Repeat,
+  },
+  {
+    title: "Quality Gates",
+    description:
+      "Three-gate planning that ensures every feature is specced, reviewed, and tested before it ships. Human review built in.",
+    href: "/docs/quality-gates",
+    icon: Shield,
   },
 ]
 
@@ -99,8 +106,18 @@ const roadmapItems = [
   },
   {
     status: "done" as const,
-    label: "Feature View",
+    label: "Feature View + Plan Viewer",
     description: "Ticket sidebar, plan viewer, and commit timeline — all in one screen per feature.",
+  },
+  {
+    status: "done" as const,
+    label: "Kanban Board",
+    description: "Drag-and-drop kanban with real-time status updates across all features.",
+  },
+  {
+    status: "done" as const,
+    label: "Markdown Rendering",
+    description: "Full markdown in plan viewer: headings, tables, blockquotes, lists, checklists.",
   },
   {
     status: "done" as const,
@@ -109,24 +126,35 @@ const roadmapItems = [
   },
   {
     status: "done" as const,
-    label: "Markdown Rendering",
-    description: "Full markdown in plan viewer: headings, tables, blockquotes, lists, checklists.",
+    label: "Real-Time Status Updates",
+    description: "Convex-powered reactivity — ticket moves, sync progress, and agent activity update live.",
   },
   {
     status: "in-progress" as const,
-    label: "Agent Repo Push (Full Loop)",
-    description: "Charizard creates tickets, pushes to GitHub, auto-sync fires — full agentic loop in review.",
+    label: "Autonomous Dev Loop",
+    description: "24/7 cron-driven cycle: agents pick tickets, write code, push commits, and move cards autonomously.",
+  },
+  {
+    status: "in-progress" as const,
+    label: "Quality Gates",
+    description: "Three-gate planning (spec → review → test) with human review gate before merge.",
   },
   {
     status: "next" as const,
-    label: "Production Login (Magic Link)",
-    description: "Convex Auth + Resend email OTP for production deploy.",
+    label: "Multi-Project Dashboard",
+    description: "Manage multiple repositories from a single Speedy Gonzales instance.",
     priority: "high",
   },
   {
     status: "next" as const,
-    label: "Multi-agent Orchestration",
-    description: "Spawn Perro salchicha (Codex/Claude Code) directly from Telegram.",
+    label: "Activity Feed",
+    description: "Unified timeline of agent actions, commits, and ticket transitions across all features.",
+    priority: "medium",
+  },
+  {
+    status: "next" as const,
+    label: "Test Coverage",
+    description: "Automated test generation and coverage tracking as part of the quality gate pipeline.",
     priority: "medium",
   },
 ]
@@ -151,12 +179,12 @@ export default function DocsPage() {
         <h1 className="text-3xl font-semibold tracking-tight">
           Speedy Gonzales
         </h1>
-        <p className="text-lg text-muted-foreground">The AI Agents IDE</p>
+        <p className="text-lg text-muted-foreground">Autonomous Development Orchestrator</p>
         <p className="leading-relaxed text-muted-foreground">
-          Speedy Gonzales connects your GitHub repositories with AI-powered
-          project management. Write plans in markdown, sync them automatically,
-          and use intelligent agents to help you build faster. Designed for
-          developers and teams who think in code.
+          Speedy Gonzales turns your GitHub plans into an autonomous development
+          pipeline. Write features as markdown, let AI agents pick up tickets,
+          write code, and push commits — while you stay in the review seat.
+          Stack-agnostic, agent-agnostic, and built for builders who ship fast.
         </p>
       </section>
 
