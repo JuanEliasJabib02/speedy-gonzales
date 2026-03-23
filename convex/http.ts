@@ -3,6 +3,12 @@ import { auth } from "./auth"
 import { internal } from "./_generated/api"
 import { httpAction } from "./_generated/server"
 
+const corsHeaders: Record<string, string> = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+}
+
 const http = httpRouter()
 
 auth.addHttpRoutes(http)
@@ -15,7 +21,7 @@ http.route({
 
     // Only process push events
     if (event !== "push") {
-      return new Response("Ignored", { status: 200 })
+      return new Response("Ignored", { status: 200, headers: corsHeaders })
     }
 
     const body = await request.text()
@@ -27,30 +33,32 @@ http.route({
     try {
       payload = JSON.parse(body)
     } catch {
-      return new Response("Invalid JSON", { status: 400 })
+      return new Response("Invalid JSON", { status: 400, headers: corsHeaders })
     }
 
     const owner = payload.repository?.owner?.login
     const name = payload.repository?.name
     if (!owner || !name) {
-      return new Response("Missing repo info", { status: 400 })
+      return new Response("Missing repo info", { status: 400, headers: corsHeaders })
     }
 
     // Look up project
     const project = await ctx.runQuery(internal.projects.getByRepo, { owner, name })
     if (!project) {
-      return new Response("Project not found", { status: 404 })
+      return new Response("Project not found", { status: 404, headers: corsHeaders })
     }
 
-    // Verify signature if webhook secret is set
-    if (project.webhookSecret) {
-      const signature = request.headers.get("x-hub-signature-256") ?? ""
-      const { getGitProvider } = await import("./model/providers")
-      const provider = getGitProvider("github")
-      const valid = await provider.verifyWebhookSignature(project.webhookSecret, body, signature)
-      if (!valid) {
-        return new Response("Invalid signature", { status: 401 })
-      }
+    // Always require webhook signature verification
+    if (!project.webhookSecret) {
+      return new Response("Webhook secret not configured", { status: 403, headers: corsHeaders })
+    }
+
+    const signature = request.headers.get("x-hub-signature-256") ?? ""
+    const { getGitProvider } = await import("./model/providers")
+    const provider = getGitProvider("github")
+    const valid = await provider.verifyWebhookSignature(project.webhookSecret, body, signature)
+    if (!valid) {
+      return new Response("Invalid signature", { status: 401, headers: corsHeaders })
     }
 
     // Check if changes are under plansPath
@@ -62,7 +70,7 @@ http.route({
 
     if (!hasRelevantChanges) {
       console.log("[webhook] No relevant changes — skipping sync")
-      return new Response("No relevant changes", { status: 200 })
+      return new Response("No relevant changes", { status: 200, headers: corsHeaders })
     }
 
     console.log("[webhook] Relevant changes found — scheduling sync for project:", project._id)
@@ -72,7 +80,7 @@ http.route({
       projectId: project._id,
     })
 
-    return new Response("Sync scheduled", { status: 200 })
+    return new Response("Sync scheduled", { status: 200, headers: corsHeaders })
   }),
 })
 
@@ -94,11 +102,14 @@ http.route({
   path: "/autonomous-loop/status",
   method: "GET",
   handler: httpAction(async (ctx, request) => {
-    // Simple API key auth
-    const authHeader = request.headers.get("authorization")
+    // API key auth — always required
     const expectedKey = process.env.LOOP_API_KEY
-    if (expectedKey && authHeader !== `Bearer ${expectedKey}`) {
-      return new Response("Unauthorized", { status: 401 })
+    if (!expectedKey) {
+      return new Response("LOOP_API_KEY not configured", { status: 500, headers: corsHeaders })
+    }
+    const authHeader = request.headers.get("authorization")
+    if (authHeader !== `Bearer ${expectedKey}`) {
+      return new Response("Unauthorized", { status: 401, headers: corsHeaders })
     }
 
     const projects = await ctx.runQuery(internal.projects.getActiveLoopProjects, {})
@@ -132,7 +143,7 @@ http.route({
 
     return new Response(JSON.stringify(result), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...corsHeaders },
     })
   }),
 })
@@ -142,13 +153,19 @@ http.route({
   path: "/update-ticket-status",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
-    // API key auth
-    const authHeader = request.headers.get("authorization")
+    // API key auth — always required
     const expectedKey = process.env.LOOP_API_KEY
-    if (expectedKey && authHeader !== `Bearer ${expectedKey}`) {
+    if (!expectedKey) {
+      return new Response(JSON.stringify({ ok: false, error: "LOOP_API_KEY not configured" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      })
+    }
+    const authHeader = request.headers.get("authorization")
+    if (authHeader !== `Bearer ${expectedKey}`) {
       return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), {
         status: 401,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...corsHeaders },
       })
     }
 
@@ -165,7 +182,7 @@ http.route({
     } catch {
       return new Response(JSON.stringify({ ok: false, error: "Invalid JSON" }), {
         status: 400,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...corsHeaders },
       })
     }
 
@@ -174,7 +191,7 @@ http.route({
     if (!repoOwner || !repoName || !ticketPath || !status) {
       return new Response(
         JSON.stringify({ ok: false, error: "Missing required fields: repoOwner, repoName, ticketPath, status" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       )
     }
 
@@ -182,7 +199,7 @@ http.route({
     if (!validStatuses.includes(status)) {
       return new Response(
         JSON.stringify({ ok: false, error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       )
     }
 
@@ -194,7 +211,7 @@ http.route({
     if (!project) {
       return new Response(
         JSON.stringify({ ok: false, error: `Project not found: ${repoOwner}/${repoName}` }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
+        { status: 404, headers: { "Content-Type": "application/json", ...corsHeaders } }
       )
     }
 
@@ -206,7 +223,7 @@ http.route({
     if (!ticket) {
       return new Response(
         JSON.stringify({ ok: false, error: `Ticket not found: ${ticketPath}` }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
+        { status: 404, headers: { "Content-Type": "application/json", ...corsHeaders } }
       )
     }
 
@@ -224,7 +241,7 @@ http.route({
         previousStatus: result.previousStatus,
         newStatus: result.newStatus,
       }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
+      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     )
   }),
 })
