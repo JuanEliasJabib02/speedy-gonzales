@@ -78,6 +78,39 @@ export const setPrUrl = mutation({
   },
 })
 
+export const deleteEpic = mutation({
+  args: {
+    epicId: v.id("epics"),
+  },
+  handler: async (ctx, { epicId }) => {
+    const userId = await requireAuth(ctx)
+    const epic = await ctx.db.get(epicId)
+    if (!epic || epic.isDeleted) return throwError(ErrorCodes.NOT_FOUND)
+    const project = await ctx.db.get(epic.projectId)
+    if (!project || project.userId !== userId) return throwError(ErrorCodes.FORBIDDEN) as never
+
+    // Mark epic as deleted
+    await ctx.db.patch(epicId, { isDeleted: true, updatedAt: Date.now() })
+
+    // Get all tickets for this epic
+    const tickets = await ctx.db
+      .query("tickets")
+      .withIndex("by_epic", (q) => q.eq("epicId", epicId))
+      .collect()
+
+    // Mark all tickets as deleted
+    let deletedCount = 0
+    for (const ticket of tickets) {
+      if (!ticket.isDeleted) {
+        await ctx.db.patch(ticket._id, { isDeleted: true, updatedAt: Date.now() })
+        deletedCount++
+      }
+    }
+
+    return { deletedTickets: deletedCount }
+  },
+})
+
 export const getEpicInternal = internalQuery({
   args: { epicId: v.id("epics") },
   handler: async (ctx, { epicId }) => {
