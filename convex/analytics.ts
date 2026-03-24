@@ -44,6 +44,7 @@ export const getTicketAnalytics = query({
     const totalCompleted = completed.length
     const cleanApprovals = completed.filter((t) => t.completionType === "clean").length
     const withFixes = completed.filter((t) => t.completionType === "with-fixes").length
+    const unreviewed = completed.filter((t) => t.completionType === undefined).length
     const blockedCount = blocked.length
 
     const resolutionTimes = completed
@@ -55,7 +56,8 @@ export const getTicketAnalytics = query({
         ? resolutionTimes.reduce((sum, t) => sum + t, 0) / resolutionTimes.length
         : 0
 
-    const qualityRate = totalCompleted > 0 ? (cleanApprovals / totalCompleted) * 100 : 0
+    const reviewed = cleanApprovals + withFixes
+    const qualityRate = reviewed > 0 ? (cleanApprovals / reviewed) * 100 : 0
     const successRate =
       totalCompleted + blockedCount > 0 ? (totalCompleted / (totalCompleted + blockedCount)) * 100 : 0
 
@@ -63,6 +65,7 @@ export const getTicketAnalytics = query({
       totalCompleted,
       cleanApprovals,
       withFixes,
+      unreviewed,
       blocked: blockedCount,
       avgResolutionTimeMs,
       qualityRate,
@@ -82,19 +85,20 @@ export const getTicketsByDay = query({
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect()
 
-    const dayMap = new Map<string, { clean: number; withFixes: number; blocked: number }>()
+    const dayMap = new Map<string, { clean: number; withFixes: number; unreviewed: number; blocked: number }>()
 
     for (const t of tickets) {
       if (t.status === "completed" && t.completedAt && t.completedAt >= from && t.completedAt <= to) {
         const date = toDateString(t.completedAt)
-        const entry = dayMap.get(date) ?? { clean: 0, withFixes: 0, blocked: 0 }
+        const entry = dayMap.get(date) ?? { clean: 0, withFixes: 0, unreviewed: 0, blocked: 0 }
         if (t.completionType === "clean") entry.clean++
-        else entry.withFixes++
+        else if (t.completionType === "with-fixes") entry.withFixes++
+        else entry.unreviewed++
         dayMap.set(date, entry)
       }
       if (t.status === "blocked" && t.blockedAt && t.blockedAt >= from && t.blockedAt <= to) {
         const date = toDateString(t.blockedAt)
-        const entry = dayMap.get(date) ?? { clean: 0, withFixes: 0, blocked: 0 }
+        const entry = dayMap.get(date) ?? { clean: 0, withFixes: 0, unreviewed: 0, blocked: 0 }
         entry.blocked++
         dayMap.set(date, entry)
       }

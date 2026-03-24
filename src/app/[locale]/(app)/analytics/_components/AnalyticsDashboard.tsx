@@ -28,6 +28,7 @@ type DayData = {
   date: string
   clean: number
   withFixes: number
+  unreviewed: number
   blocked: number
 }
 
