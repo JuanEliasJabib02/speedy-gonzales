@@ -1,21 +1,12 @@
 "use client"
 
-import { useState } from "react"
-import { Loader2, Github, Trash2, ArrowUpToLine, CheckCircle } from "lucide-react"
-import { useMutation } from "convex/react"
-import { api } from "@/convex/_generated/api"
+import { Github, Trash2, ArrowUpToLine, CheckCircle } from "lucide-react"
 import { Link } from "@/src/i18n/routing"
 import { Button } from "@/src/lib/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/src/lib/components/ui/dialog"
 import type { Feature } from "../_constants/kanban-config"
 import { PRIORITY_STYLES } from "@/src/lib/constants/status-styles"
+import { useFeatureCard } from "../_hooks/useFeatureCard"
+import { FeatureDeleteDialog } from "./FeatureDeleteDialog"
 
 type FeatureCardProps = {
   feature: Feature
@@ -23,51 +14,14 @@ type FeatureCardProps = {
 }
 
 export function FeatureCard({ feature, projectId }: FeatureCardProps) {
-  const deleteEpic = useMutation(api.epics.deleteEpic)
-  const promoteToTodo = useMutation(api.epics.promoteToTodo)
-  const updateStatus = useMutation(api.epics.updateStatus)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [isPromoting, setIsPromoting] = useState(false)
-  const [isApproving, setIsApproving] = useState(false)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-
-  const handlePromote = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsPromoting(true)
-    try {
-      await promoteToTodo({ epicId: feature.id })
-    } finally {
-      setIsPromoting(false)
-    }
-  }
-
-  const handleApprove = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsApproving(true)
-    try {
-      await updateStatus({ epicId: feature.id, status: "completed" })
-    } finally {
-      setIsApproving(false)
-    }
-  }
-
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setShowDeleteDialog(true)
-  }
-
-  const handleDeleteConfirm = async () => {
-    setIsDeleting(true)
-    try {
-      await deleteEpic({ epicId: feature.id })
-      setShowDeleteDialog(false)
-    } finally {
-      setIsDeleting(false)
-    }
-  }
+  const {
+    showDeleteDialog,
+    setShowDeleteDialog,
+    handlePromote,
+    handleApprove,
+    handleDeleteClick,
+    handleDeleteConfirm,
+  } = useFeatureCard(feature, projectId)
 
   return (
     <>
@@ -76,19 +30,28 @@ export function FeatureCard({ feature, projectId }: FeatureCardProps) {
           <div className="flex items-start justify-between gap-2">
             <h4 className="text-sm font-medium">{feature.title}</h4>
             <div className="flex items-center gap-1">
+              {feature.status === "review" && feature.prUrl && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7 shrink-0 text-muted-foreground hover:text-foreground"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    window.open(feature.prUrl, "_blank", "noopener,noreferrer")
+                  }}
+                >
+                  <Github className="size-3.5" />
+                </Button>
+              )}
               {feature.status === "backlog" && (
                 <Button
                   variant="ghost"
                   size="icon"
                   className="size-7 shrink-0 text-primary hover:bg-primary/15"
-                  disabled={isPromoting}
                   onClick={handlePromote}
                 >
-                  {isPromoting ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : (
-                    <ArrowUpToLine className="size-3.5" />
-                  )}
+                  <ArrowUpToLine className="size-3.5" />
                 </Button>
               )}
               {feature.status === "review" && (
@@ -96,92 +59,47 @@ export function FeatureCard({ feature, projectId }: FeatureCardProps) {
                   variant="ghost"
                   size="icon"
                   className="size-7 shrink-0 text-green-600 hover:bg-green-600/15"
-                  disabled={isApproving}
                   onClick={handleApprove}
                 >
-                  {isApproving ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : (
-                    <CheckCircle className="size-3.5" />
-                  )}
+                  <CheckCircle className="size-3.5" />
                 </Button>
               )}
               <Button
                 variant="ghost"
                 size="icon"
                 className="size-7 shrink-0 text-destructive hover:bg-destructive/15"
-                disabled={isDeleting}
                 onClick={handleDeleteClick}
               >
                 <Trash2 className="size-3.5" />
               </Button>
             </div>
           </div>
-        <div className="mt-2">
-          <div className="h-1 w-full rounded-full bg-muted">
-            <div
-              className="h-1 rounded-full bg-primary transition-all"
-              style={{ width: `${feature.progress}%` }}
-            />
+          <div className="mt-2">
+            <div className="h-1 w-full rounded-full bg-muted">
+              <div
+                className="h-1 rounded-full bg-primary transition-all"
+                style={{ width: `${feature.progress}%` }}
+              />
+            </div>
+          </div>
+          <div className="mt-2 flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">{feature.ticketCount} tickets</span>
+            <div className="flex items-center gap-1.5">
+              <span className={`rounded-full px-2 py-0.5 text-xs ${PRIORITY_STYLES[feature.priority]}`}>
+                {feature.priority}
+              </span>
+            </div>
           </div>
         </div>
-        <div className="mt-2 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">
-            {feature.ticketCount} tickets
-          </span>
-          <div className="flex items-center gap-1.5">
-            {feature.status === "review" && feature.prUrl && (
-              <a
-                href={feature.prUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <Github className="size-3.5" />
-              </a>
-            )}
-            <span className={`rounded-full px-2 py-0.5 text-xs ${PRIORITY_STYLES[feature.priority]}`}>
-              {feature.priority}
-            </span>
-          </div>
-        </div>
-      </div>
       </Link>
 
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Feature</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete "{feature.title}"? This will also delete all {feature.ticketCount} tickets in this feature. This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowDeleteDialog(false)}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteConfirm}
-              disabled={isDeleting}
-            >
-              {isDeleting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                'Delete Feature'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <FeatureDeleteDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        featureTitle={feature.title}
+        ticketCount={feature.ticketCount}
+        onConfirm={handleDeleteConfirm}
+      />
     </>
   )
 }

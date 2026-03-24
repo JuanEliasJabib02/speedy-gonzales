@@ -31,3 +31,28 @@ feature/
 - Keep imports clean — no circular dependencies
 - All data access goes through Convex — frontend only uses `useQuery` / `useMutation` / `useAction`
 - If a refactored helper is used by 2+ routes, move it to `src/lib/helpers/`
+
+## Optimistic updates — replace loading states
+
+When extracting mutations into a hook, check if any loading state + spinner pattern exists:
+
+```ts
+const [isDeleting, setIsDeleting] = useState(false)
+// ...
+setIsDeleting(true)
+try { await deleteFoo(...) } finally { setIsDeleting(false) }
+```
+
+If the mutation only **changes a field value** (status, order, name) or **removes a record**, replace it with `.withOptimisticUpdate()` and remove the loading state entirely:
+
+```ts
+const deleteFoo = useMutation(api.foo.delete)
+  .withOptimisticUpdate((localStore, { fooId }) => {
+    const current = localStore.getQuery(api.foo.list, { ... })
+    if (!current) return
+    localStore.setQuery(api.foo.list, { ... }, current.filter(f => f._id !== fooId))
+  })
+```
+
+**Remove:** `isDeleting`, `isPromoting`, `isXxx` states, spinners, and the try/finally wrappers.
+**Keep:** `showXxxDialog` — that is UI state, not loading state.
