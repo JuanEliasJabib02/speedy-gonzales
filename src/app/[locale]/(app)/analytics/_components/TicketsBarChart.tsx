@@ -15,6 +15,7 @@ type DayData = {
   date: string
   clean: number
   withFixes: number
+  unreviewed: number
   blocked: number
 }
 
@@ -60,6 +61,7 @@ export function TicketsBarChart({ data }: TicketsBarChartProps) {
           />
           <Bar dataKey="clean" name="Clean" stackId="tickets" fill="hsl(145 60% 42%)" radius={[0, 0, 0, 0]} />
           <Bar dataKey="withFixes" name="With Fixes" stackId="tickets" fill="hsl(45 90% 50%)" />
+          <Bar dataKey="unreviewed" name="Unreviewed" stackId="tickets" fill="hsl(220 15% 50%)" />
           <Bar dataKey="blocked" name="Blocked" stackId="tickets" fill="hsl(0 70% 55%)" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
