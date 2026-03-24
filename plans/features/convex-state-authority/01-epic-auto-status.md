@@ -1,6 +1,6 @@
 # Auto-calculate Epic Status from Tickets
 
-**Status:** todo
+**Status:** review
 **Priority:** high
 **Agent:** Charizard 🔥
 
@@ -10,16 +10,16 @@ After any ticket status change, Convex automatically recalculates the parent epi
 
 ## Checklist
 
-- [ ] Create `convex/lib/epicStatusEngine.ts` — pure function that takes an array of ticket statuses and returns the epic status:
+- [x] Create `convex/lib/epicStatusEngine.ts` — pure function that takes an array of ticket statuses and returns the epic status:
   - ALL tickets `completed` → epic `completed`
   - ALL tickets `completed` or `review` (at least one `review`) → epic `review`
   - ANY ticket `in-progress` → epic `in-progress`
   - ANY ticket `blocked` AND none `in-progress` → epic `blocked`
   - ALL tickets `todo` → epic `todo`
   - Mixed with at least one `in-progress` → epic `in-progress`
-- [ ] Update `convex/tickets.ts` `updateStatusInternal` mutation — after updating ticket status, query all sibling tickets in the same epic, run the status engine, and patch the epic with: new status, `completedTicketCount`, `checklistCompleted` (sum of all tickets)
-- [ ] Add `updatedAt` field to epics schema if not present — set it on every status recalculation
-- [ ] Add unit-style test function `testEpicStatusEngine` in `convex/lib/epicStatusEngine.ts` — export the pure function so it can be tested independently
+- [x] Update `convex/tickets.ts` `updateStatusInternal` mutation — after updating ticket status, query all sibling tickets in the same epic, run the status engine, and patch the epic with: new status, `completedTicketCount`, `checklistCompleted` (sum of all tickets)
+- [x] Add `updatedAt` field to epics schema if not present — set it on every status recalculation
+- [x] Add unit-style test function `testEpicStatusEngine` in `convex/lib/epicStatusEngine.ts` — export the pure function so it can be tested independently
 
 ## Files
 

@@ -1,12 +1,13 @@
 import { v } from "convex/values"
 import { mutation, action, internalAction, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
-import { requireAuth, statusValidator, priorityValidator, syncStatusValidator } from "./helpers"
+import { requireAuth, statusValidator, priorityValidator, syncStatusValidator, type TicketStatus } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
 import type { Id } from "./_generated/dataModel"
 import { getGitProvider } from "./model/providers"
 import { groupFilesIntoEpics } from "./model/groupFiles"
 import { parsePlan, parseCommits } from "./model/parsePlan"
+import { deriveEpicStatus } from "./lib/epicStatusEngine"
 import type { GitProviderConfig, GitProviderType } from "./model/gitProvider"
 
 const UPSERT_BATCH_THRESHOLD = 50 // max epics+tickets per mutation batch
@@ -325,11 +326,11 @@ export const upsertPlansBatch = internalMutation({
         const wasDeleted = existing.isDeleted
 
         if (contentChanged || countChanged || orderChanged || wasDeleted) {
+          // Never overwrite epic status from .md — status is auto-calculated from tickets
           await ctx.db.patch(existing._id, {
             title: epicData.title,
             content: epicData.content,
             contentHash: epicData.contentHash,
-            status: epicData.status,
             priority: epicData.priority,
             checklistTotal: epicData.checklistTotal,
             checklistCompleted: epicData.checklistCompleted,
@@ -371,12 +372,12 @@ export const upsertPlansBatch = internalMutation({
 
           if (contentChanged || movedEpic || orderChanged || wasDeleted || commitsChanged) {
             const meaningfulChange = contentChanged || movedEpic || wasDeleted || commitsChanged
+            // Never overwrite ticket status from .md — status comes only from /update-ticket-status endpoint
             await ctx.db.patch(existingTicket._id, {
               epicId,
               title: ticketData.title,
               content: ticketData.content,
               contentHash: ticketData.contentHash,
-              status: ticketData.status,
               priority: ticketData.priority,
               checklistTotal: ticketData.checklistTotal,
               checklistCompleted: ticketData.checklistCompleted,
@@ -385,7 +386,6 @@ export const upsertPlansBatch = internalMutation({
               isDeleted: false,
               ...(meaningfulChange ? { updatedAt: Date.now() } : {}),
               agentName: ticketData.agentName,
-              blockedReason: ticketData.blockedReason,
             })
           }
         } else {
@@ -410,23 +410,30 @@ export const upsertPlansBatch = internalMutation({
         }
       }
 
-      // Recalculate completed ticket count — only patch when changed
-      const completedTicketCount = epicData.tickets.filter(
+      // Recalculate epic status and counts from actual DB ticket statuses
+      const allEpicTickets = await ctx.db
+        .query("tickets")
+        .withIndex("by_epic", (q) => q.eq("epicId", epicId))
+        .collect()
+      const activeTickets = allEpicTickets.filter((t) => !t.isDeleted)
+      const completedTicketCount = activeTickets.filter(
         (t) => t.status === "completed" || t.status === "review"
       ).length
+      const epicChecklistCompleted = activeTickets.reduce((sum, t) => sum + t.checklistCompleted, 0)
+      const derivedStatus = deriveEpicStatus(activeTickets.map((t) => t.status as TicketStatus))
+
       const currentEpicDoc = await ctx.db.get(epicId)
-      if (currentEpicDoc && currentEpicDoc.completedTicketCount !== completedTicketCount) {
-        await ctx.db.patch(epicId, { completedTicketCount })
-      }
-
-      // Auto-promote epic to review when all tickets are done
-      const allDone = epicData.tickets.length > 0 &&
-        epicData.tickets.every((t) => t.status === "completed" || t.status === "review")
-
-      if (allDone) {
-        const currentEpic = await ctx.db.get(epicId)
-        if (currentEpic && currentEpic.status !== "review" && currentEpic.status !== "completed") {
-          await ctx.db.patch(epicId, { status: "review" })
+      if (currentEpicDoc) {
+        const statusChanged = currentEpicDoc.status !== derivedStatus
+        const countChanged = currentEpicDoc.completedTicketCount !== completedTicketCount
+        const checklistChanged = currentEpicDoc.checklistCompleted !== epicChecklistCompleted
+        if (statusChanged || countChanged || checklistChanged) {
+          await ctx.db.patch(epicId, {
+            status: derivedStatus,
+            completedTicketCount,
+            checklistCompleted: epicChecklistCompleted,
+            updatedAt: Date.now(),
+          })
         }
       }
     }
