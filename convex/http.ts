@@ -716,4 +716,18 @@ http.route({
   }),
 })
 
+// ── POST /recalculate-epic-statuses ─────────────────────────────────
+http.route({
+  path: "/recalculate-epic-statuses",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const authError = verifyLoopApiKey(request)
+    if (authError) return authError
+
+    const result = await ctx.runMutation(internal.epics.recalculateBacklogEpicStatuses, {})
+
+    return jsonOk({ message: result.message })
+  }),
+})
+
 export default http

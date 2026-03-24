@@ -7,16 +7,31 @@ import type { TicketStatus } from "../helpers"
 export function deriveEpicStatus(statuses: TicketStatus[]): TicketStatus {
   if (statuses.length === 0) return "todo"
 
+  // ALL tickets backlog → epic backlog
+  const allBacklog = statuses.every((s) => s === "backlog")
+  if (allBacklog) return "backlog"
+
+  // ALL tickets backlog or todo → epic todo
+  const allBacklogOrTodo = statuses.every((s) => s === "backlog" || s === "todo")
+  if (allBacklogOrTodo) return "todo"
+
+  // For mixed scenarios with backlog, filter out backlog tickets and calculate normally
+  const nonBacklogStatuses = statuses.filter((s) => s !== "backlog")
+  if (nonBacklogStatuses.length === 0) {
+    // This shouldn't happen since we already handled all-backlog and all-backlog-or-todo
+    return "todo"
+  }
+
   // ALL completed or ALL completed+review → epic goes to "review" (NOT completed)
   // Only Juan manually moves epics to "completed" after reviewing
-  const allCompletedOrReview = statuses.every((s) => s === "completed" || s === "review")
+  const allCompletedOrReview = nonBacklogStatuses.every((s) => s === "completed" || s === "review")
   if (allCompletedOrReview) return "review"
 
-  const hasInProgress = statuses.some((s) => s === "in-progress")
+  const hasInProgress = nonBacklogStatuses.some((s) => s === "in-progress")
   if (hasInProgress) return "in-progress"
 
-  const hasBlocked = statuses.some((s) => s === "blocked")
-  const allTodo = statuses.every((s) => s === "todo")
+  const hasBlocked = nonBacklogStatuses.some((s) => s === "blocked")
+  const allTodo = nonBacklogStatuses.every((s) => s === "todo")
 
   if (hasBlocked && !hasInProgress) return "blocked"
   if (allTodo) return "todo"
@@ -54,7 +69,17 @@ export function testEpicStatusEngine(): string[] {
   assert("single blocked", ["blocked"], "blocked")
   assert("single in-progress", ["in-progress"], "in-progress")
   assert("single review", ["review"], "review")
-  assert("backlog only", ["backlog"], "in-progress") // backlog is not todo/completed/review/blocked
+
+  // Backlog scenarios
+  assert("all backlog", ["backlog", "backlog"], "backlog")
+  assert("single backlog", ["backlog"], "backlog")
+  assert("all backlog or todo", ["backlog", "todo", "backlog"], "todo")
+  assert("backlog + todo only", ["backlog", "todo"], "todo")
+  assert("backlog + completed", ["backlog", "completed"], "review") // ignore backlog, completed only -> review
+  assert("backlog + review", ["backlog", "review"], "review") // ignore backlog, review only -> review
+  assert("backlog + in-progress", ["backlog", "in-progress"], "in-progress") // ignore backlog, in-progress wins
+  assert("backlog + blocked", ["backlog", "blocked"], "blocked") // ignore backlog, blocked only -> blocked
+  assert("backlog + mixed", ["backlog", "todo", "completed"], "in-progress") // ignore backlog, mixed todo+completed -> in-progress
 
   return failures
 }

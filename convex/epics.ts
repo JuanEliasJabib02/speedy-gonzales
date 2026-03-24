@@ -1,7 +1,9 @@
 import { v } from "convex/values"
 import { query, mutation, internalQuery, internalMutation } from "./_generated/server"
 import { requireAuth, assertValidStatus, statusValidator, priorityValidator } from "./helpers"
+import type { TicketStatus } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
+import { deriveEpicStatus } from "./lib/epicStatusEngine"
 
 export const getByProject = query({
   args: { projectId: v.id("projects") },
@@ -212,5 +214,47 @@ export const deleteEpicInternal = internalMutation({
     }
 
     return deletedCount
+  },
+})
+
+export const recalculateBacklogEpicStatuses = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    // Get all non-deleted epics
+    const allEpics = await ctx.db
+      .query("epics")
+      .collect()
+
+    const activeEpics = allEpics.filter((e) => !e.isDeleted)
+    let updatedCount = 0
+
+    for (const epic of activeEpics) {
+      // Get all tickets for this epic
+      const allTickets = await ctx.db
+        .query("tickets")
+        .withIndex("by_epic", (q) => q.eq("epicId", epic._id))
+        .collect()
+
+      const activeTickets = allTickets.filter((t) => !t.isDeleted)
+
+      // Check if this epic has any backlog tickets
+      const hasBacklogTickets = activeTickets.some((t) => t.status === "backlog")
+
+      if (hasBacklogTickets) {
+        // Recalculate the epic status using the new engine
+        const newStatus = deriveEpicStatus(activeTickets.map((t) => t.status as TicketStatus))
+
+        // Only update if the status actually changed
+        if (newStatus !== epic.status) {
+          await ctx.db.patch(epic._id, {
+            status: newStatus,
+            updatedAt: Date.now(),
+          })
+          updatedCount++
+        }
+      }
+    }
+
+    return { message: `Updated ${updatedCount} epics with backlog tickets to correct status` }
   },
 })
