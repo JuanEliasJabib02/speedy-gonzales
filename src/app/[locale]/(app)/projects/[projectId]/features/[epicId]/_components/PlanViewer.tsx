@@ -16,9 +16,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/src/lib/components/ui/popover"
-import { ChevronDown, GitCommitHorizontal, Plus, Minus, Code2, CheckCircle2, Wrench, Loader2 } from "lucide-react"
+import { ChevronDown, CheckCircle2, Wrench, Loader2 } from "lucide-react"
 import { ChecklistProgress } from "./ChecklistProgress"
-import { CommitDiffPanel } from "./CommitDiffPanel"
 import { Button } from "@/src/lib/components/ui/button"
 import { Input } from "@/src/lib/components/ui/input"
 import type { Components } from "react-markdown"
@@ -79,126 +78,6 @@ const STATUS_OPTIONS = [
   { value: "completed", label: "Done" },
 ] as const
 
-type CommitDetail = {
-  sha: string
-  message: string
-  filesChanged: number
-  additions: number
-  deletions: number
-  loading: boolean
-  error?: string
-}
-
-function CommitsSection({
-  commits,
-  repoOwner,
-  repoName,
-  onViewDiff,
-}: {
-  commits: string[]
-  repoOwner: string
-  repoName: string
-  onViewDiff: (sha: string) => void
-}) {
-  const [details, setDetails] = useState<Record<string, CommitDetail>>({})
-
-  useEffect(() => {
-    let cancelled = false
-    for (const sha of commits) {
-      if (details[sha]) continue
-      setDetails((prev) => ({
-        ...prev,
-        [sha]: { sha, message: "", filesChanged: 0, additions: 0, deletions: 0, loading: true },
-      }))
-      fetch(`/api/commit-diff?owner=${encodeURIComponent(repoOwner)}&repo=${encodeURIComponent(repoName)}&sha=${encodeURIComponent(sha)}`)
-        .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
-        .then((data) => {
-          if (!cancelled) {
-            setDetails((prev) => ({
-              ...prev,
-              [sha]: {
-                sha,
-                message: data.message?.split("\n")[0] ?? "",
-                filesChanged: data.files?.length ?? 0,
-                additions: data.stats?.additions ?? 0,
-                deletions: data.stats?.deletions ?? 0,
-                loading: false,
-              },
-            }))
-          }
-        })
-        .catch((err) => {
-          if (!cancelled) {
-            setDetails((prev) => ({
-              ...prev,
-              [sha]: { sha, message: "", filesChanged: 0, additions: 0, deletions: 0, loading: false, error: err.message },
-            }))
-          }
-        })
-    }
-    return () => { cancelled = true }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [commits.join(","), repoOwner, repoName])
-
-  return (
-    <div className="mt-6">
-      <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground mb-3">
-        <GitCommitHorizontal className="size-4" />
-        Commits ({commits.length})
-      </h3>
-      <div className="flex flex-col gap-2">
-        {commits.map((sha) => {
-          const d = details[sha]
-          return (
-            <div
-              key={sha}
-              className="rounded-lg border border-[#30363d] bg-[#24292f] p-3 text-white"
-            >
-              <div className="flex items-center gap-2">
-                <GitCommitHorizontal className="size-4 text-status-completed shrink-0" />
-                <code className="text-xs text-[#8b949e]">{sha.slice(0, 7)}</code>
-              </div>
-              {d?.loading ? (
-                <div className="mt-1.5 flex items-center gap-1.5 text-xs text-[#8b949e]">
-                  <Loader2 className="size-3 animate-spin" /> Loading...
-                </div>
-              ) : d?.error ? (
-                <p className="mt-1.5 text-xs text-red-400">Failed to load: {d.error}</p>
-              ) : d ? (
-                <>
-                  <p className="mt-1.5 text-sm">{d.message}</p>
-                  <div className="mt-1 flex items-center gap-3 text-xs text-[#8b949e]">
-                    <span>{d.filesChanged} file{d.filesChanged !== 1 ? "s" : ""} changed</span>
-                    {d.additions > 0 && (
-                      <span className="flex items-center gap-0.5 text-emerald-400">
-                        <Plus className="size-3" />
-                        {d.additions}
-                      </span>
-                    )}
-                    {d.deletions > 0 && (
-                      <span className="flex items-center gap-0.5 text-red-400">
-                        <Minus className="size-3" />
-                        {d.deletions}
-                      </span>
-                    )}
-                  </div>
-                </>
-              ) : null}
-              <button
-                onClick={() => onViewDiff(sha)}
-                className="mt-2 flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium bg-white/10 text-[#c9d1d9] hover:bg-white/15 transition-colors"
-              >
-                <Code2 className="size-3" />
-                View diff
-              </button>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
 type PlanViewerProps = {
   title: string
   status: string
@@ -207,17 +86,13 @@ type PlanViewerProps = {
   checklist: { total: number; completed: number }
   ticketId?: string
   blockedReason?: string
-  commits?: string[]
-  repoOwner?: string
-  repoName?: string
 }
 
-export function PlanViewer({ title, status, priority, content, checklist, ticketId, blockedReason, commits, repoOwner, repoName }: PlanViewerProps) {
+export function PlanViewer({ title, status, priority, content, checklist, ticketId, blockedReason }: PlanViewerProps) {
   const updateStatus = useMutation(api.tickets.updateStatus)
   const [showBlockedInput, setShowBlockedInput] = useState(false)
   const [reasonText, setReasonText] = useState("")
   const [marking, setMarking] = useState(false)
-  const [diffTarget, setDiffTarget] = useState<string | null>(null)
 
   const handleStatusChange = (newStatus: "backlog" | "todo" | "in-progress" | "review" | "completed" | "blocked") => {
     if (!ticketId) return
@@ -257,7 +132,6 @@ export function PlanViewer({ title, status, priority, content, checklist, ticket
 
   const isBlocked = status === "blocked"
   const isReview = status === "review"
-  const showCommits = (isReview || status === "completed") && commits && commits.length > 0 && repoOwner && repoName
 
   return (
     <div className="flex flex-1 flex-col overflow-y-auto p-6 scrollbar-thin">
@@ -375,30 +249,6 @@ export function PlanViewer({ title, status, priority, content, checklist, ticket
       <div className="my-4 border-t border-border" />
 
       <MarkdownContent content={content} components={planMarkdownComponents} className="max-w-none" />
-
-      {showCommits && (
-        <>
-          <div className="my-4 border-t border-border" />
-          <CommitsSection
-            commits={commits}
-            repoOwner={repoOwner}
-            repoName={repoName}
-            onViewDiff={(sha) => setDiffTarget(sha)}
-          />
-        </>
-      )}
-
-      {diffTarget && repoOwner && repoName && (
-        <CommitDiffPanel
-          open={true}
-          onOpenChange={(open) => { if (!open) setDiffTarget(null) }}
-          owner={repoOwner}
-          repo={repoName}
-          sha={diffTarget}
-          ticketId={ticketId}
-          onApprove={isReview && ticketId ? handleApprove : undefined}
-        />
-      )}
     </div>
   )
 }
