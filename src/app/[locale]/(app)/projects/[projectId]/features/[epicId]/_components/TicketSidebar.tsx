@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, FileText, GitBranch, Search } from "lucide-react"
+import { ArrowLeft, FileText, GitBranch, Search, BookOpen } from "lucide-react"
 import { useRouter } from "@/src/i18n/routing"
 import { Button } from "@/src/lib/components/ui/button"
 import { Input } from "@/src/lib/components/ui/input"
@@ -128,6 +128,21 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
       </div>
       <div className="mx-4 border-t border-border" />
       <div className="flex flex-col gap-1 p-2">
+        {/* Overview item */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => onSelect("_context")}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelect("_context") }}
+          className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors cursor-pointer font-medium ${
+            selectedId === "_context" ? "bg-accent text-accent-foreground" : "text-foreground hover:bg-accent"
+          }`}
+        >
+          <BookOpen className="size-4 text-primary shrink-0" />
+          <span className="truncate">Overview</span>
+        </div>
+
+        {/* Regular tickets */}
         {filteredTickets.map((ticket) => (
           <TicketItem
             key={ticket.id}

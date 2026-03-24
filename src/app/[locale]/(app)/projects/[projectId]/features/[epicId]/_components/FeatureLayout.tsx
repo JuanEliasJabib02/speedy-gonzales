@@ -29,7 +29,7 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
   }
 
   const realTickets = epic.tickets.filter((t) => t.title !== "Overview" && t.id !== "_context")
-  const effectiveId = selectedTicketId || realTickets[0]?.id || ""
+  const effectiveId = selectedTicketId || "_context"
   const selectedTicket = epic.tickets.find((t) => t.id === effectiveId)
   const ticketData = getTicketContent(effectiveId)
 
