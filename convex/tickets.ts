@@ -125,16 +125,26 @@ export const updateStatusInternal = internalMutation({
     ticketId: v.id("tickets"),
     status: statusValidator,
     blockedReason: v.optional(v.string()),
+    commits: v.optional(v.array(v.string())),
+    checklistCompleted: v.optional(v.number()),
+    checklistTotal: v.optional(v.number()),
   },
-  handler: async (ctx, { ticketId, status, blockedReason }) => {
+  handler: async (ctx, { ticketId, status, blockedReason, commits, checklistCompleted, checklistTotal }) => {
     assertValidStatus(status)
     const ticket = await ctx.db.get(ticketId)
     if (!ticket) throw new Error("Ticket not found")
+
+    // Validate checklist: completed must be ≤ total
+    if (checklistCompleted != null && checklistTotal != null && checklistCompleted > checklistTotal) {
+      throw new Error("checklistCompleted must be ≤ checklistTotal")
+    }
 
     const previousStatus = ticket.status
 
     const now = Date.now()
     const patch: Record<string, unknown> = { status }
+
+    // Timestamp fields based on status transitions
     if (status === "in-progress") patch.startedAt = now
     if (status === "review") patch.reviewAt = now
     if (status === "completed") patch.completedAt = now
@@ -142,8 +152,21 @@ export const updateStatusInternal = internalMutation({
       patch.blockedAt = now
       patch.blockedReason = blockedReason ?? undefined
     } else {
+      // Clear blocked fields when moving OUT of blocked
+      patch.blockedAt = undefined
       patch.blockedReason = undefined
     }
+
+    // Merge commits (append, don't replace)
+    if (commits && commits.length > 0) {
+      const existing = ticket.commits ?? []
+      patch.commits = [...existing, ...commits]
+    }
+
+    // Update checklist counts
+    if (checklistCompleted != null) patch.checklistCompleted = checklistCompleted
+    if (checklistTotal != null) patch.checklistTotal = checklistTotal
+
     await ctx.db.patch(ticketId, patch)
 
     // Recalculate epic status from all sibling tickets
@@ -155,16 +178,16 @@ export const updateStatusInternal = internalMutation({
     const completedCount = activeTickets.filter(
       (t) => t.status === "completed" || t.status === "review"
     ).length
-    const checklistCompleted = activeTickets.reduce((sum, t) => sum + t.checklistCompleted, 0)
+    const epicChecklistCompleted = activeTickets.reduce((sum, t) => sum + t.checklistCompleted, 0)
     const derivedStatus = deriveEpicStatus(activeTickets.map((t) => t.status as TicketStatus))
 
     await ctx.db.patch(ticket.epicId, {
       completedTicketCount: completedCount,
-      checklistCompleted,
+      checklistCompleted: epicChecklistCompleted,
       status: derivedStatus,
       updatedAt: Date.now(),
     })
 
-    return { ticketId, previousStatus, newStatus: status }
+    return { ticketId, previousStatus, newStatus: status, epicStatus: derivedStatus }
   },
 })

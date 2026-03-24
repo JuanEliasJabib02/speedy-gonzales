@@ -176,6 +176,9 @@ http.route({
       ticketPath?: string
       status?: string
       blockedReason?: string
+      commits?: string[]
+      checklistCompleted?: number
+      checklistTotal?: number
     }
 
     try {
@@ -187,7 +190,7 @@ http.route({
       })
     }
 
-    const { repoOwner, repoName, ticketPath, status, blockedReason } = body
+    const { repoOwner, repoName, ticketPath, status, blockedReason, commits, checklistCompleted, checklistTotal } = body
 
     if (!repoOwner || !repoName || !ticketPath || !status) {
       return new Response(
@@ -228,11 +231,22 @@ http.route({
       )
     }
 
+    // Validate checklist fields
+    if (checklistCompleted != null && checklistTotal != null && checklistCompleted > checklistTotal) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "checklistCompleted must be ≤ checklistTotal" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      )
+    }
+
     // Update status
     const result = await ctx.runMutation(internal.tickets.updateStatusInternal, {
       ticketId: ticket._id,
       status: validatedStatus,
       blockedReason: validatedStatus === "blocked" ? blockedReason : undefined,
+      commits,
+      checklistCompleted,
+      checklistTotal,
     })
 
     return new Response(
@@ -241,6 +255,7 @@ http.route({
         ticketId: result.ticketId,
         previousStatus: result.previousStatus,
         newStatus: result.newStatus,
+        epicStatus: result.epicStatus,
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     )
