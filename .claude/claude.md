@@ -7,8 +7,8 @@
 - Components are pure UI only — no logic, no API calls, no state management.
 - All logic stays in custom hooks.
 - Extract sub-components when a block exceeds ~100 lines OR has a clear semantic identity (header, card, row, section) — naming is the stronger signal.
-
 ## Styling — always use design system tokens
+- Use always the design system inside _design-system.md
 - Colors: use CSS variables defined in the theme (`--primary`, `--muted`, etc.) — never hardcode hex values.
 - Font: Poppins (configured globally) — never set font-family inline.
 - Spacing / padding / margin / gap: use Tailwind utility classes (`p-4`, `gap-6`, etc.).
@@ -63,15 +63,6 @@ src/lib/
 - Use `useTranslations()` hook — never hardcode user-facing strings.
 - When a feature is wired to the backend, translate its strings in `messages/` (en, es).
 - Mock/maqueta phases can use hardcoded text — translate when the feature is real.
-
-## Plan files — keep in sync
-- When making implementation decisions about a feature, always ask the user "Should I update the plans?" once the decisions are confirmed.
-- Keep `plans/features/` in sync with what's actually being built.
-
-## Ticket status — update in the SAME commit as the code
-- When you finish a ticket, update the ticket `.md` status (`**Status:** review`, checklist `[x]`) **in the same commit** as the implementation code.
-- NEVER push code without updating the ticket status. One commit = code + status change.
-- This is non-negotiable — if the status isn't updated, the kanban stays stale and the loop re-dispatches the same ticket.
 
 ## State scope — where does it live?
 
