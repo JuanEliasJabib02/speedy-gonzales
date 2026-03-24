@@ -57,7 +57,6 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
           status={selectedTicket?.status ?? epic.status}
           priority={epic.priority}
           content={ticketData.content}
-          checklist={ticketData.checklist}
           ticketId={selectedTicket?.id !== "_context" ? selectedTicket?.id : undefined}
           blockedReason={selectedTicket?.blockedReason}
         />

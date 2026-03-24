@@ -17,7 +17,6 @@ import {
   PopoverTrigger,
 } from "@/src/lib/components/ui/popover"
 import { ChevronDown, CheckCircle2, Wrench, Loader2 } from "lucide-react"
-import { ChecklistProgress } from "./ChecklistProgress"
 import { Button } from "@/src/lib/components/ui/button"
 import { Input } from "@/src/lib/components/ui/input"
 import type { Components } from "react-markdown"
@@ -83,12 +82,11 @@ type PlanViewerProps = {
   status: string
   priority: string
   content: string
-  checklist: { total: number; completed: number }
   ticketId?: string
   blockedReason?: string
 }
 
-export function PlanViewer({ title, status, priority, content, checklist, ticketId, blockedReason }: PlanViewerProps) {
+export function PlanViewer({ title, status, priority, content, ticketId, blockedReason }: PlanViewerProps) {
   const updateStatus = useMutation(api.tickets.updateStatus)
   const [showBlockedInput, setShowBlockedInput] = useState(false)
   const [reasonText, setReasonText] = useState("")
@@ -240,10 +238,6 @@ export function PlanViewer({ title, status, priority, content, checklist, ticket
         <div className="mb-4 rounded-md border border-status-blocked/30 bg-status-blocked/5 px-3 py-2">
           <p className="text-xs font-medium text-status-blocked">Blocked: {blockedReason}</p>
         </div>
-      )}
-
-      {checklist.total > 0 && (
-        <ChecklistProgress completed={checklist.completed} total={checklist.total} />
       )}
 
       <div className="my-4 border-t border-border" />
