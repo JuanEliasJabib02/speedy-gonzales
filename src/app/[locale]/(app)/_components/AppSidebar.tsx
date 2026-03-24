@@ -42,8 +42,8 @@ export function AppSidebar() {
         <SidebarNavItem
           icon={Settings}
           label="Settings"
-          href="#"
-          isActive={false}
+          href="/settings"
+          isActive={pathname.includes("/settings")}
         />
       </nav>
 
