@@ -4,6 +4,52 @@ import { requireAuth, assertValidStatus, statusValidator, priorityValidator } fr
 import type { TicketStatus } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
 import { deriveEpicStatus } from "./lib/epicStatusEngine"
+import type { MutationCtx } from "./_generated/server"
+import type { Doc } from "./_generated/dataModel"
+
+// Helper function to create a GitHub PR when epic moves to review
+async function createPullRequestForEpic(
+  ctx: MutationCtx,
+  epic: Doc<"epics">,
+  project: Doc<"projects">
+): Promise<string> {
+  const githubPat = process.env.GITHUB_PAT
+  if (!githubPat) {
+    throw new Error("GITHUB_PAT environment variable not configured")
+  }
+
+  // Extract epic slug from path (e.g., "plans/features/auth" -> "auth")
+  const epicSlug = epic.path.split("/").pop() || "feature"
+
+  // Generate branch name using project's branch prefix
+  const branchName = `${project.branchPrefix || "feat/"}${epicSlug}`
+
+  // Create the pull request
+  const response = await fetch(`https://api.github.com/repos/${project.repoOwner}/${project.repoName}/pulls`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${githubPat}`,
+      "Accept": "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      title: epic.title,
+      head: branchName,
+      base: project.branch || "main",
+      body: `Auto-created PR for feature: ${epic.title}\n\nThis PR was automatically created when the feature moved to review status.\n\n---\n\n${epic.content.slice(0, 500)}${epic.content.length > 500 ? "..." : ""}`,
+      draft: false,
+    }),
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(`GitHub API error ${response.status}: ${errorData.message || "Failed to create PR"}`)
+  }
+
+  const prData = await response.json()
+  return prData.html_url as string
+}
 
 export const getByProject = query({
   args: { projectId: v.id("projects") },
@@ -60,7 +106,19 @@ export const updateStatus = mutation({
       return throwError(ErrorCodes.BAD_REQUEST)
     }
 
-    await ctx.db.patch(epicId, { status })
+    // Auto-create PR when moving to review status
+    if (status === "review" && epic.status !== "review" && !epic.prUrl) {
+      try {
+        const prUrl = await createPullRequestForEpic(ctx, epic, project)
+        await ctx.db.patch(epicId, { status, prUrl })
+      } catch (error) {
+        // If PR creation fails, still update status but log the error
+        console.error("Failed to create PR for epic:", epicId, error)
+        await ctx.db.patch(epicId, { status })
+      }
+    } else {
+      await ctx.db.patch(epicId, { status })
+    }
   },
 })
 
