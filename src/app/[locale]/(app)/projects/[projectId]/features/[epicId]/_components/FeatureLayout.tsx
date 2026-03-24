@@ -15,21 +15,7 @@ type FeatureLayoutProps = {
 
 export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
   const { plan: epic, isLoading, getTicketContent, lastSyncAt, syncStatus, repoOwner, repoName } = useLivePlan(epicId, projectId)
-  const createTicketAction = useAction(api.githubSync.createTicketOnGitHub)
   const [selectedTicketId, setSelectedTicketId] = useState("")
-
-  const handleCreateTicket = useCallback(
-    async (args: { title: string; priority: string; description: string }) => {
-      await createTicketAction({
-        projectId: projectId as Id<"projects">,
-        epicId: epicId as Id<"epics">,
-        title: args.title,
-        priority: args.priority,
-        description: args.description || undefined,
-      })
-    },
-    [createTicketAction, projectId, epicId],
-  )
 
   if (isLoading || !epic) {
     return (
@@ -60,7 +46,6 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
         epicId={epicId}
         lastSyncAt={lastSyncAt}
         syncStatus={syncStatus}
-        onCreateTicket={handleCreateTicket}
       />
 
       {/* Center panel: plan viewer */}

@@ -65,9 +65,6 @@ export const createProject = mutation({
       updatedAt: now,
     })
 
-    // Schedule initial sync
-    await ctx.scheduler.runAfter(0, internal.githubSync.syncRepoInternal, { projectId })
-
     return projectId
   },
 })

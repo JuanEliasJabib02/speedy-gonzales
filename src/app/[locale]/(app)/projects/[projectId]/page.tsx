@@ -60,8 +60,6 @@ export default function ProjectPage() {
         showCompleted={showCompleted}
         onToggleCompleted={() => setShowCompleted((v) => !v)}
         completedCount={completedCount}
-        syncStatus={project.syncStatus}
-        lastSyncAt={project.lastSyncAt}
         agentName={project.agentName}
         agentEmoji={project.agentEmoji}
         agentStatus={project.agentStatus}
