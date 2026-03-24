@@ -764,4 +764,41 @@ http.route({
   }),
 })
 
+// ── GET /stale-tickets ──────────────────────────────────────────────
+http.route({
+  path: "/stale-tickets",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const authError = verifyLoopApiKey(request)
+    if (authError) return authError
+
+    const url = new URL(request.url)
+    const repoOwner = url.searchParams.get("repoOwner")
+    const repoName = url.searchParams.get("repoName")
+
+    if (!repoOwner || !repoName) {
+      return jsonError("Missing required params: repoOwner, repoName", 400)
+    }
+
+    const project = await ctx.runQuery(internal.projects.getByRepo, { owner: repoOwner, name: repoName })
+    if (!project) return jsonError(`Project not found: ${repoOwner}/${repoName}`, 404)
+
+    const staleTickets = await ctx.runQuery(internal.tickets.getStaleInProgressTickets, {
+      projectId: project._id,
+    })
+
+    return jsonOk({
+      staleTickets: staleTickets.map((t) => ({
+        id: t.id,
+        title: t.title,
+        path: t.path,
+        startedAt: t.startedAt,
+        epicId: t.epicId,
+        agentName: t.agentName,
+        minutesStuck: t.minutesStuck,
+      })),
+    })
+  }),
+})
+
 export default http
