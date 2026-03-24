@@ -1,8 +1,7 @@
 import { cronJobs } from "convex/server"
-import { internal } from "./_generated/api"
 
 const crons = cronJobs()
 
-crons.interval("sync-all-projects", { minutes: 15 }, internal.githubSync.syncAllProjects)
+// All GitHub sync crons have been removed since plans now live in Convex
 
 export default crons
