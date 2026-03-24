@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, Play, Square, Loader2, Github, Trash2 } from "lucide-react"
+import { Loader2, Github, Trash2, ArrowUpToLine, CheckCircle } from "lucide-react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Link } from "@/src/i18n/routing"
@@ -23,30 +23,33 @@ type FeatureCardProps = {
 }
 
 export function FeatureCard({ feature, projectId }: FeatureCardProps) {
-  const updateStatus = useMutation(api.epics.updateStatus)
   const deleteEpic = useMutation(api.epics.deleteEpic)
-  const [isUpdating, setIsUpdating] = useState(false)
+  const promoteToTodo = useMutation(api.epics.promoteToTodo)
+  const updateStatus = useMutation(api.epics.updateStatus)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isPromoting, setIsPromoting] = useState(false)
+  const [isApproving, setIsApproving] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
-  const showStart = feature.status === "todo" || feature.status === "blocked"
-  const showStop = feature.status === "in-progress"
-  const showApprove = feature.status === "review"
-
-  const handleStatusChange = async (
-    e: React.MouseEvent,
-    newStatus: "todo" | "in-progress" | "review" | "completed" | "blocked",
-  ) => {
+  const handlePromote = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setIsUpdating(true)
+    setIsPromoting(true)
     try {
-      await updateStatus({
-        epicId: feature.id,
-        status: newStatus,
-      })
+      await promoteToTodo({ epicId: feature.id })
     } finally {
-      setIsUpdating(false)
+      setIsPromoting(false)
+    }
+  }
+
+  const handleApprove = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsApproving(true)
+    try {
+      await updateStatus({ epicId: feature.id, status: "completed" })
+    } finally {
+      setIsApproving(false)
     }
   }
 
@@ -73,48 +76,33 @@ export function FeatureCard({ feature, projectId }: FeatureCardProps) {
           <div className="flex items-start justify-between gap-2">
             <h4 className="text-sm font-medium">{feature.title}</h4>
             <div className="flex items-center gap-1">
-              {showStart && (
+              {feature.status === "backlog" && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-7 shrink-0 text-status-in-progress hover:bg-status-in-progress/15"
-                  disabled={isUpdating}
-                  onClick={(e) => handleStatusChange(e, "in-progress")}
+                  className="size-7 shrink-0 text-primary hover:bg-primary/15"
+                  disabled={isPromoting}
+                  onClick={handlePromote}
                 >
-                  {isUpdating ? (
+                  {isPromoting ? (
                     <Loader2 className="size-3.5 animate-spin" />
                   ) : (
-                    <Play className="size-3.5" />
+                    <ArrowUpToLine className="size-3.5" />
                   )}
                 </Button>
               )}
-              {showStop && (
+              {feature.status === "review" && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-7 shrink-0 text-status-blocked hover:bg-status-blocked/15"
-                  disabled={isUpdating}
-                  onClick={(e) => handleStatusChange(e, "todo")}
+                  className="size-7 shrink-0 text-green-600 hover:bg-green-600/15"
+                  disabled={isApproving}
+                  onClick={handleApprove}
                 >
-                  {isUpdating ? (
+                  {isApproving ? (
                     <Loader2 className="size-3.5 animate-spin" />
                   ) : (
-                    <Square className="size-3.5" />
-                  )}
-                </Button>
-              )}
-              {showApprove && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-7 shrink-0 text-status-completed hover:bg-status-completed/15"
-                  disabled={isUpdating}
-                  onClick={(e) => handleStatusChange(e, "completed")}
-                >
-                  {isUpdating ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : (
-                    <Check className="size-3.5" />
+                    <CheckCircle className="size-3.5" />
                   )}
                 </Button>
               )}
@@ -122,7 +110,7 @@ export function FeatureCard({ feature, projectId }: FeatureCardProps) {
                 variant="ghost"
                 size="icon"
                 className="size-7 shrink-0 text-destructive hover:bg-destructive/15"
-                disabled={isUpdating || isDeleting}
+                disabled={isDeleting}
                 onClick={handleDeleteClick}
               >
                 <Trash2 className="size-3.5" />
