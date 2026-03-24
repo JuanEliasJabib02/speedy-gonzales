@@ -1,6 +1,6 @@
 // Provider-agnostic git interface — implement one file per provider
 
-export type GitProviderType = "github" | "bitbucket" | "gitlab"
+export type GitProviderType = "github" | "bitbucket"
 
 export type GitProviderConfig = {
   provider: GitProviderType

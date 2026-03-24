@@ -13,9 +13,9 @@ async function createPullRequestForEpic(
   epic: Doc<"epics">,
   project: Doc<"projects">
 ): Promise<string> {
-  const githubPat = process.env.GITHUB_PAT
+  const githubPat = process.env.GITHUB_ACCESS_TOKEN
   if (!githubPat) {
-    throw new Error("GITHUB_PAT environment variable not configured")
+    throw new Error("GITHUB_ACCESS_TOKEN environment variable not configured")
   }
 
   // Extract epic slug from path (e.g., "plans/features/auth" -> "auth")

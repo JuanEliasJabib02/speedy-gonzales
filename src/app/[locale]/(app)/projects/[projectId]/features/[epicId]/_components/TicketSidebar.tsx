@@ -9,7 +9,6 @@ import type { Id } from "@/convex/_generated/dataModel"
 import { Button } from "@/src/lib/components/ui/button"
 import { Input } from "@/src/lib/components/ui/input"
 import { TicketItem } from "./TicketItem"
-import { NewTicketModal } from "./NewTicketModal"
 import { timeAgo } from "@/src/lib/helpers/timeAgo"
 
 type Ticket = {
@@ -33,7 +32,6 @@ type TicketSidebarProps = {
   epicId: string
   lastSyncAt?: number
   syncStatus?: string
-  onCreateTicket?: (args: { title: string; priority: string; description: string }) => Promise<void>
 }
 
 const STATUS_TABS = [
@@ -47,7 +45,7 @@ const STATUS_TABS = [
 
 type TabKey = (typeof STATUS_TABS)[number]["key"]
 
-export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId, epicId, lastSyncAt, syncStatus, onCreateTicket }: TicketSidebarProps) {
+export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect, projectId, epicId, lastSyncAt, syncStatus }: TicketSidebarProps) {
   const isSyncing = syncStatus === "syncing"
   const syncLabel = lastSyncAt ? timeAgo(lastSyncAt) : null
   const router = useRouter()
@@ -117,9 +115,6 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
             {isSyncing ? "syncing…" : `↻ ${syncLabel}`}
           </span>
         )}
-      </div>
-      <div className="flex gap-2 px-3 pb-3">
-        <NewTicketModal epicId={epicId} onSubmit={onCreateTicket} />
       </div>
       <div className="px-3 pb-3">
         <div className="relative">

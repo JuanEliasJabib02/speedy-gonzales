@@ -77,7 +77,7 @@ export const insertProject = internalMutation({
     repoName: v.string(),
     plansPath: v.string(),
     branch: v.string(),
-    gitProvider: v.union(v.literal("github"), v.literal("bitbucket"), v.literal("gitlab")),
+    gitProvider: v.union(v.literal("github"), v.literal("bitbucket")),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx)
@@ -381,8 +381,6 @@ function detectGitProvider(repoUrl: string): GitProviderType {
     return "github"
   } else if (url.includes("bitbucket.org")) {
     return "bitbucket"
-  } else if (url.includes("gitlab.com")) {
-    return "gitlab"
   } else {
     return "github"
   }
@@ -419,8 +417,6 @@ function getAccessToken(gitProvider: GitProviderType): string | undefined {
       return process.env.GITHUB_ACCESS_TOKEN
     case "bitbucket":
       return process.env.BITBUCKET_ACCESS_TOKEN
-    case "gitlab":
-      return process.env.GITLAB_ACCESS_TOKEN
     default:
       return undefined
   }

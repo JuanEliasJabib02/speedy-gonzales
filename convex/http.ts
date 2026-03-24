@@ -308,8 +308,6 @@ function getAccessToken(gitProvider: GitProviderType): string | undefined {
       return process.env.GITHUB_ACCESS_TOKEN
     case "bitbucket":
       return process.env.BITBUCKET_ACCESS_TOKEN
-    case "gitlab":
-      return process.env.GITLAB_ACCESS_TOKEN
     default:
       return undefined
   }
@@ -828,7 +826,6 @@ function getAccessTokenForProvider(provider: string): string | undefined {
   switch (provider) {
     case "github": return process.env.GITHUB_ACCESS_TOKEN
     case "bitbucket": return process.env.BITBUCKET_ACCESS_TOKEN
-    case "gitlab": return process.env.GITLAB_ACCESS_TOKEN
     default: return undefined
   }
 }
