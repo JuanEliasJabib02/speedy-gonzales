@@ -53,10 +53,10 @@ export function useFeatureCard(feature: Feature, projectId: string) {
     promoteToTodo({ epicId: feature.id })
   }
 
-  const handleApprove = (e: React.MouseEvent) => {
+  const handleApprove = (e: React.MouseEvent, completionType: "clean" | "with-fixes") => {
     e.preventDefault()
     e.stopPropagation()
-    updateStatus({ epicId: feature.id, status: "completed" })
+    updateStatus({ epicId: feature.id, status: "completed", completionType })
   }
 
   const handleDeleteClick = (e: React.MouseEvent) => {

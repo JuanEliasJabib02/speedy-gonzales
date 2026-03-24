@@ -26,9 +26,8 @@ export const updateStatus = mutation({
     ticketId: v.id("tickets"),
     status: statusValidator,
     blockedReason: v.optional(v.string()),
-    completionType: v.optional(v.union(v.literal("clean"), v.literal("with-fixes"))),
   },
-  handler: async (ctx, { ticketId, status, blockedReason, completionType }) => {
+  handler: async (ctx, { ticketId, status, blockedReason }) => {
     assertValidStatus(status)
     const userId = await requireAuth(ctx)
     const ticket = await ctx.db.get(ticketId)
@@ -39,10 +38,7 @@ export const updateStatus = mutation({
     const patch: Record<string, unknown> = { status }
     if (status === "in-progress") patch.startedAt = now
     if (status === "review") patch.reviewAt = now
-    if (status === "completed") {
-      patch.completedAt = now
-      if (completionType) patch.completionType = completionType
-    }
+    if (status === "completed") patch.completedAt = now
     if (status === "blocked") {
       patch.blockedAt = now
       patch.blockedReason = blockedReason ?? undefined

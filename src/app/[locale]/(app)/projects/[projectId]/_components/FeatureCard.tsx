@@ -1,6 +1,6 @@
 "use client"
 
-import { Github, Trash2, ArrowUpToLine, CheckCircle } from "lucide-react"
+import { Github, Trash2, ArrowUpToLine, CheckCircle2, Wrench } from "lucide-react"
 import { Link } from "@/src/i18n/routing"
 import { Button } from "@/src/lib/components/ui/button"
 import type { Feature } from "../_constants/kanban-config"
@@ -55,14 +55,24 @@ export function FeatureCard({ feature, projectId }: FeatureCardProps) {
                 </Button>
               )}
               {feature.status === "review" && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-7 shrink-0 text-green-600 hover:bg-green-600/15"
-                  onClick={handleApprove}
-                >
-                  <CheckCircle className="size-3.5" />
-                </Button>
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-7 shrink-0 text-green-600 hover:bg-green-600/15"
+                    onClick={(e) => handleApprove(e, "clean")}
+                  >
+                    <CheckCircle2 className="size-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-7 shrink-0 text-amber-500 hover:bg-amber-500/15"
+                    onClick={(e) => handleApprove(e, "with-fixes")}
+                  >
+                    <Wrench className="size-3.5" />
+                  </Button>
+                </>
               )}
               <Button
                 variant="ghost"

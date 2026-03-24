@@ -19,7 +19,6 @@ export const tickets = defineTable({
   reviewAt: v.optional(v.number()),
   completedAt: v.optional(v.number()),
   blockedAt: v.optional(v.number()),
-  completionType: v.optional(v.union(v.literal("clean"), v.literal("with-fixes"))),
   sortOrder: v.number(),
   isDeleted: v.boolean(),
   updatedAt: v.optional(v.number()),

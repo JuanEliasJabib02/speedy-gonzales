@@ -92,8 +92,9 @@ export const updateStatus = mutation({
   args: {
     epicId: v.id("epics"),
     status: statusValidator,
+    completionType: v.optional(v.union(v.literal("clean"), v.literal("with-fixes"))),
   },
-  handler: async (ctx, { epicId, status }) => {
+  handler: async (ctx, { epicId, status, completionType }) => {
     assertValidStatus(status)
     const userId = await requireAuth(ctx)
     const epic = await ctx.db.get(epicId)
@@ -106,18 +107,20 @@ export const updateStatus = mutation({
       return throwError(ErrorCodes.BAD_REQUEST)
     }
 
+    const patch: Record<string, unknown> = { status }
+    if (completionType) patch.completionType = completionType
+
     // Auto-create PR when moving to review status
     if (status === "review" && epic.status !== "review" && !epic.prUrl) {
       try {
         const prUrl = await createPullRequestForEpic(ctx, epic, project)
-        await ctx.db.patch(epicId, { status, prUrl })
+        await ctx.db.patch(epicId, { ...patch, prUrl })
       } catch (error) {
-        // If PR creation fails, still update status but log the error
         console.error("Failed to create PR for epic:", epicId, error)
-        await ctx.db.patch(epicId, { status })
+        await ctx.db.patch(epicId, patch)
       }
     } else {
-      await ctx.db.patch(epicId, { status })
+      await ctx.db.patch(epicId, patch)
     }
   },
 })

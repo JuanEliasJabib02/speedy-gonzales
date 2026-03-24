@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { ArrowLeft, FileText, GitBranch, Search, BookOpen, CheckCircle2, Wrench, Loader2 } from "lucide-react"
+import { ArrowLeft, FileText, GitBranch, Search, BookOpen, CheckCircle2, Loader2 } from "lucide-react"
 import { useRouter } from "@/src/i18n/routing"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
@@ -58,18 +58,18 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
 
   const activeFilter = STATUS_TABS.find((t) => t.key === activeTab)!
 
-  const handleApprove = useCallback(async (completionType: "clean" | "with-fixes") => {
+  const handleApprove = useCallback(async () => {
     if (!selectedId || selectedId === "_context" || marking) return
     setMarking(true)
     try {
-      await updateStatus({ ticketId: selectedId as Id<"tickets">, status: "completed", completionType })
+      await updateStatus({ ticketId: selectedId as Id<"tickets">, status: "completed" })
     } finally {
       setMarking(false)
     }
   }, [selectedId, marking, updateStatus])
 
   const selectedTicket = tickets.find((t) => t.id === selectedId)
-  const showApproveButtons = activeTab === "review" && selectedTicket?.status === "review" && selectedId !== "_context"
+  const showApproveButtons = selectedTicket?.status === "review" && selectedId !== "_context"
 
   const regularTickets = tickets.filter((t) => t.id !== "_context")
 
@@ -147,27 +147,15 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
       </div>
       {showApproveButtons && (
         <div className="px-3 pb-3">
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              onClick={() => handleApprove("clean")}
-              disabled={marking}
-              className="h-7 text-xs gap-1.5 bg-status-completed hover:bg-status-completed/80 text-white flex-1"
-            >
-              {marking ? <Loader2 className="size-3 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
-              Approve Clean
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleApprove("with-fixes")}
-              disabled={marking}
-              className="h-7 text-xs gap-1.5 border-amber-500/30 text-amber-500 hover:bg-amber-500/10 flex-1"
-            >
-              {marking ? <Loader2 className="size-3 animate-spin" /> : <Wrench className="size-3.5" />}
-              Approve With Fixes
-            </Button>
-          </div>
+          <Button
+            size="sm"
+            onClick={handleApprove}
+            disabled={marking}
+            className="h-7 w-full text-xs gap-1.5 bg-status-completed hover:bg-status-completed/80 text-white"
+          >
+            {marking ? <Loader2 className="size-3 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
+            Approve Ticket
+          </Button>
         </div>
       )}
       <div className="mx-4 border-t border-border" />
