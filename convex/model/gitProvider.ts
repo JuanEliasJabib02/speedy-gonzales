@@ -30,4 +30,13 @@ export type GitProvider = {
     signature: string,
   ) => Promise<boolean>
   getChangedPaths: (payload: unknown) => string[]
+  createPR: (
+    config: GitProviderConfig,
+    data: {
+      sourceBranch: string
+      targetBranch: string
+      title: string
+      description: string
+    }
+  ) => Promise<{ url: string; id: string }>
 }

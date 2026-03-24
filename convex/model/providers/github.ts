@@ -125,4 +125,39 @@ export const githubProvider: GitProvider = {
     }
     return Array.from(paths)
   },
+
+  async createPR(
+    config: GitProviderConfig,
+    data: {
+      sourceBranch: string
+      targetBranch: string
+      title: string
+      description: string
+    }
+  ): Promise<{ url: string; id: string }> {
+    const { accessToken, owner, repo } = config
+    const { sourceBranch, targetBranch, title, description } = data
+    const url = `${API_BASE}/repos/${owner}/${repo}/pulls`
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: headers(accessToken),
+      body: JSON.stringify({
+        title,
+        body: description,
+        head: sourceBranch,
+        base: targetBranch,
+      }),
+    })
+
+    if (!res.ok) {
+      throw new Error(`GitHub createPR failed: ${res.status} ${await res.text()}`)
+    }
+
+    const pullRequest = await res.json()
+    return {
+      url: pullRequest.html_url,
+      id: String(pullRequest.number),
+    }
+  },
 }

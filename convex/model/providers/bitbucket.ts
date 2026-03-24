@@ -113,4 +113,47 @@ export const bitbucketProvider: GitProvider = {
     // TODO: Implement proper path extraction from Bitbucket webhook
     return []
   },
+
+  async createPR(
+    config: GitProviderConfig,
+    data: {
+      sourceBranch: string
+      targetBranch: string
+      title: string
+      description: string
+    }
+  ): Promise<{ url: string; id: string }> {
+    const { accessToken, owner, repo } = config
+    const { sourceBranch, targetBranch, title, description } = data
+    const url = `${API_BASE}/repositories/${owner}/${repo}/pullrequests`
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: headers(accessToken),
+      body: JSON.stringify({
+        title,
+        description,
+        source: {
+          branch: {
+            name: sourceBranch,
+          },
+        },
+        destination: {
+          branch: {
+            name: targetBranch,
+          },
+        },
+      }),
+    })
+
+    if (!res.ok) {
+      throw new Error(`Bitbucket createPR failed: ${res.status} ${await res.text()}`)
+    }
+
+    const pullRequest = await res.json()
+    return {
+      url: pullRequest.links.html.href,
+      id: String(pullRequest.id),
+    }
+  },
 }
