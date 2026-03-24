@@ -33,12 +33,6 @@ export function AppSidebar() {
           isActive={pathname.includes("/analytics")}
         />
         <SidebarNavItem
-          icon={BookOpen}
-          label="Docs"
-          href="/docs"
-          isActive={pathname.includes("/docs")}
-        />
-        <SidebarNavItem
           icon={Settings}
           label="Settings"
           href="#"
