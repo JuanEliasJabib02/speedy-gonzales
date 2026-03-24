@@ -1,9 +1,10 @@
 import { v } from "convex/values"
-import { query, mutation, internalQuery, internalMutation } from "./_generated/server"
+import { query, mutation, action, internalQuery, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
 import type { Doc } from "./_generated/dataModel"
 import { requireAuth, agentStatusValidator } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
+import { getAuthUserId } from "@convex-dev/auth/server"
 import { parseRepoUrl } from "./model/parseRepoUrl"
 import { getGitProvider } from "./model/providers"
 import type { GitProviderType } from "./model/gitProvider"
@@ -32,7 +33,7 @@ export const getProject = query({
   },
 })
 
-export const createProject = mutation({
+export const createProject = action({
   args: {
     name: v.string(),
     description: v.optional(v.string()),
@@ -41,19 +42,18 @@ export const createProject = mutation({
     branch: v.optional(v.string()),
     gitProvider: v.optional(v.union(v.literal("github"), v.literal("bitbucket"))),
   },
-  handler: async (ctx, args) => {
-    const userId = await requireAuth(ctx)
-    const { owner, repo } = parseRepoUrl(args.repoUrl)
-    const now = Date.now()
+  handler: async (ctx, args): Promise<string> => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Unauthorized")
 
-    // Detect git provider from URL if not provided
+    const { owner, repo } = parseRepoUrl(args.repoUrl)
     const gitProvider: GitProviderType = args.gitProvider ?? detectGitProvider(args.repoUrl)
 
-    // Validate repository exists
-    await validateRepository(gitProvider, owner, repo)
+    // Validate repository exists (uses fetch — only allowed in actions)
+    const branch = args.branch ?? "main"
+    await validateRepository(gitProvider, owner, repo, branch)
 
-    const projectId = await ctx.db.insert("projects", {
-      userId,
+    const projectId: string = await ctx.runMutation(internal.projects.insertProject, {
       name: args.name,
       description: args.description,
       repoUrl: args.repoUrl,
@@ -62,6 +62,38 @@ export const createProject = mutation({
       plansPath: args.plansPath ?? "plans/features",
       branch: args.branch ?? "main",
       gitProvider,
+    })
+
+    return projectId
+  },
+})
+
+export const insertProject = internalMutation({
+  args: {
+    name: v.string(),
+    description: v.optional(v.string()),
+    repoUrl: v.string(),
+    repoOwner: v.string(),
+    repoName: v.string(),
+    plansPath: v.string(),
+    branch: v.string(),
+    gitProvider: v.union(v.literal("github"), v.literal("bitbucket"), v.literal("gitlab")),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx)
+    if (!userId) throw new Error("Unauthorized")
+
+    const now = Date.now()
+    return ctx.db.insert("projects", {
+      userId,
+      name: args.name,
+      description: args.description,
+      repoUrl: args.repoUrl,
+      repoOwner: args.repoOwner,
+      repoName: args.repoName,
+      plansPath: args.plansPath,
+      branch: args.branch,
+      gitProvider: args.gitProvider,
       syncStatus: "idle",
       autonomousLoop: false,
       loopStatus: "idle",
@@ -73,8 +105,6 @@ export const createProject = mutation({
       createdAt: now,
       updatedAt: now,
     })
-
-    return projectId
   },
 })
 
@@ -359,7 +389,7 @@ function detectGitProvider(repoUrl: string): GitProviderType {
 }
 
 // Helper function to validate repository exists
-async function validateRepository(gitProvider: GitProviderType, owner: string, repo: string): Promise<void> {
+async function validateRepository(gitProvider: GitProviderType, owner: string, repo: string, branch: string): Promise<void> {
   try {
     const provider = getGitProvider(gitProvider)
     const accessToken = getAccessToken(gitProvider)
@@ -373,7 +403,7 @@ async function validateRepository(gitProvider: GitProviderType, owner: string, r
       accessToken,
       owner,
       repo,
-      branch: "main",
+      branch,
     }
 
     await provider.fetchTree(config)

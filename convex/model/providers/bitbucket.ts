@@ -3,8 +3,11 @@ import type { GitProvider, GitProviderConfig, FileEntry } from "../gitProvider"
 const API_BASE = "https://api.bitbucket.org/2.0"
 
 function headers(token: string) {
+  const username = process.env.BITBUCKET_USERNAME
+  if (!username) throw new Error("BITBUCKET_USERNAME env var is not set")
+  const encoded = btoa(`${username}:${token}`)
   return {
-    Authorization: `Bearer ${token}`,
+    Authorization: `Basic ${encoded}`,
     Accept: "application/json",
   }
 }

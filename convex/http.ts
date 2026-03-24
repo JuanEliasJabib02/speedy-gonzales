@@ -675,12 +675,12 @@ http.route({
     })
     const epicTickets = allTickets
       .filter((t) => t.epicId === epic._id && !t.isDeleted)
-      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .sort((a: { sortOrder: number }, b: { sortOrder: number }) => a.sortOrder - b.sortOrder)
 
     return jsonOk({
       epicId: epic._id,
       epicTitle: epic.title,
-      tickets: epicTickets.map((t) => ({
+      tickets: epicTickets.map((t: any) => ({
         ticketId: t._id,
         title: t.title,
         path: t.path,
@@ -810,7 +810,7 @@ http.route({
     })
 
     return jsonOk({
-      staleTickets: staleTickets.map((t) => ({
+      staleTickets: staleTickets.map((t: any) => ({
         id: t.id,
         title: t.title,
         path: t.path,

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useMutation } from "convex/react"
+import { useAction } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import {
   Dialog,
@@ -32,10 +32,11 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [repoUrl, setRepoUrl] = useState("")
+  const [branch, setBranch] = useState("main")
   const [gitProvider, setGitProvider] = useState<"github" | "bitbucket">("github")
   const [isCreating, setIsCreating] = useState(false)
 
-  const createProject = useMutation(api.projects.createProject)
+  const createProject = useAction(api.projects.createProject)
 
   const handleCreate = async () => {
     if (!name.trim() || !repoUrl.trim()) return
@@ -45,11 +46,13 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
         name: name.trim(),
         description: description.trim() || undefined,
         repoUrl: repoUrl.trim(),
+        branch: branch.trim() || "main",
         gitProvider,
       })
       setName("")
       setDescription("")
       setRepoUrl("")
+      setBranch("main")
       setGitProvider("github")
       onOpenChange(false)
     } finally {
@@ -104,6 +107,15 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="branch">Default branch</Label>
+            <Input
+              id="branch"
+              placeholder="main"
+              value={branch}
+              onChange={(e) => setBranch(e.target.value)}
+            />
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="repo">Repository URL</Label>
