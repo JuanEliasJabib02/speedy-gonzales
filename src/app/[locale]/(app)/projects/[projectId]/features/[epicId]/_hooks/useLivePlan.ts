@@ -13,7 +13,10 @@ export function useLivePlan(epicId: string, projectId?: string) {
     projectId ? { projectId: projectId as Id<"projects"> } : "skip"
   )
 
-  const isLoading = epic === undefined || tickets === undefined
+  // Progressive loading: epic loaded first, tickets may still be loading
+  const isEpicLoading = epic === undefined
+  const isTicketsLoading = tickets === undefined
+  const isLoading = isEpicLoading // Only block on epic, not tickets
 
   const plan = epic
     ? {
@@ -22,17 +25,30 @@ export function useLivePlan(epicId: string, projectId?: string) {
         priority: epic.priority,
         branch: `${project?.branchPrefix ?? "feat/"}${epic.path.split("/").pop()}`,
         tickets: [
-          { id: "_context", title: "Overview", status: epic.status as "backlog" | "todo" | "in-progress" | "review" | "completed" | "blocked", blockedReason: undefined },
-          ...(tickets ?? []).map((t) => ({
-            id: t._id as string,
-            title: t.title,
-            status: t.status as "backlog" | "todo" | "in-progress" | "review" | "completed" | "blocked",
-            blockedReason: t.blockedReason,
-            commits: t.commits ?? [],
-            updatedAt: t.updatedAt,
-            agentName: t.agentName,
-            _creationTime: t._creationTime,
-          })),
+          {
+            id: "_context",
+            title: "Overview",
+            status: epic.status as "backlog" | "todo" | "in-progress" | "review" | "completed" | "blocked",
+            blockedReason: undefined
+          },
+          // Show ticket placeholders while loading, real tickets when loaded
+          ...(isTicketsLoading
+            ? [
+                { id: "loading-1", title: "Loading tickets...", status: "todo" as const, blockedReason: undefined, isLoading: true },
+                { id: "loading-2", title: "Loading tickets...", status: "todo" as const, blockedReason: undefined, isLoading: true },
+              ]
+            : (tickets ?? []).map((t) => ({
+                id: t._id as string,
+                title: t.title,
+                status: t.status as "backlog" | "todo" | "in-progress" | "review" | "completed" | "blocked",
+                blockedReason: t.blockedReason,
+                commits: t.commits ?? [],
+                updatedAt: t.updatedAt,
+                agentName: t.agentName,
+                _creationTime: t._creationTime,
+                isLoading: false,
+              }))
+          ),
         ],
         planContent: epic.content,
         checklist: { total: epic.checklistTotal, completed: epic.checklistCompleted },
@@ -62,6 +78,8 @@ export function useLivePlan(epicId: string, projectId?: string) {
   return {
     plan,
     isLoading,
+    isEpicLoading,
+    isTicketsLoading,
     isLive: epic !== null,
     getTicketContent,
     lastSyncAt: project?.lastSyncAt,
