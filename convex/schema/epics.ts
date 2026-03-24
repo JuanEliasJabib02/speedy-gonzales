@@ -17,6 +17,8 @@ export const epics = defineTable({
   sortOrder: v.number(),
   prUrl: v.optional(v.string()),
   completionType: v.optional(v.union(v.literal("clean"), v.literal("with-fixes"))),
+  startedAt: v.optional(v.number()),
+  reviewAt: v.optional(v.number()),
   completedAt: v.optional(v.number()),
   isDeleted: v.boolean(),
   updatedAt: v.optional(v.number()),

@@ -39,7 +39,7 @@ export const getTicketAnalytics = query({
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect()
 
-    // Ticket-level metrics: completed count, blocked, resolution times
+    // Ticket-level metrics: completed count, blocked
     const completedTickets = tickets.filter(
       (t) => t.status === "completed" && t.completedAt && t.completedAt >= from && t.completedAt <= to,
     )
@@ -49,15 +49,6 @@ export const getTicketAnalytics = query({
 
     const totalCompleted = completedTickets.length
     const blockedCount = blocked.length
-
-    const resolutionTimes = completedTickets
-      .filter((t) => t.startedAt && t.reviewAt)
-      .map((t) => t.reviewAt! - t.startedAt!)
-
-    const avgResolutionTimeMs =
-      resolutionTimes.length > 0
-        ? resolutionTimes.reduce((sum, t) => sum + t, 0) / resolutionTimes.length
-        : 0
 
     // Epic-level quality metrics: only count epics that went through the approve flow
     const reviewedEpics = epics.filter(
@@ -72,6 +63,16 @@ export const getTicketAnalytics = query({
 
     const cleanApprovals = reviewedEpics.filter((e) => e.completionType === "clean").length
     const withFixes = reviewedEpics.filter((e) => e.completionType === "with-fixes").length
+
+    // Epic-level resolution time: in-progress → review
+    const resolutionTimes = reviewedEpics
+      .filter((e) => e.startedAt && e.reviewAt)
+      .map((e) => e.reviewAt! - e.startedAt!)
+
+    const avgResolutionTimeMs =
+      resolutionTimes.length > 0
+        ? resolutionTimes.reduce((sum, t) => sum + t, 0) / resolutionTimes.length
+        : 0
 
     const totalReviewed = cleanApprovals + withFixes
     const qualityRate = totalReviewed > 0 ? (cleanApprovals / totalReviewed) * 100 : 0
@@ -149,25 +150,26 @@ export const getResolutionTimeTrend = query({
     const userId = await requireAuth(ctx)
     await verifyProjectOwnership(ctx, projectId, userId)
 
-    const tickets = await ctx.db
-      .query("tickets")
+    const epics = await ctx.db
+      .query("epics")
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect()
 
     const dayMap = new Map<string, number[]>()
 
-    for (const t of tickets) {
+    for (const e of epics) {
       if (
-        t.status === "completed" &&
-        t.completedAt &&
-        t.completedAt >= from &&
-        t.completedAt <= to &&
-        t.startedAt &&
-        t.reviewAt
+        !e.isDeleted &&
+        e.status === "completed" &&
+        e.completedAt &&
+        e.completedAt >= from &&
+        e.completedAt <= to &&
+        e.startedAt &&
+        e.reviewAt
       ) {
-        const date = toDateString(t.completedAt)
+        const date = toDateString(e.completedAt)
         const times = dayMap.get(date) ?? []
-        times.push(t.reviewAt - t.startedAt)
+        times.push(e.reviewAt - e.startedAt)
         dayMap.set(date, times)
       }
     }
