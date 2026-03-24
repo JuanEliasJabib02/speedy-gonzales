@@ -110,6 +110,20 @@ export const setPrUrl = mutation({
   },
 })
 
+export const setPrUrlInternal = internalMutation({
+  args: {
+    epicId: v.id("epics"),
+    prUrl: v.string(),
+  },
+  handler: async (ctx, { epicId, prUrl }) => {
+    const epic = await ctx.db.get(epicId)
+    if (!epic) throw new Error("Epic not found")
+
+    await ctx.db.patch(epicId, { prUrl, updatedAt: Date.now() })
+    return epicId
+  },
+})
+
 export const deleteEpic = mutation({
   args: {
     epicId: v.id("epics"),

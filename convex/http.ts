@@ -730,4 +730,38 @@ http.route({
   }),
 })
 
+// ── POST /set-pr-url ────────────────────────────────────────────────
+http.route({
+  path: "/set-pr-url",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const authError = verifyLoopApiKey(request)
+    if (authError) return authError
+
+    let body: {
+      epicId?: string
+      prUrl?: string
+    }
+
+    try {
+      body = await request.json()
+    } catch {
+      return jsonError("Invalid JSON", 400)
+    }
+
+    const { epicId, prUrl } = body
+
+    if (!epicId || !prUrl) {
+      return jsonError("Missing required fields: epicId, prUrl", 400)
+    }
+
+    const result = await ctx.runMutation(internal.epics.setPrUrlInternal, {
+      epicId: epicId as any,
+      prUrl,
+    })
+
+    return jsonOk({ epicId: result })
+  }),
+})
+
 export default http
