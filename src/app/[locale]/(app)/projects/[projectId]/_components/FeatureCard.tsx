@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Loader2, Github, Trash2 } from "lucide-react"
+import { Loader2, Github, Trash2, ArrowUpToLine } from "lucide-react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Link } from "@/src/i18n/routing"
@@ -24,8 +24,21 @@ type FeatureCardProps = {
 
 export function FeatureCard({ feature, projectId }: FeatureCardProps) {
   const deleteEpic = useMutation(api.epics.deleteEpic)
+  const promoteToTodo = useMutation(api.epics.promoteToTodo)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isPromoting, setIsPromoting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+
+  const handlePromote = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsPromoting(true)
+    try {
+      await promoteToTodo({ epicId: feature.id })
+    } finally {
+      setIsPromoting(false)
+    }
+  }
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -50,6 +63,21 @@ export function FeatureCard({ feature, projectId }: FeatureCardProps) {
           <div className="flex items-start justify-between gap-2">
             <h4 className="text-sm font-medium">{feature.title}</h4>
             <div className="flex items-center gap-1">
+              {feature.status === "backlog" && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7 shrink-0 text-primary hover:bg-primary/15"
+                  disabled={isPromoting}
+                  onClick={handlePromote}
+                >
+                  {isPromoting ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <ArrowUpToLine className="size-3.5" />
+                  )}
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="icon"

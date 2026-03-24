@@ -64,6 +64,36 @@ export const updateStatus = mutation({
   },
 })
 
+export const promoteToTodo = mutation({
+  args: {
+    epicId: v.id("epics"),
+  },
+  handler: async (ctx, { epicId }) => {
+    const userId = await requireAuth(ctx)
+    const epic = await ctx.db.get(epicId)
+    if (!epic || epic.isDeleted) return throwError(ErrorCodes.NOT_FOUND)
+    const project = await ctx.db.get(epic.projectId)
+    if (!project || project.userId !== userId) return throwError(ErrorCodes.FORBIDDEN) as never
+
+    if (epic.status !== "backlog") {
+      return throwError(ErrorCodes.BAD_REQUEST)
+    }
+
+    await ctx.db.patch(epicId, { status: "todo" as TicketStatus })
+
+    const tickets = await ctx.db
+      .query("tickets")
+      .withIndex("by_epic", (q) => q.eq("epicId", epicId))
+      .collect()
+
+    for (const ticket of tickets) {
+      if (!ticket.isDeleted && ticket.status === "backlog") {
+        await ctx.db.patch(ticket._id, { status: "todo" as TicketStatus })
+      }
+    }
+  },
+})
+
 export const setPrUrl = mutation({
   args: {
     epicId: v.id("epics"),
