@@ -324,7 +324,7 @@ http.route({
 
     const { repoOwner, repoName, title, content = "" } = body
     const priority = body.priority ?? "medium"
-    const status = body.status ?? "todo"
+    const status = body.status ?? "backlog"
 
     if (!repoOwner || !repoName || !title) {
       return jsonError("Missing required fields: repoOwner, repoName, title", 400)
@@ -399,7 +399,7 @@ http.route({
 
     const { repoOwner, repoName, epicPath, title, content = "" } = body
     const priority = body.priority ?? "medium"
-    const status = body.status ?? "todo"
+    const status = body.status ?? "backlog"
     const sortOrder = body.sortOrder ?? 0
 
     if (!repoOwner || !repoName || !epicPath || !title) {
