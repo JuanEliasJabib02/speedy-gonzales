@@ -158,8 +158,8 @@ export function AnalyticsDashboard({
               accent={ticketAnalytics.successRate >= 80 ? "success" : "warning"}
             />
             <StatCard
-              label="Features Reviewed"
-              value={String(ticketAnalytics.totalReviewed)}
+              label="Features Completed"
+              value={String((ticketAnalytics.cleanApprovals ?? 0) + (ticketAnalytics.withFixes ?? 0))}
               icon={Hash}
             />
           </div>
