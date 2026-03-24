@@ -5,6 +5,8 @@ import type { Doc } from "./_generated/dataModel"
 import { requireAuth, agentStatusValidator } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
 import { parseRepoUrl } from "./model/parseRepoUrl"
+import { getGitProvider } from "./model/providers"
+import type { GitProviderType } from "./model/gitProvider"
 
 const DELETE_BATCH_SIZE = 100
 
@@ -37,11 +39,18 @@ export const createProject = mutation({
     repoUrl: v.string(),
     plansPath: v.optional(v.string()),
     branch: v.optional(v.string()),
+    gitProvider: v.optional(v.union(v.literal("github"), v.literal("bitbucket"))),
   },
   handler: async (ctx, args) => {
     const userId = await requireAuth(ctx)
     const { owner, repo } = parseRepoUrl(args.repoUrl)
     const now = Date.now()
+
+    // Detect git provider from URL if not provided
+    const gitProvider: GitProviderType = args.gitProvider ?? detectGitProvider(args.repoUrl)
+
+    // Validate repository exists
+    await validateRepository(gitProvider, owner, repo)
 
     const projectId = await ctx.db.insert("projects", {
       userId,
@@ -52,7 +61,7 @@ export const createProject = mutation({
       repoName: repo,
       plansPath: args.plansPath ?? "plans/features",
       branch: args.branch ?? "main",
-      gitProvider: "github",
+      gitProvider,
       syncStatus: "idle",
       autonomousLoop: false,
       loopStatus: "idle",
@@ -334,3 +343,55 @@ export const getProjectWithEpics = query({
     return { project, epics: activeEpics }
   },
 })
+
+// Helper function to detect git provider from repository URL
+function detectGitProvider(repoUrl: string): GitProviderType {
+  const url = repoUrl.toLowerCase()
+  if (url.includes("github.com")) {
+    return "github"
+  } else if (url.includes("bitbucket.org")) {
+    return "bitbucket"
+  } else if (url.includes("gitlab.com")) {
+    return "gitlab"
+  } else {
+    return "github"
+  }
+}
+
+// Helper function to validate repository exists
+async function validateRepository(gitProvider: GitProviderType, owner: string, repo: string): Promise<void> {
+  try {
+    const provider = getGitProvider(gitProvider)
+    const accessToken = getAccessToken(gitProvider)
+
+    if (!accessToken) {
+      throw new Error(`Access token not configured for ${gitProvider}`)
+    }
+
+    const config = {
+      provider: gitProvider,
+      accessToken,
+      owner,
+      repo,
+      branch: "main",
+    }
+
+    await provider.fetchTree(config)
+  } catch (error) {
+    throw new Error(`Failed to validate ${gitProvider} repository ${owner}/${repo}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
+}
+
+// Helper function to get access token for git provider
+function getAccessToken(gitProvider: GitProviderType): string | undefined {
+  switch (gitProvider) {
+    case "github":
+      return process.env.GITHUB_ACCESS_TOKEN
+    case "bitbucket":
+      return process.env.BITBUCKET_ACCESS_TOKEN
+    case "gitlab":
+      return process.env.GITLAB_ACCESS_TOKEN
+    default:
+      return undefined
+  }
+}

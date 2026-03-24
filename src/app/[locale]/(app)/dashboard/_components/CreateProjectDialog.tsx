@@ -14,6 +14,14 @@ import {
 import { Input } from "@/src/lib/components/ui/input"
 import { Label } from "@/src/lib/components/ui/label"
 import { Button } from "@/src/lib/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/src/lib/components/ui/dropdown-menu"
+import { ChevronDown } from "lucide-react"
 
 type CreateProjectDialogProps = {
   open: boolean
@@ -24,6 +32,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [repoUrl, setRepoUrl] = useState("")
+  const [gitProvider, setGitProvider] = useState<"github" | "bitbucket">("github")
   const [isCreating, setIsCreating] = useState(false)
 
   const createProject = useMutation(api.projects.createProject)
@@ -36,10 +45,12 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
         name: name.trim(),
         description: description.trim() || undefined,
         repoUrl: repoUrl.trim(),
+        gitProvider,
       })
       setName("")
       setDescription("")
       setRepoUrl("")
+      setGitProvider("github")
       onOpenChange(false)
     } finally {
       setIsCreating(false)
@@ -75,10 +86,30 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
             />
           </div>
           <div className="flex flex-col gap-2">
+            <Label>Git Provider</Label>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full justify-between">
+                  {gitProvider === "github" ? "GitHub" : "Bitbucket"}
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuRadioGroup
+                  value={gitProvider}
+                  onValueChange={(value) => setGitProvider(value as "github" | "bitbucket")}
+                >
+                  <DropdownMenuRadioItem value="github">GitHub</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="bitbucket">Bitbucket</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div className="flex flex-col gap-2">
             <Label htmlFor="repo">Repository URL</Label>
             <Input
               id="repo"
-              placeholder="github.com/owner/repo"
+              placeholder={gitProvider === "bitbucket" ? "bitbucket.org/workspace/repo" : "github.com/owner/repo"}
               value={repoUrl}
               onChange={(e) => setRepoUrl(e.target.value)}
             />

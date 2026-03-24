@@ -594,6 +594,9 @@ http.route({
   path: "/get-ticket-plan",
   method: "GET",
   handler: httpAction(async (ctx, request) => {
+    const authError = verifyLoopApiKey(request)
+    if (authError) return authError
+
     const url = new URL(request.url)
     const repoOwner = url.searchParams.get("repoOwner")
     const repoName = url.searchParams.get("repoName")
@@ -630,6 +633,9 @@ http.route({
   path: "/get-epic-tickets",
   method: "GET",
   handler: httpAction(async (ctx, request) => {
+    const authError = verifyLoopApiKey(request)
+    if (authError) return authError
+
     const url = new URL(request.url)
     const repoOwner = url.searchParams.get("repoOwner")
     const repoName = url.searchParams.get("repoName")
