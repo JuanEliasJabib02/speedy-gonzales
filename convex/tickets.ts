@@ -1,8 +1,9 @@
 import { v } from "convex/values"
 import { query, mutation, internalQuery, internalMutation } from "./_generated/server"
-import type { Doc } from "./_generated/dataModel"
 import { requireAuth, assertValidStatus, statusValidator } from "./helpers"
+import type { TicketStatus } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
+import { deriveEpicStatus } from "./lib/epicStatusEngine"
 
 export const getByEpic = query({
   args: { epicId: v.id("epics") },
@@ -50,7 +51,7 @@ export const updateStatus = mutation({
     }
     await ctx.db.patch(ticketId, patch)
 
-    // Update denormalized completed ticket count + auto-promote epic
+    // Recalculate epic status from all sibling tickets
     const updatedTicket = await ctx.db.get(ticketId)
     if (updatedTicket) {
       const allTickets = await ctx.db
@@ -59,21 +60,15 @@ export const updateStatus = mutation({
         .collect()
       const activeTickets = allTickets.filter((t) => !t.isDeleted)
       const completedCount = activeTickets.filter((t) => t.status === "completed" || t.status === "review").length
+      const checklistCompleted = activeTickets.reduce((sum, t) => sum + t.checklistCompleted, 0)
+      const derivedStatus = deriveEpicStatus(activeTickets.map((t) => t.status as TicketStatus))
 
-      const epicPatch: Partial<Doc<"epics">> = { completedTicketCount: completedCount }
-
-      // Auto-promote epic to review when all tickets are done (completed or review)
-      if (status === "completed" || status === "review") {
-        const allDone = activeTickets.every((t) => t.status === "completed" || t.status === "review")
-        if (allDone && activeTickets.length > 0) {
-          const epic = await ctx.db.get(updatedTicket.epicId)
-          if (epic && epic.status !== "review" && epic.status !== "completed") {
-            epicPatch.status = "review"
-          }
-        }
-      }
-
-      await ctx.db.patch(updatedTicket.epicId, epicPatch)
+      await ctx.db.patch(updatedTicket.epicId, {
+        completedTicketCount: completedCount,
+        checklistCompleted,
+        status: derivedStatus,
+        updatedAt: Date.now(),
+      })
     }
   },
 })
@@ -151,7 +146,7 @@ export const updateStatusInternal = internalMutation({
     }
     await ctx.db.patch(ticketId, patch)
 
-    // Update denormalized completed ticket count + auto-promote epic
+    // Recalculate epic status from all sibling tickets
     const allTickets = await ctx.db
       .query("tickets")
       .withIndex("by_epic", (q) => q.eq("epicId", ticket.epicId))
@@ -160,20 +155,15 @@ export const updateStatusInternal = internalMutation({
     const completedCount = activeTickets.filter(
       (t) => t.status === "completed" || t.status === "review"
     ).length
+    const checklistCompleted = activeTickets.reduce((sum, t) => sum + t.checklistCompleted, 0)
+    const derivedStatus = deriveEpicStatus(activeTickets.map((t) => t.status as TicketStatus))
 
-    const epicPatch: Partial<Doc<"epics">> = { completedTicketCount: completedCount }
-
-    if (status === "completed" || status === "review") {
-      const allDone = activeTickets.every((t) => t.status === "completed" || t.status === "review")
-      if (allDone && activeTickets.length > 0) {
-        const epic = await ctx.db.get(ticket.epicId)
-        if (epic && epic.status !== "review" && epic.status !== "completed") {
-          epicPatch.status = "review"
-        }
-      }
-    }
-
-    await ctx.db.patch(ticket.epicId, epicPatch)
+    await ctx.db.patch(ticket.epicId, {
+      completedTicketCount: completedCount,
+      checklistCompleted,
+      status: derivedStatus,
+      updatedAt: Date.now(),
+    })
 
     return { ticketId, previousStatus, newStatus: status }
   },

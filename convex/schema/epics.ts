@@ -17,6 +17,7 @@ export const epics = defineTable({
   sortOrder: v.number(),
   prUrl: v.optional(v.string()),
   isDeleted: v.boolean(),
+  updatedAt: v.optional(v.number()),
 })
   .index("by_project", ["projectId"])
   .index("by_project_path", ["projectId", "path"])
