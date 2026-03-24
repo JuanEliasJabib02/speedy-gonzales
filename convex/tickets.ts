@@ -275,3 +275,32 @@ export const updateTicketContentInternal = internalMutation({
     return ticketId
   },
 })
+
+export const getStaleInProgressTickets = internalQuery({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, { projectId }) => {
+    const thirtyMinutesAgo = Date.now() - (30 * 60 * 1000) // 30 minutes in milliseconds
+
+    const tickets = await ctx.db
+      .query("tickets")
+      .withIndex("by_project", (q) => q.eq("projectId", projectId))
+      .collect()
+
+    return tickets
+      .filter((t) =>
+        !t.isDeleted &&
+        t.status === "in-progress" &&
+        t.startedAt != null &&
+        t.startedAt < thirtyMinutesAgo
+      )
+      .map((t) => ({
+        id: t._id,
+        title: t.title,
+        path: t.path,
+        startedAt: t.startedAt!,
+        epicId: t.epicId,
+        agentName: t.agentName,
+        minutesStuck: Math.floor((Date.now() - t.startedAt!) / (60 * 1000)),
+      }))
+  },
+})
