@@ -313,3 +313,24 @@ export const getProjectsWithStats = query({
     return results
   },
 })
+
+export const getProjectWithEpics = query({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, { projectId }) => {
+    const userId = await requireAuth(ctx)
+    const project = await ctx.db.get(projectId)
+    if (!project || project.userId !== userId || project.deletionStatus) return throwError(ErrorCodes.NOT_FOUND)
+
+    const epics = await ctx.db
+      .query("epics")
+      .withIndex("by_project", (q) => q.eq("projectId", projectId))
+      .collect()
+
+    const activeEpics = epics.filter((e) => !e.isDeleted).map((epic) => ({
+      ...epic,
+      completedTicketCount: epic.completedTicketCount ?? 0,
+    }))
+
+    return { project, epics: activeEpics }
+  },
+})

@@ -5,13 +5,14 @@ import { STATUS_DOT } from "@/src/lib/constants/status-styles"
 import { timeAgo } from "@/src/lib/helpers/timeAgo"
 
 type TicketItemProps = {
-  ticket: { id: string; title: string; status: string; blockedReason?: string; updatedAt?: number; agentName?: string }
+  ticket: { id: string; title: string; status: string; blockedReason?: string; updatedAt?: number; agentName?: string; isLoading?: boolean }
   isActive: boolean
   onClick: () => void
 }
 
 export function TicketItem({ ticket, isActive, onClick }: TicketItemProps) {
   const isBlocked = ticket.status === "blocked"
+  const isLoading = ticket.isLoading || false
 
   return (
     <div
@@ -26,20 +27,35 @@ export function TicketItem({ ticket, isActive, onClick }: TicketItemProps) {
       )}
     >
       <div className="shrink-0 flex items-center justify-center w-[44px] h-[44px]">
-        <div className={cn("size-2.5 rounded-full", STATUS_DOT[ticket.status] ?? "bg-status-todo")} />
+        {isLoading ? (
+          <div className="size-2.5 rounded-full bg-muted animate-pulse" />
+        ) : (
+          <div className={cn("size-2.5 rounded-full", STATUS_DOT[ticket.status] ?? "bg-status-todo")} />
+        )}
       </div>
       <div className="flex flex-col min-w-0 gap-0.5">
         <span
-          className={cn("truncate", isBlocked && "text-status-blocked font-medium")}
+          className={cn(
+            "truncate",
+            isBlocked && "text-status-blocked font-medium",
+            isLoading && "text-muted-foreground"
+          )}
           title={isBlocked && ticket.blockedReason ? `Blocked: ${ticket.blockedReason}` : undefined}
         >
           {isBlocked && "⛔ "}
-          {ticket.title}
+          {isLoading ? (
+            <span className="animate-pulse">{ticket.title}</span>
+          ) : (
+            ticket.title
+          )}
         </span>
-        {(ticket.agentName || ticket.updatedAt) && (
+        {!isLoading && (ticket.agentName || ticket.updatedAt) && (
           <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
             {ticket.updatedAt && <span className="shrink-0">{timeAgo(ticket.updatedAt)}</span>}
           </div>
+        )}
+        {isLoading && (
+          <div className="h-3 w-16 bg-muted animate-pulse rounded" />
         )}
       </div>
     </div>

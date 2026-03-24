@@ -17,6 +17,7 @@ type Ticket = {
   updatedAt?: number
   agentName?: string
   _creationTime?: number
+  isLoading?: boolean
 }
 
 type TicketSidebarProps = {
@@ -55,8 +56,8 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
   const regularTickets = tickets.filter((t) => t.id !== "_context")
 
   const filteredTickets = regularTickets
-    .filter((t) => activeFilter.match(t.status))
-    .filter((t) => !search || t.title.toLowerCase().includes(search.toLowerCase()))
+    .filter((t) => t.isLoading || activeFilter.match(t.status)) // Show loading tickets in all tabs
+    .filter((t) => t.isLoading || !search || t.title.toLowerCase().includes(search.toLowerCase())) // Skip search for loading tickets
     .sort((a, b) => {
       const aTime = a.updatedAt ?? 0
       const bTime = b.updatedAt ?? 0
@@ -68,7 +69,7 @@ export function TicketSidebar({ epicTitle, branch, tickets, selectedId, onSelect
 
   const counts = STATUS_TABS.reduce(
     (acc, tab) => {
-      acc[tab.key] = regularTickets.filter((t) => tab.match(t.status)).length
+      acc[tab.key] = regularTickets.filter((t) => !t.isLoading && tab.match(t.status)).length
       return acc
     },
     {} as Record<TabKey, number>,

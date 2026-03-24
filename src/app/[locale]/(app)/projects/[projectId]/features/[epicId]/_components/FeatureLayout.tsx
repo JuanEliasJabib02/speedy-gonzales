@@ -15,16 +15,35 @@ type FeatureLayoutProps = {
 }
 
 export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
-  const { plan: epic, isLoading, getTicketContent, lastSyncAt, syncStatus, repoOwner, repoName } = useLivePlan(epicId, projectId)
+  const { plan: epic, isLoading, isTicketsLoading, getTicketContent, lastSyncAt, syncStatus, repoOwner, repoName } = useLivePlan(epicId, projectId)
   const [selectedTicketId, setSelectedTicketId] = useState("")
   const [isChatOpen, setIsChatOpen] = useState(false)
 
+  // Only show full loading for epic, not tickets
   if (isLoading || !epic) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <span className="text-sm text-muted-foreground">Loading feature...</span>
+      <div className="flex h-full">
+        {/* Left panel skeleton */}
+        <div className="w-80 border-r bg-muted/30">
+          <div className="border-b p-4">
+            <div className="h-6 w-48 animate-pulse rounded bg-muted" />
+            <div className="mt-2 h-4 w-32 animate-pulse rounded bg-muted" />
+          </div>
+          <div className="p-4 space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-12 animate-pulse rounded bg-muted" />
+            ))}
+          </div>
+        </div>
+
+        {/* Center panel skeleton */}
+        <div className="flex-1 p-6">
+          <div className="h-8 w-64 animate-pulse rounded bg-muted mb-4" />
+          <div className="space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-4 animate-pulse rounded bg-muted" />
+            ))}
+          </div>
         </div>
       </div>
     )
