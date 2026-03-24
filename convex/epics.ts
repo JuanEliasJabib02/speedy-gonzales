@@ -1,6 +1,6 @@
 import { v } from "convex/values"
-import { query, mutation, internalQuery } from "./_generated/server"
-import { requireAuth, assertValidStatus, statusValidator } from "./helpers"
+import { query, mutation, internalQuery, internalMutation } from "./_generated/server"
+import { requireAuth, assertValidStatus, statusValidator, priorityValidator } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
 
 export const getByProject = query({
@@ -92,5 +92,64 @@ export const getByProjectInternal = internalQuery({
       .query("epics")
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect()
+  },
+})
+
+export const getByProjectPathInternal = internalQuery({
+  args: { projectId: v.id("projects"), path: v.string() },
+  handler: async (ctx, { projectId, path }) => {
+    return ctx.db
+      .query("epics")
+      .withIndex("by_project_path", (q) => q.eq("projectId", projectId).eq("path", path))
+      .first()
+  },
+})
+
+export const createEpicInternal = internalMutation({
+  args: {
+    projectId: v.id("projects"),
+    title: v.string(),
+    path: v.string(),
+    content: v.string(),
+    contentHash: v.string(),
+    status: statusValidator,
+    priority: priorityValidator,
+    checklistTotal: v.number(),
+    checklistCompleted: v.number(),
+    sortOrder: v.number(),
+  },
+  handler: async (ctx, args) => {
+    return ctx.db.insert("epics", {
+      ...args,
+      ticketCount: 0,
+      completedTicketCount: 0,
+      isDeleted: false,
+      updatedAt: Date.now(),
+    })
+  },
+})
+
+export const updateEpicInternal = internalMutation({
+  args: {
+    epicId: v.id("epics"),
+    content: v.optional(v.string()),
+    contentHash: v.optional(v.string()),
+    title: v.optional(v.string()),
+    priority: v.optional(priorityValidator),
+    checklistTotal: v.optional(v.number()),
+    checklistCompleted: v.optional(v.number()),
+  },
+  handler: async (ctx, { epicId, ...patch }) => {
+    const epic = await ctx.db.get(epicId)
+    if (!epic) throw new Error("Epic not found")
+    const updates: Record<string, unknown> = { updatedAt: Date.now() }
+    if (patch.content !== undefined) updates.content = patch.content
+    if (patch.contentHash !== undefined) updates.contentHash = patch.contentHash
+    if (patch.title !== undefined) updates.title = patch.title
+    if (patch.priority !== undefined) updates.priority = patch.priority
+    if (patch.checklistTotal !== undefined) updates.checklistTotal = patch.checklistTotal
+    if (patch.checklistCompleted !== undefined) updates.checklistCompleted = patch.checklistCompleted
+    await ctx.db.patch(epicId, updates)
+    return epicId
   },
 })
