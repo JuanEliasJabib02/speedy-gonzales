@@ -59,25 +59,30 @@ export const getTicketAnalytics = query({
         ? resolutionTimes.reduce((sum, t) => sum + t, 0) / resolutionTimes.length
         : 0
 
-    // Epic-level quality metrics: clean / with-fixes / unreviewed
-    const completedEpics = epics.filter(
-      (e) => !e.isDeleted && e.status === "completed" && e.completedAt && e.completedAt >= from && e.completedAt <= to,
+    // Epic-level quality metrics: only count epics that went through the approve flow
+    const reviewedEpics = epics.filter(
+      (e) =>
+        !e.isDeleted &&
+        e.status === "completed" &&
+        e.completedAt &&
+        e.completedAt >= from &&
+        e.completedAt <= to &&
+        e.completionType !== undefined,
     )
 
-    const cleanApprovals = completedEpics.filter((e) => e.completionType === "clean").length
-    const withFixes = completedEpics.filter((e) => e.completionType === "with-fixes").length
-    const unreviewed = completedEpics.filter((e) => e.completionType === undefined).length
+    const cleanApprovals = reviewedEpics.filter((e) => e.completionType === "clean").length
+    const withFixes = reviewedEpics.filter((e) => e.completionType === "with-fixes").length
 
-    const reviewed = cleanApprovals + withFixes
-    const qualityRate = reviewed > 0 ? (cleanApprovals / reviewed) * 100 : 0
+    const totalReviewed = cleanApprovals + withFixes
+    const qualityRate = totalReviewed > 0 ? (cleanApprovals / totalReviewed) * 100 : 0
     const successRate =
       totalCompleted + blockedCount > 0 ? (totalCompleted / (totalCompleted + blockedCount)) * 100 : 0
 
     return {
       totalCompleted,
+      totalReviewed,
       cleanApprovals,
       withFixes,
-      unreviewed,
       blocked: blockedCount,
       avgResolutionTimeMs,
       qualityRate,
@@ -102,16 +107,22 @@ export const getTicketsByDay = query({
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect()
 
-    const dayMap = new Map<string, { clean: number; withFixes: number; unreviewed: number; blocked: number }>()
+    const dayMap = new Map<string, { clean: number; withFixes: number; blocked: number }>()
 
-    // Epic completions bucketed by day (quality labels)
+    // Only count epics that went through the approve flow
     for (const e of epics) {
-      if (!e.isDeleted && e.status === "completed" && e.completedAt && e.completedAt >= from && e.completedAt <= to) {
+      if (
+        !e.isDeleted &&
+        e.status === "completed" &&
+        e.completedAt &&
+        e.completedAt >= from &&
+        e.completedAt <= to &&
+        e.completionType !== undefined
+      ) {
         const date = toDateString(e.completedAt)
-        const entry = dayMap.get(date) ?? { clean: 0, withFixes: 0, unreviewed: 0, blocked: 0 }
+        const entry = dayMap.get(date) ?? { clean: 0, withFixes: 0, blocked: 0 }
         if (e.completionType === "clean") entry.clean++
         else if (e.completionType === "with-fixes") entry.withFixes++
-        else entry.unreviewed++
         dayMap.set(date, entry)
       }
     }
@@ -120,7 +131,7 @@ export const getTicketsByDay = query({
     for (const t of tickets) {
       if (t.status === "blocked" && t.blockedAt && t.blockedAt >= from && t.blockedAt <= to) {
         const date = toDateString(t.blockedAt)
-        const entry = dayMap.get(date) ?? { clean: 0, withFixes: 0, unreviewed: 0, blocked: 0 }
+        const entry = dayMap.get(date) ?? { clean: 0, withFixes: 0, blocked: 0 }
         entry.blocked++
         dayMap.set(date, entry)
       }

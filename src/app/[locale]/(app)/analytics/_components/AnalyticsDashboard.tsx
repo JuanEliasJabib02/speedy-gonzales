@@ -16,6 +16,7 @@ type Project = {
 
 type TicketAnalytics = {
   totalCompleted: number
+  totalReviewed: number
   cleanApprovals: number
   withFixes: number
   blocked: number
@@ -28,7 +29,6 @@ type DayData = {
   date: string
   clean: number
   withFixes: number
-  unreviewed: number
   blocked: number
 }
 
@@ -158,8 +158,8 @@ export function AnalyticsDashboard({
               accent={ticketAnalytics.successRate >= 80 ? "success" : "warning"}
             />
             <StatCard
-              label="Total Processed"
-              value={String(ticketAnalytics.totalCompleted + ticketAnalytics.blocked)}
+              label="Features Reviewed"
+              value={String(ticketAnalytics.totalReviewed)}
               icon={Hash}
             />
           </div>
