@@ -1,6 +1,6 @@
 import { v } from "convex/values"
 import { query, mutation, internalQuery, internalMutation } from "./_generated/server"
-import { requireAuth, assertValidStatus, statusValidator } from "./helpers"
+import { requireAuth, assertValidStatus, statusValidator, priorityValidator } from "./helpers"
 import type { TicketStatus } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
 import { deriveEpicStatus } from "./lib/epicStatusEngine"
@@ -189,5 +189,93 @@ export const updateStatusInternal = internalMutation({
     })
 
     return { ticketId, previousStatus, newStatus: status, epicStatus: derivedStatus }
+  },
+})
+
+export const createTicketInternal = internalMutation({
+  args: {
+    projectId: v.id("projects"),
+    epicId: v.id("epics"),
+    title: v.string(),
+    path: v.string(),
+    content: v.string(),
+    contentHash: v.string(),
+    status: statusValidator,
+    priority: priorityValidator,
+    checklistTotal: v.number(),
+    checklistCompleted: v.number(),
+    sortOrder: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const ticketId = await ctx.db.insert("tickets", {
+      ...args,
+      isDeleted: false,
+      updatedAt: Date.now(),
+    })
+
+    // Update epic ticket count
+    const allTickets = await ctx.db
+      .query("tickets")
+      .withIndex("by_epic", (q) => q.eq("epicId", args.epicId))
+      .collect()
+    const activeTickets = allTickets.filter((t) => !t.isDeleted)
+    const completedCount = activeTickets.filter(
+      (t) => t.status === "completed" || t.status === "review"
+    ).length
+    const epicChecklistTotal = activeTickets.reduce((sum, t) => sum + t.checklistTotal, 0)
+    const epicChecklistCompleted = activeTickets.reduce((sum, t) => sum + t.checklistCompleted, 0)
+
+    await ctx.db.patch(args.epicId, {
+      ticketCount: activeTickets.length,
+      completedTicketCount: completedCount,
+      checklistTotal: epicChecklistTotal,
+      checklistCompleted: epicChecklistCompleted,
+      updatedAt: Date.now(),
+    })
+
+    return ticketId
+  },
+})
+
+export const updateTicketContentInternal = internalMutation({
+  args: {
+    ticketId: v.id("tickets"),
+    content: v.optional(v.string()),
+    contentHash: v.optional(v.string()),
+    title: v.optional(v.string()),
+    priority: v.optional(priorityValidator),
+    checklistTotal: v.optional(v.number()),
+    checklistCompleted: v.optional(v.number()),
+  },
+  handler: async (ctx, { ticketId, ...patch }) => {
+    const ticket = await ctx.db.get(ticketId)
+    if (!ticket) throw new Error("Ticket not found")
+
+    const updates: Record<string, unknown> = { updatedAt: Date.now() }
+    if (patch.content !== undefined) updates.content = patch.content
+    if (patch.contentHash !== undefined) updates.contentHash = patch.contentHash
+    if (patch.title !== undefined) updates.title = patch.title
+    if (patch.priority !== undefined) updates.priority = patch.priority
+    if (patch.checklistTotal !== undefined) updates.checklistTotal = patch.checklistTotal
+    if (patch.checklistCompleted !== undefined) updates.checklistCompleted = patch.checklistCompleted
+
+    await ctx.db.patch(ticketId, updates)
+
+    // Recalculate epic aggregates
+    const allTickets = await ctx.db
+      .query("tickets")
+      .withIndex("by_epic", (q) => q.eq("epicId", ticket.epicId))
+      .collect()
+    const activeTickets = allTickets.filter((t) => !t.isDeleted)
+    const epicChecklistTotal = activeTickets.reduce((sum, t) => sum + t.checklistTotal, 0)
+    const epicChecklistCompleted = activeTickets.reduce((sum, t) => sum + t.checklistCompleted, 0)
+
+    await ctx.db.patch(ticket.epicId, {
+      checklistTotal: epicChecklistTotal,
+      checklistCompleted: epicChecklistCompleted,
+      updatedAt: Date.now(),
+    })
+
+    return ticketId
   },
 })

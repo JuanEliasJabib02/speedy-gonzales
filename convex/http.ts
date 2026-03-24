@@ -2,7 +2,8 @@ import { httpRouter } from "convex/server"
 import { auth } from "./auth"
 import { internal } from "./_generated/api"
 import { httpAction } from "./_generated/server"
-import { VALID_STATUSES, type ValidStatus } from "./helpers"
+import { VALID_STATUSES, VALID_PRIORITIES, type ValidStatus, type ValidPriority } from "./helpers"
+import { parseChecklistCounts, generateContentHash, slugify } from "./lib/planParser"
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -345,6 +346,414 @@ http.route({
       JSON.stringify({ ok: true }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     )
+  }),
+})
+
+// ── Helper: verify LOOP_API_KEY ─────────────────────────────────────
+function verifyLoopApiKey(request: Request): Response | null {
+  const expectedKey = process.env.LOOP_API_KEY
+  if (!expectedKey) {
+    return new Response(JSON.stringify({ ok: false, error: "LOOP_API_KEY not configured" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    })
+  }
+  const authHeader = request.headers.get("authorization")
+  if (authHeader !== `Bearer ${expectedKey}`) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    })
+  }
+  return null
+}
+
+// ── Helper: JSON error response ─────────────────────────────────────
+function jsonError(error: string, status: number): Response {
+  return new Response(JSON.stringify({ ok: false, error }), {
+    status,
+    headers: { "Content-Type": "application/json", ...corsHeaders },
+  })
+}
+
+function jsonOk(data: Record<string, unknown>): Response {
+  return new Response(JSON.stringify({ ok: true, ...data }), {
+    status: 200,
+    headers: { "Content-Type": "application/json", ...corsHeaders },
+  })
+}
+
+// ── POST /create-epic ───────────────────────────────────────────────
+http.route({
+  path: "/create-epic",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const authError = verifyLoopApiKey(request)
+    if (authError) return authError
+
+    let body: {
+      repoOwner?: string
+      repoName?: string
+      title?: string
+      content?: string
+      priority?: string
+      status?: string
+    }
+
+    try {
+      body = await request.json()
+    } catch {
+      return jsonError("Invalid JSON", 400)
+    }
+
+    const { repoOwner, repoName, title, content = "" } = body
+    const priority = body.priority ?? "medium"
+    const status = body.status ?? "todo"
+
+    if (!repoOwner || !repoName || !title) {
+      return jsonError("Missing required fields: repoOwner, repoName, title", 400)
+    }
+    if (!VALID_PRIORITIES.includes(priority as ValidPriority)) {
+      return jsonError(`Invalid priority. Must be one of: ${VALID_PRIORITIES.join(", ")}`, 400)
+    }
+    if (!VALID_STATUSES.includes(status as ValidStatus)) {
+      return jsonError(`Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}`, 400)
+    }
+
+    const project = await ctx.runQuery(internal.projects.getByRepo, { owner: repoOwner, name: repoName })
+    if (!project) return jsonError(`Project not found: ${repoOwner}/${repoName}`, 404)
+
+    const epicSlug = slugify(title)
+    const path = `${project.plansPath}/${epicSlug}`
+    const contentHash = generateContentHash(content)
+    const { total, completed } = parseChecklistCounts(content)
+
+    // Check if epic already exists at this path
+    const existing = await ctx.runQuery(internal.epics.getByProjectPathInternal, {
+      projectId: project._id,
+      path,
+    })
+    if (existing) return jsonError(`Epic already exists at path: ${path}`, 409)
+
+    // Get next sort order
+    const allEpics = await ctx.runQuery(internal.epics.getByProjectInternal, { projectId: project._id })
+    const sortOrder = allEpics.length
+
+    const epicId = await ctx.runMutation(internal.epics.createEpicInternal, {
+      projectId: project._id,
+      title,
+      path,
+      content,
+      contentHash,
+      status: status as ValidStatus,
+      priority: priority as ValidPriority,
+      checklistTotal: total,
+      checklistCompleted: completed,
+      sortOrder,
+    })
+
+    return jsonOk({ epicId, path })
+  }),
+})
+
+// ── POST /create-ticket ─────────────────────────────────────────────
+http.route({
+  path: "/create-ticket",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const authError = verifyLoopApiKey(request)
+    if (authError) return authError
+
+    let body: {
+      repoOwner?: string
+      repoName?: string
+      epicPath?: string
+      title?: string
+      content?: string
+      priority?: string
+      status?: string
+      sortOrder?: number
+    }
+
+    try {
+      body = await request.json()
+    } catch {
+      return jsonError("Invalid JSON", 400)
+    }
+
+    const { repoOwner, repoName, epicPath, title, content = "" } = body
+    const priority = body.priority ?? "medium"
+    const status = body.status ?? "todo"
+    const sortOrder = body.sortOrder ?? 0
+
+    if (!repoOwner || !repoName || !epicPath || !title) {
+      return jsonError("Missing required fields: repoOwner, repoName, epicPath, title", 400)
+    }
+    if (!VALID_PRIORITIES.includes(priority as ValidPriority)) {
+      return jsonError(`Invalid priority. Must be one of: ${VALID_PRIORITIES.join(", ")}`, 400)
+    }
+    if (!VALID_STATUSES.includes(status as ValidStatus)) {
+      return jsonError(`Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}`, 400)
+    }
+
+    const project = await ctx.runQuery(internal.projects.getByRepo, { owner: repoOwner, name: repoName })
+    if (!project) return jsonError(`Project not found: ${repoOwner}/${repoName}`, 404)
+
+    const epic = await ctx.runQuery(internal.epics.getByProjectPathInternal, {
+      projectId: project._id,
+      path: epicPath,
+    })
+    if (!epic) return jsonError(`Epic not found at path: ${epicPath}`, 404)
+
+    const ticketSlug = slugify(title)
+    const ticketPath = `${epicPath}/${ticketSlug}.md`
+    const contentHash = generateContentHash(content)
+    const { total, completed } = parseChecklistCounts(content)
+
+    // Check if ticket already exists
+    const existing = await ctx.runQuery(internal.tickets.getByProjectPath, {
+      projectId: project._id,
+      path: ticketPath,
+    })
+    if (existing) return jsonError(`Ticket already exists at path: ${ticketPath}`, 409)
+
+    const ticketId = await ctx.runMutation(internal.tickets.createTicketInternal, {
+      projectId: project._id,
+      epicId: epic._id,
+      title,
+      path: ticketPath,
+      content,
+      contentHash,
+      status: status as ValidStatus,
+      priority: priority as ValidPriority,
+      checklistTotal: total,
+      checklistCompleted: completed,
+      sortOrder,
+    })
+
+    return jsonOk({ ticketId, path: ticketPath })
+  }),
+})
+
+// ── POST /update-epic ───────────────────────────────────────────────
+http.route({
+  path: "/update-epic",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const authError = verifyLoopApiKey(request)
+    if (authError) return authError
+
+    let body: {
+      repoOwner?: string
+      repoName?: string
+      epicPath?: string
+      content?: string
+      title?: string
+      priority?: string
+    }
+
+    try {
+      body = await request.json()
+    } catch {
+      return jsonError("Invalid JSON", 400)
+    }
+
+    const { repoOwner, repoName, epicPath } = body
+
+    if (!repoOwner || !repoName || !epicPath) {
+      return jsonError("Missing required fields: repoOwner, repoName, epicPath", 400)
+    }
+    if (body.priority && !VALID_PRIORITIES.includes(body.priority as ValidPriority)) {
+      return jsonError(`Invalid priority. Must be one of: ${VALID_PRIORITIES.join(", ")}`, 400)
+    }
+
+    const project = await ctx.runQuery(internal.projects.getByRepo, { owner: repoOwner, name: repoName })
+    if (!project) return jsonError(`Project not found: ${repoOwner}/${repoName}`, 404)
+
+    const epic = await ctx.runQuery(internal.epics.getByProjectPathInternal, {
+      projectId: project._id,
+      path: epicPath,
+    })
+    if (!epic) return jsonError(`Epic not found at path: ${epicPath}`, 404)
+
+    const patch: Record<string, unknown> = {}
+    if (body.content !== undefined) {
+      patch.content = body.content
+      patch.contentHash = generateContentHash(body.content)
+      const { total, completed } = parseChecklistCounts(body.content)
+      patch.checklistTotal = total
+      patch.checklistCompleted = completed
+    }
+    if (body.title !== undefined) patch.title = body.title
+    if (body.priority !== undefined) patch.priority = body.priority
+
+    await ctx.runMutation(internal.epics.updateEpicInternal, {
+      epicId: epic._id,
+      ...patch,
+    } as {
+      epicId: typeof epic._id
+      content?: string
+      contentHash?: string
+      title?: string
+      priority?: "low" | "medium" | "high" | "critical"
+      checklistTotal?: number
+      checklistCompleted?: number
+    })
+
+    return jsonOk({ epicId: epic._id })
+  }),
+})
+
+// ── POST /update-ticket-content ─────────────────────────────────────
+http.route({
+  path: "/update-ticket-content",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const authError = verifyLoopApiKey(request)
+    if (authError) return authError
+
+    let body: {
+      repoOwner?: string
+      repoName?: string
+      ticketPath?: string
+      content?: string
+      title?: string
+      priority?: string
+    }
+
+    try {
+      body = await request.json()
+    } catch {
+      return jsonError("Invalid JSON", 400)
+    }
+
+    const { repoOwner, repoName, ticketPath } = body
+
+    if (!repoOwner || !repoName || !ticketPath) {
+      return jsonError("Missing required fields: repoOwner, repoName, ticketPath", 400)
+    }
+    if (body.priority && !VALID_PRIORITIES.includes(body.priority as ValidPriority)) {
+      return jsonError(`Invalid priority. Must be one of: ${VALID_PRIORITIES.join(", ")}`, 400)
+    }
+
+    const project = await ctx.runQuery(internal.projects.getByRepo, { owner: repoOwner, name: repoName })
+    if (!project) return jsonError(`Project not found: ${repoOwner}/${repoName}`, 404)
+
+    const ticket = await ctx.runQuery(internal.tickets.getByProjectPath, {
+      projectId: project._id,
+      path: ticketPath,
+    })
+    if (!ticket) return jsonError(`Ticket not found: ${ticketPath}`, 404)
+
+    const patch: Record<string, unknown> = {}
+    if (body.content !== undefined) {
+      patch.content = body.content
+      patch.contentHash = generateContentHash(body.content)
+      const { total, completed } = parseChecklistCounts(body.content)
+      patch.checklistTotal = total
+      patch.checklistCompleted = completed
+    }
+    if (body.title !== undefined) patch.title = body.title
+    if (body.priority !== undefined) patch.priority = body.priority
+
+    await ctx.runMutation(internal.tickets.updateTicketContentInternal, {
+      ticketId: ticket._id,
+      ...patch,
+    } as {
+      ticketId: typeof ticket._id
+      content?: string
+      contentHash?: string
+      title?: string
+      priority?: "low" | "medium" | "high" | "critical"
+      checklistTotal?: number
+      checklistCompleted?: number
+    })
+
+    return jsonOk({ ticketId: ticket._id })
+  }),
+})
+
+// ── GET /get-ticket-plan ────────────────────────────────────────────
+http.route({
+  path: "/get-ticket-plan",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url)
+    const repoOwner = url.searchParams.get("repoOwner")
+    const repoName = url.searchParams.get("repoName")
+    const ticketPath = url.searchParams.get("ticketPath")
+
+    if (!repoOwner || !repoName || !ticketPath) {
+      return jsonError("Missing required params: repoOwner, repoName, ticketPath", 400)
+    }
+
+    const project = await ctx.runQuery(internal.projects.getByRepo, { owner: repoOwner, name: repoName })
+    if (!project) return jsonError(`Project not found: ${repoOwner}/${repoName}`, 404)
+
+    const ticket = await ctx.runQuery(internal.tickets.getByProjectPath, {
+      projectId: project._id,
+      path: ticketPath,
+    })
+    if (!ticket) return jsonError(`Ticket not found: ${ticketPath}`, 404)
+
+    return jsonOk({
+      ticketId: ticket._id,
+      title: ticket.title,
+      path: ticket.path,
+      status: ticket.status,
+      priority: ticket.priority,
+      content: ticket.content,
+      checklistTotal: ticket.checklistTotal,
+      checklistCompleted: ticket.checklistCompleted,
+    })
+  }),
+})
+
+// ── GET /get-epic-tickets ───────────────────────────────────────────
+http.route({
+  path: "/get-epic-tickets",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url)
+    const repoOwner = url.searchParams.get("repoOwner")
+    const repoName = url.searchParams.get("repoName")
+    const epicPath = url.searchParams.get("epicPath")
+
+    if (!repoOwner || !repoName || !epicPath) {
+      return jsonError("Missing required params: repoOwner, repoName, epicPath", 400)
+    }
+
+    const project = await ctx.runQuery(internal.projects.getByRepo, { owner: repoOwner, name: repoName })
+    if (!project) return jsonError(`Project not found: ${repoOwner}/${repoName}`, 404)
+
+    const epic = await ctx.runQuery(internal.epics.getByProjectPathInternal, {
+      projectId: project._id,
+      path: epicPath,
+    })
+    if (!epic) return jsonError(`Epic not found at path: ${epicPath}`, 404)
+
+    const allTickets = await ctx.runQuery(internal.tickets.getByProjectInternal, {
+      projectId: project._id,
+    })
+    const epicTickets = allTickets
+      .filter((t) => t.epicId === epic._id && !t.isDeleted)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+
+    return jsonOk({
+      epicId: epic._id,
+      epicTitle: epic.title,
+      tickets: epicTickets.map((t) => ({
+        ticketId: t._id,
+        title: t.title,
+        path: t.path,
+        status: t.status,
+        priority: t.priority,
+        content: t.content,
+        checklistTotal: t.checklistTotal,
+        checklistCompleted: t.checklistCompleted,
+        sortOrder: t.sortOrder,
+      })),
+    })
   }),
 })
 
