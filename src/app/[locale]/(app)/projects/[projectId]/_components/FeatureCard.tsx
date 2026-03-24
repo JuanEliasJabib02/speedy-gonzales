@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Loader2, Github, Trash2, ArrowUpToLine } from "lucide-react"
+import { Loader2, Github, Trash2, ArrowUpToLine, CheckCircle } from "lucide-react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Link } from "@/src/i18n/routing"
@@ -25,8 +25,10 @@ type FeatureCardProps = {
 export function FeatureCard({ feature, projectId }: FeatureCardProps) {
   const deleteEpic = useMutation(api.epics.deleteEpic)
   const promoteToTodo = useMutation(api.epics.promoteToTodo)
+  const updateStatus = useMutation(api.epics.updateStatus)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isPromoting, setIsPromoting] = useState(false)
+  const [isApproving, setIsApproving] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   const handlePromote = async (e: React.MouseEvent) => {
@@ -37,6 +39,17 @@ export function FeatureCard({ feature, projectId }: FeatureCardProps) {
       await promoteToTodo({ epicId: feature.id })
     } finally {
       setIsPromoting(false)
+    }
+  }
+
+  const handleApprove = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsApproving(true)
+    try {
+      await updateStatus({ epicId: feature.id, status: "completed" })
+    } finally {
+      setIsApproving(false)
     }
   }
 
@@ -75,6 +88,21 @@ export function FeatureCard({ feature, projectId }: FeatureCardProps) {
                     <Loader2 className="size-3.5 animate-spin" />
                   ) : (
                     <ArrowUpToLine className="size-3.5" />
+                  )}
+                </Button>
+              )}
+              {feature.status === "review" && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7 shrink-0 text-green-600 hover:bg-green-600/15"
+                  disabled={isApproving}
+                  onClick={handleApprove}
+                >
+                  {isApproving ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <CheckCircle className="size-3.5" />
                   )}
                 </Button>
               )}
