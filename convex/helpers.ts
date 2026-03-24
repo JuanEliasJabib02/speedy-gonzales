@@ -30,7 +30,6 @@ export const syncStatusValidator = v.union(
 export const gitProviderValidator = v.union(
   v.literal("github"),
   v.literal("bitbucket"),
-  v.literal("gitlab"),
 )
 
 export const agentStatusValidator = v.union(
