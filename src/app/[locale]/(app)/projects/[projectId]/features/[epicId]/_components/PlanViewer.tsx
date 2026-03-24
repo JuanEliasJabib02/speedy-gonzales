@@ -122,7 +122,7 @@ export function PlanViewer({ title, status, priority, content, ticketId, blocked
     if (!ticketId || marking) return
     setMarking(true)
     try {
-      await updateStatus({ ticketId: ticketId as Id<"tickets">, status: "completed", completionType })
+      await updateStatus({ ticketId: ticketId as Id<"tickets">, status: "completed" })
     } finally {
       setMarking(false)
     }
