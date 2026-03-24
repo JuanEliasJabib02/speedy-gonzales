@@ -7,6 +7,7 @@ import type { Id } from "@/convex/_generated/dataModel"
 import { TicketSidebar } from "./TicketSidebar"
 import { PlanViewer } from "./PlanViewer"
 import { useLivePlan } from "../_hooks/useLivePlan"
+import { ChatPanel } from "@/src/components/chat/ChatPanel"
 
 type FeatureLayoutProps = {
   projectId: string
@@ -16,6 +17,7 @@ type FeatureLayoutProps = {
 export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
   const { plan: epic, isLoading, getTicketContent, lastSyncAt, syncStatus, repoOwner, repoName } = useLivePlan(epicId, projectId)
   const [selectedTicketId, setSelectedTicketId] = useState("")
+  const [isChatOpen, setIsChatOpen] = useState(false)
 
   if (isLoading || !epic) {
     return (
@@ -34,30 +36,38 @@ export function FeatureLayout({ projectId, epicId }: FeatureLayoutProps) {
   const ticketData = getTicketContent(effectiveId)
 
   return (
-    <div className="flex h-full">
-      {/* Left panel: ticket sidebar */}
-      <TicketSidebar
-        epicTitle={epic.title}
-        branch={epic.branch}
-        tickets={epic.tickets}
-        selectedId={effectiveId}
-        onSelect={setSelectedTicketId}
-        projectId={projectId}
-        epicId={epicId}
-        lastSyncAt={lastSyncAt}
-        syncStatus={syncStatus}
-      />
+    <>
+      <div className="flex h-full">
+        {/* Left panel: ticket sidebar */}
+        <TicketSidebar
+          epicTitle={epic.title}
+          branch={epic.branch}
+          tickets={epic.tickets}
+          selectedId={effectiveId}
+          onSelect={setSelectedTicketId}
+          projectId={projectId}
+          epicId={epicId}
+          lastSyncAt={lastSyncAt}
+          syncStatus={syncStatus}
+        />
 
-      {/* Center panel: plan viewer */}
-      <PlanViewer
-        title={selectedTicket?.title ?? epic.title}
-        status={selectedTicket?.status ?? epic.status}
-        priority={epic.priority}
-        content={ticketData.content}
-        checklist={ticketData.checklist}
-        ticketId={selectedTicket?.id !== "_context" ? selectedTicket?.id : undefined}
-        blockedReason={selectedTicket?.blockedReason}
+        {/* Center panel: plan viewer */}
+        <PlanViewer
+          title={selectedTicket?.title ?? epic.title}
+          status={selectedTicket?.status ?? epic.status}
+          priority={epic.priority}
+          content={ticketData.content}
+          checklist={ticketData.checklist}
+          ticketId={selectedTicket?.id !== "_context" ? selectedTicket?.id : undefined}
+          blockedReason={selectedTicket?.blockedReason}
+        />
+      </div>
+
+      {/* Chat panel */}
+      <ChatPanel
+        isOpen={isChatOpen}
+        onToggle={() => setIsChatOpen(!isChatOpen)}
       />
-    </div>
+    </>
   )
 }
