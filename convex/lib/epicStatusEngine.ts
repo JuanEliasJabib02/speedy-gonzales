@@ -7,9 +7,8 @@ import type { TicketStatus } from "../helpers"
 export function deriveEpicStatus(statuses: TicketStatus[]): TicketStatus {
   if (statuses.length === 0) return "todo"
 
-  const allCompleted = statuses.every((s) => s === "completed")
-  if (allCompleted) return "completed"
-
+  // ALL completed or ALL completed+review → epic goes to "review" (NOT completed)
+  // Only Juan manually moves epics to "completed" after reviewing
   const allCompletedOrReview = statuses.every((s) => s === "completed" || s === "review")
   if (allCompletedOrReview) return "review"
 
@@ -41,7 +40,7 @@ export function testEpicStatusEngine(): string[] {
     }
   }
 
-  assert("all completed", ["completed", "completed"], "completed")
+  assert("all completed", ["completed", "completed"], "review") // Juan moves to completed manually
   assert("all review", ["review", "review"], "review")
   assert("mix completed + review", ["completed", "review"], "review")
   assert("any in-progress", ["todo", "in-progress", "completed"], "in-progress")
@@ -50,7 +49,7 @@ export function testEpicStatusEngine(): string[] {
   assert("empty array", [], "todo")
   assert("mixed todo + completed", ["todo", "completed"], "in-progress")
   assert("blocked + in-progress", ["blocked", "in-progress"], "in-progress")
-  assert("single completed", ["completed"], "completed")
+  assert("single completed", ["completed"], "review") // Juan moves to completed manually
   assert("single todo", ["todo"], "todo")
   assert("single blocked", ["blocked"], "blocked")
   assert("single in-progress", ["in-progress"], "in-progress")
