@@ -153,3 +153,31 @@ export const updateEpicInternal = internalMutation({
     return epicId
   },
 })
+
+export const deleteEpicInternal = internalMutation({
+  args: { epicId: v.id("epics") },
+  handler: async (ctx, { epicId }) => {
+    const epic = await ctx.db.get(epicId)
+    if (!epic) throw new Error("Epic not found")
+
+    // Mark epic as deleted
+    await ctx.db.patch(epicId, { isDeleted: true, updatedAt: Date.now() })
+
+    // Get all tickets for this epic
+    const tickets = await ctx.db
+      .query("tickets")
+      .withIndex("by_epic", (q) => q.eq("epicId", epicId))
+      .collect()
+
+    // Mark all tickets as deleted
+    let deletedCount = 0
+    for (const ticket of tickets) {
+      if (!ticket.isDeleted) {
+        await ctx.db.patch(ticket._id, { isDeleted: true, updatedAt: Date.now() })
+        deletedCount++
+      }
+    }
+
+    return deletedCount
+  },
+})

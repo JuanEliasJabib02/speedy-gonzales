@@ -673,4 +673,47 @@ http.route({
   }),
 })
 
+// ── POST /delete-epic ───────────────────────────────────────────────
+http.route({
+  path: "/delete-epic",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const authError = verifyLoopApiKey(request)
+    if (authError) return authError
+
+    let body: {
+      repoOwner?: string
+      repoName?: string
+      epicPath?: string
+    }
+
+    try {
+      body = await request.json()
+    } catch {
+      return jsonError("Invalid JSON", 400)
+    }
+
+    const { repoOwner, repoName, epicPath } = body
+
+    if (!repoOwner || !repoName || !epicPath) {
+      return jsonError("Missing required fields: repoOwner, repoName, epicPath", 400)
+    }
+
+    const project = await ctx.runQuery(internal.projects.getByRepo, { owner: repoOwner, name: repoName })
+    if (!project) return jsonError(`Project not found: ${repoOwner}/${repoName}`, 404)
+
+    const epic = await ctx.runQuery(internal.epics.getByProjectPathInternal, {
+      projectId: project._id,
+      path: epicPath,
+    })
+    if (!epic) return jsonError(`Epic not found at path: ${epicPath}`, 404)
+
+    const deletedTickets = await ctx.runMutation(internal.epics.deleteEpicInternal, {
+      epicId: epic._id,
+    })
+
+    return jsonOk({ deletedTickets })
+  }),
+})
+
 export default http
