@@ -22,6 +22,7 @@ import type * as loopCycles from "../loopCycles.js";
 import type * as model_gitProvider from "../model/gitProvider.js";
 import type * as model_groupFiles from "../model/groupFiles.js";
 import type * as model_parseRepoUrl from "../model/parseRepoUrl.js";
+import type * as model_providers_bitbucket from "../model/providers/bitbucket.js";
 import type * as model_providers_github from "../model/providers/github.js";
 import type * as model_providers_index from "../model/providers/index.js";
 import type * as projects from "../projects.js";
@@ -54,6 +55,7 @@ declare const fullApi: ApiFromModules<{
   "model/gitProvider": typeof model_gitProvider;
   "model/groupFiles": typeof model_groupFiles;
   "model/parseRepoUrl": typeof model_parseRepoUrl;
+  "model/providers/bitbucket": typeof model_providers_bitbucket;
   "model/providers/github": typeof model_providers_github;
   "model/providers/index": typeof model_providers_index;
   projects: typeof projects;

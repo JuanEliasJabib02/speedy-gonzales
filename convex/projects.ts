@@ -1,10 +1,13 @@
 import { v } from "convex/values"
-import { query, mutation, internalQuery, internalMutation } from "./_generated/server"
+import { query, mutation, action, internalQuery, internalMutation } from "./_generated/server"
 import { internal } from "./_generated/api"
 import type { Doc } from "./_generated/dataModel"
 import { requireAuth, agentStatusValidator } from "./helpers"
 import { throwError, ErrorCodes } from "./errors"
+import { getAuthUserId } from "@convex-dev/auth/server"
 import { parseRepoUrl } from "./model/parseRepoUrl"
+import { getGitProvider } from "./model/providers"
+import type { GitProviderType } from "./model/gitProvider"
 
 const DELETE_BATCH_SIZE = 100
 
@@ -30,21 +33,27 @@ export const getProject = query({
   },
 })
 
-export const createProject = mutation({
+export const createProject = action({
   args: {
     name: v.string(),
     description: v.optional(v.string()),
     repoUrl: v.string(),
     plansPath: v.optional(v.string()),
     branch: v.optional(v.string()),
+    gitProvider: v.optional(v.union(v.literal("github"), v.literal("bitbucket"))),
   },
-  handler: async (ctx, args) => {
-    const userId = await requireAuth(ctx)
-    const { owner, repo } = parseRepoUrl(args.repoUrl)
-    const now = Date.now()
+  handler: async (ctx, args): Promise<string> => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Unauthorized")
 
-    const projectId = await ctx.db.insert("projects", {
-      userId,
+    const { owner, repo } = parseRepoUrl(args.repoUrl)
+    const gitProvider: GitProviderType = args.gitProvider ?? detectGitProvider(args.repoUrl)
+
+    // Validate repository exists (uses fetch — only allowed in actions)
+    const branch = args.branch ?? "main"
+    await validateRepository(gitProvider, owner, repo, branch)
+
+    const projectId: string = await ctx.runMutation(internal.projects.insertProject, {
       name: args.name,
       description: args.description,
       repoUrl: args.repoUrl,
@@ -52,7 +61,39 @@ export const createProject = mutation({
       repoName: repo,
       plansPath: args.plansPath ?? "plans/features",
       branch: args.branch ?? "main",
-      gitProvider: "github",
+      gitProvider,
+    })
+
+    return projectId
+  },
+})
+
+export const insertProject = internalMutation({
+  args: {
+    name: v.string(),
+    description: v.optional(v.string()),
+    repoUrl: v.string(),
+    repoOwner: v.string(),
+    repoName: v.string(),
+    plansPath: v.string(),
+    branch: v.string(),
+    gitProvider: v.union(v.literal("github"), v.literal("bitbucket"), v.literal("gitlab")),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx)
+    if (!userId) throw new Error("Unauthorized")
+
+    const now = Date.now()
+    return ctx.db.insert("projects", {
+      userId,
+      name: args.name,
+      description: args.description,
+      repoUrl: args.repoUrl,
+      repoOwner: args.repoOwner,
+      repoName: args.repoName,
+      plansPath: args.plansPath,
+      branch: args.branch,
+      gitProvider: args.gitProvider,
       syncStatus: "idle",
       autonomousLoop: false,
       loopStatus: "idle",
@@ -64,8 +105,6 @@ export const createProject = mutation({
       createdAt: now,
       updatedAt: now,
     })
-
-    return projectId
   },
 })
 
@@ -334,3 +373,55 @@ export const getProjectWithEpics = query({
     return { project, epics: activeEpics }
   },
 })
+
+// Helper function to detect git provider from repository URL
+function detectGitProvider(repoUrl: string): GitProviderType {
+  const url = repoUrl.toLowerCase()
+  if (url.includes("github.com")) {
+    return "github"
+  } else if (url.includes("bitbucket.org")) {
+    return "bitbucket"
+  } else if (url.includes("gitlab.com")) {
+    return "gitlab"
+  } else {
+    return "github"
+  }
+}
+
+// Helper function to validate repository exists
+async function validateRepository(gitProvider: GitProviderType, owner: string, repo: string, branch: string): Promise<void> {
+  try {
+    const provider = getGitProvider(gitProvider)
+    const accessToken = getAccessToken(gitProvider)
+
+    if (!accessToken) {
+      throw new Error(`Access token not configured for ${gitProvider}`)
+    }
+
+    const config = {
+      provider: gitProvider,
+      accessToken,
+      owner,
+      repo,
+      branch,
+    }
+
+    await provider.fetchTree(config)
+  } catch (error) {
+    throw new Error(`Failed to validate ${gitProvider} repository ${owner}/${repo}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
+}
+
+// Helper function to get access token for git provider
+function getAccessToken(gitProvider: GitProviderType): string | undefined {
+  switch (gitProvider) {
+    case "github":
+      return process.env.GITHUB_ACCESS_TOKEN
+    case "bitbucket":
+      return process.env.BITBUCKET_ACCESS_TOKEN
+    case "gitlab":
+      return process.env.GITLAB_ACCESS_TOKEN
+    default:
+      return undefined
+  }
+}

@@ -4,6 +4,8 @@ import { internal } from "./_generated/api"
 import { httpAction } from "./_generated/server"
 import { VALID_STATUSES, VALID_PRIORITIES, type ValidStatus, type ValidPriority } from "./helpers"
 import { parseChecklistCounts, generateContentHash, slugify } from "./lib/planParser"
+import { getGitProvider } from "./model/providers"
+import type { GitProviderType } from "./model/gitProvider"
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -297,6 +299,20 @@ function jsonOk(data: Record<string, unknown>): Response {
     status: 200,
     headers: { "Content-Type": "application/json", ...corsHeaders },
   })
+}
+
+// ── Helper: get access token for git provider ──────────────────────
+function getAccessToken(gitProvider: GitProviderType): string | undefined {
+  switch (gitProvider) {
+    case "github":
+      return process.env.GITHUB_ACCESS_TOKEN
+    case "bitbucket":
+      return process.env.BITBUCKET_ACCESS_TOKEN
+    case "gitlab":
+      return process.env.GITLAB_ACCESS_TOKEN
+    default:
+      return undefined
+  }
 }
 
 // ── POST /create-epic ───────────────────────────────────────────────
@@ -594,6 +610,9 @@ http.route({
   path: "/get-ticket-plan",
   method: "GET",
   handler: httpAction(async (ctx, request) => {
+    const authError = verifyLoopApiKey(request)
+    if (authError) return authError
+
     const url = new URL(request.url)
     const repoOwner = url.searchParams.get("repoOwner")
     const repoName = url.searchParams.get("repoName")
@@ -630,6 +649,9 @@ http.route({
   path: "/get-epic-tickets",
   method: "GET",
   handler: httpAction(async (ctx, request) => {
+    const authError = verifyLoopApiKey(request)
+    if (authError) return authError
+
     const url = new URL(request.url)
     const repoOwner = url.searchParams.get("repoOwner")
     const repoName = url.searchParams.get("repoName")
@@ -653,12 +675,12 @@ http.route({
     })
     const epicTickets = allTickets
       .filter((t) => t.epicId === epic._id && !t.isDeleted)
-      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .sort((a: { sortOrder: number }, b: { sortOrder: number }) => a.sortOrder - b.sortOrder)
 
     return jsonOk({
       epicId: epic._id,
       epicTitle: epic.title,
-      tickets: epicTickets.map((t) => ({
+      tickets: epicTickets.map((t: any) => ({
         ticketId: t._id,
         title: t.title,
         path: t.path,
@@ -788,7 +810,7 @@ http.route({
     })
 
     return jsonOk({
-      staleTickets: staleTickets.map((t) => ({
+      staleTickets: staleTickets.map((t: any) => ({
         id: t.id,
         title: t.title,
         path: t.path,
@@ -798,6 +820,81 @@ http.route({
         minutesStuck: t.minutesStuck,
       })),
     })
+  }),
+})
+
+// ── POST /create-pr ─────────────────────────────────────────────────
+function getAccessTokenForProvider(provider: string): string | undefined {
+  switch (provider) {
+    case "github": return process.env.GITHUB_ACCESS_TOKEN
+    case "bitbucket": return process.env.BITBUCKET_ACCESS_TOKEN
+    case "gitlab": return process.env.GITLAB_ACCESS_TOKEN
+    default: return undefined
+  }
+}
+
+http.route({
+  path: "/create-pr",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const authError = verifyLoopApiKey(request)
+    if (authError) return authError
+
+    let body: {
+      repoOwner?: string
+      repoName?: string
+      sourceBranch?: string
+      targetBranch?: string
+      title?: string
+      description?: string
+    }
+
+    try {
+      body = await request.json()
+    } catch {
+      return jsonError("Invalid JSON", 400)
+    }
+
+    const { repoOwner, repoName, sourceBranch, targetBranch, title, description = "" } = body
+
+    if (!repoOwner || !repoName || !sourceBranch || !targetBranch || !title) {
+      return jsonError("Missing required fields: repoOwner, repoName, sourceBranch, targetBranch, title", 400)
+    }
+
+    const project = await ctx.runQuery(internal.projects.getByRepo, { owner: repoOwner, name: repoName })
+    if (!project) return jsonError(`Project not found: ${repoOwner}/${repoName}`, 404)
+
+    const gitProvider = getGitProvider(project.gitProvider)
+    const accessToken = getAccessTokenForProvider(project.gitProvider)
+    if (!accessToken) {
+      return jsonError(`Access token not configured for ${project.gitProvider}`, 500)
+    }
+
+    try {
+      const result = await gitProvider.createPR(
+        {
+          provider: project.gitProvider,
+          accessToken,
+          owner: repoOwner,
+          repo: repoName,
+          branch: project.branch,
+        },
+        {
+          sourceBranch,
+          targetBranch,
+          title,
+          description,
+        }
+      )
+
+      return jsonOk({
+        url: result.url,
+        id: result.id,
+        provider: project.gitProvider,
+      })
+    } catch (error) {
+      return jsonError(`Failed to create PR: ${error instanceof Error ? error.message : 'Unknown error'}`, 500)
+    }
   }),
 })
 
