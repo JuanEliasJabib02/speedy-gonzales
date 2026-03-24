@@ -109,6 +109,7 @@ export const updateStatus = mutation({
 
     const patch: Record<string, unknown> = { status }
     if (completionType) patch.completionType = completionType
+    if (status === "completed") patch.completedAt = Date.now()
 
     // Auto-create PR when moving to review status
     if (status === "review" && epic.status !== "review" && !epic.prUrl) {

@@ -34,20 +34,23 @@ export const getTicketAnalytics = query({
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect()
 
-    const completed = tickets.filter(
+    const epics = await ctx.db
+      .query("epics")
+      .withIndex("by_project", (q) => q.eq("projectId", projectId))
+      .collect()
+
+    // Ticket-level metrics: completed count, blocked, resolution times
+    const completedTickets = tickets.filter(
       (t) => t.status === "completed" && t.completedAt && t.completedAt >= from && t.completedAt <= to,
     )
     const blocked = tickets.filter(
       (t) => t.status === "blocked" && t.blockedAt && t.blockedAt >= from && t.blockedAt <= to,
     )
 
-    const totalCompleted = completed.length
-    const cleanApprovals = completed.filter((t) => t.completionType === "clean").length
-    const withFixes = completed.filter((t) => t.completionType === "with-fixes").length
-    const unreviewed = completed.filter((t) => t.completionType === undefined).length
+    const totalCompleted = completedTickets.length
     const blockedCount = blocked.length
 
-    const resolutionTimes = completed
+    const resolutionTimes = completedTickets
       .filter((t) => t.startedAt && t.reviewAt)
       .map((t) => t.reviewAt! - t.startedAt!)
 
@@ -55,6 +58,15 @@ export const getTicketAnalytics = query({
       resolutionTimes.length > 0
         ? resolutionTimes.reduce((sum, t) => sum + t, 0) / resolutionTimes.length
         : 0
+
+    // Epic-level quality metrics: clean / with-fixes / unreviewed
+    const completedEpics = epics.filter(
+      (e) => !e.isDeleted && e.status === "completed" && e.completedAt && e.completedAt >= from && e.completedAt <= to,
+    )
+
+    const cleanApprovals = completedEpics.filter((e) => e.completionType === "clean").length
+    const withFixes = completedEpics.filter((e) => e.completionType === "with-fixes").length
+    const unreviewed = completedEpics.filter((e) => e.completionType === undefined).length
 
     const reviewed = cleanApprovals + withFixes
     const qualityRate = reviewed > 0 ? (cleanApprovals / reviewed) * 100 : 0
@@ -85,17 +97,27 @@ export const getTicketsByDay = query({
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect()
 
+    const epics = await ctx.db
+      .query("epics")
+      .withIndex("by_project", (q) => q.eq("projectId", projectId))
+      .collect()
+
     const dayMap = new Map<string, { clean: number; withFixes: number; unreviewed: number; blocked: number }>()
 
-    for (const t of tickets) {
-      if (t.status === "completed" && t.completedAt && t.completedAt >= from && t.completedAt <= to) {
-        const date = toDateString(t.completedAt)
+    // Epic completions bucketed by day (quality labels)
+    for (const e of epics) {
+      if (!e.isDeleted && e.status === "completed" && e.completedAt && e.completedAt >= from && e.completedAt <= to) {
+        const date = toDateString(e.completedAt)
         const entry = dayMap.get(date) ?? { clean: 0, withFixes: 0, unreviewed: 0, blocked: 0 }
-        if (t.completionType === "clean") entry.clean++
-        else if (t.completionType === "with-fixes") entry.withFixes++
+        if (e.completionType === "clean") entry.clean++
+        else if (e.completionType === "with-fixes") entry.withFixes++
         else entry.unreviewed++
         dayMap.set(date, entry)
       }
+    }
+
+    // Ticket blocks bucketed by day
+    for (const t of tickets) {
       if (t.status === "blocked" && t.blockedAt && t.blockedAt >= from && t.blockedAt <= to) {
         const date = toDateString(t.blockedAt)
         const entry = dayMap.get(date) ?? { clean: 0, withFixes: 0, unreviewed: 0, blocked: 0 }
