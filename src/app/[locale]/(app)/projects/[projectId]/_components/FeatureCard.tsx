@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, Play, Square, Loader2, Github, Trash2 } from "lucide-react"
+import { Loader2, Github, Trash2 } from "lucide-react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Link } from "@/src/i18n/routing"
@@ -23,32 +23,9 @@ type FeatureCardProps = {
 }
 
 export function FeatureCard({ feature, projectId }: FeatureCardProps) {
-  const updateStatus = useMutation(api.epics.updateStatus)
   const deleteEpic = useMutation(api.epics.deleteEpic)
-  const [isUpdating, setIsUpdating] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-
-  const showStart = feature.status === "todo" || feature.status === "blocked"
-  const showStop = feature.status === "in-progress"
-  const showApprove = feature.status === "review"
-
-  const handleStatusChange = async (
-    e: React.MouseEvent,
-    newStatus: "todo" | "in-progress" | "review" | "completed" | "blocked",
-  ) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsUpdating(true)
-    try {
-      await updateStatus({
-        epicId: feature.id,
-        status: newStatus,
-      })
-    } finally {
-      setIsUpdating(false)
-    }
-  }
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -73,56 +50,11 @@ export function FeatureCard({ feature, projectId }: FeatureCardProps) {
           <div className="flex items-start justify-between gap-2">
             <h4 className="text-sm font-medium">{feature.title}</h4>
             <div className="flex items-center gap-1">
-              {showStart && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-7 shrink-0 text-status-in-progress hover:bg-status-in-progress/15"
-                  disabled={isUpdating}
-                  onClick={(e) => handleStatusChange(e, "in-progress")}
-                >
-                  {isUpdating ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : (
-                    <Play className="size-3.5" />
-                  )}
-                </Button>
-              )}
-              {showStop && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-7 shrink-0 text-status-blocked hover:bg-status-blocked/15"
-                  disabled={isUpdating}
-                  onClick={(e) => handleStatusChange(e, "todo")}
-                >
-                  {isUpdating ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : (
-                    <Square className="size-3.5" />
-                  )}
-                </Button>
-              )}
-              {showApprove && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-7 shrink-0 text-status-completed hover:bg-status-completed/15"
-                  disabled={isUpdating}
-                  onClick={(e) => handleStatusChange(e, "completed")}
-                >
-                  {isUpdating ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : (
-                    <Check className="size-3.5" />
-                  )}
-                </Button>
-              )}
               <Button
                 variant="ghost"
                 size="icon"
                 className="size-7 shrink-0 text-destructive hover:bg-destructive/15"
-                disabled={isUpdating || isDeleting}
+                disabled={isDeleting}
                 onClick={handleDeleteClick}
               >
                 <Trash2 className="size-3.5" />
